@@ -13,10 +13,6 @@ export default function CreerAnnonce() {
   else if (user?.role === "commercant") typeAnnonce = "produit_livre";
   else if (user?.role === "prestataire") typeAnnonce = "service";
 
-  if (!typeAnnonce) {
-    return <p className="text-center mt-10 text-red-600">Vous n'avez pas le droit de créer une annonce.</p>;
-  }
-
   const [form, setForm] = useState({
     titre: "",
     description: "",
@@ -25,6 +21,14 @@ export default function CreerAnnonce() {
     lieu_arrivee: "",
     photo: "",
   });
+
+  if (!typeAnnonce) {
+    return (
+      <p className="text-center mt-10 text-red-600">
+        Vous n'avez pas le droit de créer une annonce.
+      </p>
+    );
+  }
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
