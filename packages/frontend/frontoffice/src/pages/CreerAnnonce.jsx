@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 import { createCheckoutSession } from "../services/paiement";
@@ -7,6 +7,7 @@ import { createCheckoutSession } from "../services/paiement";
 export default function CreerAnnonce() {
   const { user, token } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   // Déterminer le type selon le rôle
   let typeAnnonce = null;
   if (user?.role === "client") typeAnnonce = "livraison_client";
@@ -39,6 +40,15 @@ export default function CreerAnnonce() {
     };
     fetchEntrepots();
   }, [token]);
+
+  useEffect(() => {
+    if (searchParams.get("cancel") === "1") {
+      setMessage(
+        "Le paiement a échoué ou a été annulé. Aucune annonce n’a été créée.",
+      );
+      setSuccess(false);
+    }
+  }, [searchParams]);
 
   if (!typeAnnonce) {
     return (
@@ -82,15 +92,16 @@ export default function CreerAnnonce() {
       if (user?.role === "client") {
         localStorage.setItem(
           "annonceForm",
-          JSON.stringify({ form, type: typeAnnonce })
+          JSON.stringify({ form, type: typeAnnonce }),
         );
         if (photoPreview) {
           localStorage.setItem("annoncePhoto", photoPreview);
         }
+        localStorage.setItem("paymentContext", "creer");
         const { checkout_url } = await createCheckoutSession(
           { montant: form.prix_propose, type: typeAnnonce },
           token,
-          "creer"
+          "creer",
         );
         window.location.href = checkout_url;
       } else {
@@ -136,7 +147,9 @@ export default function CreerAnnonce() {
     <div className="max-w-xl mx-auto mt-10 p-6 bg-white shadow rounded">
       <h2 className="text-2xl font-bold mb-4">Créer une annonce</h2>
       {message && (
-        <p className={`mb-2 ${success ? "text-green-600" : "text-red-600"}`}>{message}</p>
+        <p className={`mb-2 ${success ? "text-green-600" : "text-red-600"}`}>
+          {message}
+        </p>
       )}
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
@@ -167,7 +180,8 @@ export default function CreerAnnonce() {
         />
 
         {/* Champ toujours visible : entrepôt de départ */}
-        {(typeAnnonce === "livraison_client" || typeAnnonce === "produit_livre") && (
+        {(typeAnnonce === "livraison_client" ||
+          typeAnnonce === "produit_livre") && (
           <select
             name="entrepot_depart_id"
             value={form.entrepot_depart_id}
