@@ -9,10 +9,12 @@ class Paiement extends Model
     protected $fillable = [
         'utilisateur_id',
         'commande_id',
+        'annonce_id',
         'montant',
         'sens',
         'type',
         'reference',
+        'statut',
     ];
 
     public function utilisateur()
@@ -23,5 +25,10 @@ class Paiement extends Model
     public function commande()
     {
         return $this->belongsTo(Commande::class, 'commande_id');
+    }
+
+    public function annonce()
+    {
+        return $this->belongsTo(Annonce::class, 'annonce_id');
     }
 }
