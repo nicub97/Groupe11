@@ -7,6 +7,7 @@ export default function AnnoncesList() {
   const [form, setForm] = useState({ titre: "", description: "", prix_propose: "" });
   const [editingId, setEditingId] = useState(null);
   const [errors, setErrors] = useState({});
+  const [apiError, setApiError] = useState("");
 
   useEffect(() => {
     fetchAnnonces();
@@ -82,11 +83,29 @@ export default function AnnoncesList() {
     setEditingId(null);
   };
 
+  const deleteAnnonce = async (id) => {
+    if (!window.confirm("Confirmer la suppression de l'annonce ?")) return;
+    setApiError("");
+    try {
+      await api.delete(`/annonces/${id}`);
+      setAnnonces((prev) => prev.filter((a) => a.id !== id));
+    } catch (err) {
+      const message = err.response?.data?.errors?.message ||
+        "Erreur lors de la suppression";
+      setApiError(message);
+    }
+  };
+
   if (loading) return <div className="p-4">Chargement...</div>;
 
   return (
     <div className="p-6 space-y-6">
       <h1 className="text-2xl font-bold">Gestion des annonces</h1>
+      {apiError && (
+        <p className="text-red-600" role="alert">
+          {apiError}
+        </p>
+      )}
 
       <form onSubmit={handleSubmit} className="bg-white shadow p-4 rounded space-y-4">
         <h2 className="text-xl font-semibold">
@@ -169,6 +188,12 @@ export default function AnnoncesList() {
                     className="text-yellow-600 hover:underline"
                   >
                     Modifier
+                  </button>
+                  <button
+                    onClick={() => deleteAnnonce(a.id)}
+                    className="text-red-600 hover:underline"
+                  >
+                    Supprimer
                   </button>
                 </td>
               </tr>
