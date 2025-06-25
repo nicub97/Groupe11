@@ -18,6 +18,7 @@ import AnnonceDetail from "../pages/AnnonceDetail";
 import AdresseLivraison from "../pages/AdresseLivraison";
 import Paiement from "../pages/Paiement";
 import PaiementSuccess from "../pages/PaiementSuccess";
+import PaiementCancel from "../pages/PaiementCancel";
 import DetailsService from "../pages/DetailsService";
 import MesAnnonces from "../pages/MesAnnonces";
 import AnnoncesDisponibles from "../pages/AnnoncesDisponibles";
@@ -33,7 +34,7 @@ import MesTrajets from "../pages/MesTrajets";
 import MesEtapes from "../pages/MesEtapes";
 import ValidationCodeBox from "../pages/ValidationCodeBox";
 import SuiviAnnonce from "../pages/SuiviAnnonce";
-import ReserverAnnonce from "../pages/ReserverAnnonce"
+import ReserverAnnonce from "../pages/ReserverAnnonce";
 
 export default function AppRouter() {
   return (
@@ -45,7 +46,10 @@ export default function AppRouter() {
           <Route path="/register" element={<Register />} />
           <Route path="/register-commercant" element={<RegisterCommercant />} />
           <Route path="/register-livreur" element={<RegisterLivreur />} />
-          <Route path="/register-prestataire" element={<RegisterPrestataire />} />
+          <Route
+            path="/register-prestataire"
+            element={<RegisterPrestataire />}
+          />
           <Route
             path="/annonces"
             element={
@@ -84,7 +88,10 @@ export default function AppRouter() {
               </PrivateRoute>
             }
           />
-          <Route path="/adresse-livraison/:commandeId" element={<AdresseLivraison />} />
+          <Route
+            path="/adresse-livraison/:commandeId"
+            element={<AdresseLivraison />}
+          />
           <Route
             path="/paiement/:commandeId"
             element={
@@ -98,6 +105,14 @@ export default function AppRouter() {
             element={
               <PrivateRoute>
                 <PaiementSuccess />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/paiement/cancel"
+            element={
+              <PrivateRoute>
+                <PaiementCancel />
               </PrivateRoute>
             }
           />
@@ -240,7 +255,6 @@ export default function AppRouter() {
             }
           />
 
-
           <Route
             path="/notifications"
             element={
@@ -261,33 +275,32 @@ export default function AppRouter() {
             }
           />
 
-          <Route 
-            path="/etapes/:etapeId/validation-code" 
+          <Route
+            path="/etapes/:etapeId/validation-code"
             element={
               <PrivateRoute>
                 <ValidationCodeBox />
               </PrivateRoute>
-            } 
+            }
           />
 
-          <Route 
+          <Route
             path="/annonces/:annonceId/suivi"
             element={
               <PrivateRoute>
                 <SuiviAnnonce />
               </PrivateRoute>
-            } 
+            }
           />
 
-          <Route 
+          <Route
             path="/annonces/:annonceId/reserver"
             element={
               <PrivateRoute>
                 <ReserverAnnonce />
               </PrivateRoute>
-            } 
+            }
           />
-
         </Routes>
       </MainLayout>
     </Router>

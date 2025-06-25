@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import api from "../services/api";
 import { createCheckoutSession } from "../services/paiement";
 import { useAuth } from "../context/AuthContext";
@@ -8,6 +8,7 @@ export default function ReserverAnnonce() {
   const { annonceId } = useParams();
   const { token, user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [annonce, setAnnonce] = useState(null);
   const [entrepots, setEntrepots] = useState([]);
@@ -46,6 +47,14 @@ export default function ReserverAnnonce() {
     fetchEntrepots();
   }, [annonceId, token, user, navigate]);
 
+  useEffect(() => {
+    if (searchParams.get("cancel") === "1") {
+      setMessage(
+        "Le paiement a échoué ou a été annulé. Aucune annonce n’a été créée.",
+      );
+    }
+  }, [searchParams]);
+
   const reserver = async () => {
     if (!entrepotArriveeId) {
       setMessage("Veuillez sélectionner un entrepôt d’arrivée.");
@@ -56,10 +65,12 @@ export default function ReserverAnnonce() {
     setMessage("");
     try {
       localStorage.setItem("reservationEntrepot", entrepotArriveeId);
+      localStorage.setItem("paymentContext", "reserver");
+      localStorage.setItem("reservationAnnonceId", annonceId);
       const { checkout_url } = await createCheckoutSession(
         { annonce_id: Number(annonceId), type: annonce.type },
         token,
-        "reserver"
+        "reserver",
       );
       window.location.href = checkout_url;
     } catch (err) {
@@ -78,13 +89,23 @@ export default function ReserverAnnonce() {
     <div className="max-w-2xl mx-auto mt-10 p-6 bg-white shadow rounded">
       <h2 className="text-2xl font-bold mb-4">Réserver l’annonce</h2>
 
-      <p className="mb-2"><strong>Titre :</strong> {annonce.titre}</p>
-      <p className="mb-2"><strong>Description :</strong> {annonce.description}</p>
-      <p className="mb-2"><strong>Prix proposé :</strong> {annonce.prix_propose} €</p>
-      <p className="mb-4"><strong>Départ :</strong> {annonce.entrepot_depart?.ville || "❓"}</p>
+      <p className="mb-2">
+        <strong>Titre :</strong> {annonce.titre}
+      </p>
+      <p className="mb-2">
+        <strong>Description :</strong> {annonce.description}
+      </p>
+      <p className="mb-2">
+        <strong>Prix proposé :</strong> {annonce.prix_propose} €
+      </p>
+      <p className="mb-4">
+        <strong>Départ :</strong> {annonce.entrepot_depart?.ville || "❓"}
+      </p>
 
       <div className="mb-4">
-        <label className="block font-medium mb-1">Sélectionnez un entrepôt d’arrivée :</label>
+        <label className="block font-medium mb-1">
+          Sélectionnez un entrepôt d’arrivée :
+        </label>
         <select
           value={entrepotArriveeId}
           onChange={(e) => setEntrepotArriveeId(e.target.value)}
