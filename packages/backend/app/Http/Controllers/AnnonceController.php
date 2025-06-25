@@ -11,6 +11,7 @@ use App\Models\CodeBox;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class AnnonceController extends Controller
 {
@@ -66,7 +67,7 @@ class AnnonceController extends Controller
             'titre' => 'required|string|max:255',
             'description' => 'required|string',
             'prix_propose' => 'required|numeric|min:0',
-            'photo' => 'nullable|url',
+            'photo' => 'nullable|file|image|max:2048',
             'entrepot_depart_id' => 'required|exists:entrepots,id',
         ];
 
@@ -77,9 +78,17 @@ class AnnonceController extends Controller
 
         $validated = $request->validate($rules);
 
+        $data = $validated;
+        unset($data['photo']);
+
         DB::beginTransaction();
 
-        $annonce = new Annonce($validated);
+        $annonce = new Annonce($data);
+
+        if ($request->hasFile('photo')) {
+            $path = $request->file('photo')->store('documents/annonces', 'public');
+            $annonce->photo = $path;
+        }
 
         if ($user->role === 'client') {
             $annonce->id_client = $user->id;
