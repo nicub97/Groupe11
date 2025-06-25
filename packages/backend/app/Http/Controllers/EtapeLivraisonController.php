@@ -10,6 +10,9 @@ use App\Models\Annonce;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\CodeDepotMail;
+use App\Mail\CodeRetraitMail;
 use App\Services\PaiementService;
 
 class EtapeLivraisonController extends Controller
@@ -107,7 +110,13 @@ class EtapeLivraisonController extends Controller
             $etape->est_client === false &&
             $etape->lieu_arrivee === $annonce->entrepotArrivee?->ville
         ) {
-            $annonce->genererEtapeRetraitClientFinaleSiBesoin();
+            $code = $annonce->genererEtapeRetraitClientFinaleSiBesoin();
+            if ($code && !$code->mail_envoye_at) {
+                $dest = $annonce->client;
+                Mail::to($dest->email)->send(new CodeRetraitMail($code));
+                $code->mail_envoye_at = now();
+                $code->save();
+            }
         }
 
         return response()->json(['message' => '✅ Étape clôturée avec succès.']);
@@ -141,6 +150,36 @@ class EtapeLivraisonController extends Controller
         // ✅ Marquer le code comme utilisé
         $codeBox->utilise = true;
         $codeBox->save();
+
+        // Envoi du code par email une seule fois
+        if (!$codeBox->mail_envoye_at) {
+            $destinataire = null;
+            $mailable = null;
+
+            if ($codeBox->type === 'depot') {
+                if ($etape->est_client) {
+                    $destinataire = $etape->annonce->client;
+                } elseif ($etape->est_commercant) {
+                    $destinataire = $etape->annonce->commercant;
+                } else {
+                    $destinataire = $etape->livreur;
+                }
+                $mailable = new CodeDepotMail($codeBox);
+            } else { // retrait
+                if ($etape->est_client) {
+                    $destinataire = $etape->annonce->client;
+                } else {
+                    $destinataire = $etape->livreur;
+                }
+                $mailable = new CodeRetraitMail($codeBox);
+            }
+
+            if ($destinataire) {
+                Mail::to($destinataire->email)->send($mailable);
+                $codeBox->mail_envoye_at = now();
+                $codeBox->save();
+            }
+        }
 
         // 🎯 Cas 1 : Étape client = marquer dépôt + clôturer
         if ($etape->est_client && $request->type === 'depot') {
@@ -179,7 +218,13 @@ class EtapeLivraisonController extends Controller
                     $etape->est_client === false &&
                     $etape->lieu_arrivee === $annonce->entrepotArrivee->ville
                 ) {
-                    $annonce->genererEtapeRetraitClientFinaleSiBesoin();
+                    $code = $annonce->genererEtapeRetraitClientFinaleSiBesoin();
+                    if ($code && !$code->mail_envoye_at) {
+                        $dest = $annonce->client;
+                        Mail::to($dest->email)->send(new CodeRetraitMail($code));
+                        $code->mail_envoye_at = now();
+                        $code->save();
+                    }
                 }
 
                 return response()->json(['message' => 'Colis déposé. Étape clôturée.']);
