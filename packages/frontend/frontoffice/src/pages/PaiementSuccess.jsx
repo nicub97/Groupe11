@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
@@ -8,8 +8,11 @@ export default function PaiementSuccess() {
   const [searchParams] = useSearchParams();
   const { token } = useAuth();
   const navigate = useNavigate();
+  const finalized = useRef(false);
 
   useEffect(() => {
+    if (finalized.current) return;
+    finalized.current = true;
     const context = searchParams.get("context");
     const annonceId = searchParams.get("annonce_id");
     const entrepotId = localStorage.getItem("reservationEntrepot");
