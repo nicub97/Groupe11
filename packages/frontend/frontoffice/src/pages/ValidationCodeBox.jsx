@@ -94,6 +94,13 @@ export default function ValidationCodeBox() {
         setMessage("✅ Retrait validé. Vous pouvez continuer.");
         setCode("");
         await fetchEtapeInfos();
+        // Si la validation est effectuée par un livreur, on retourne
+        // automatiquement sur la liste des étapes après un court délai
+        if (etape && !etape.est_client && !etape.est_commercant) {
+          setTimeout(() => {
+            navigate("/mes-etapes");
+          }, 1000);
+        }
       } else {
         await api.patch(`/etapes/${etapeId}/cloturer`, null, {
           headers: { Authorization: `Bearer ${token}` },
