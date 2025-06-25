@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../services/api";
+import { effectuerPaiement } from "../services/paiement";
 import { useAuth } from "../context/AuthContext";
 
 export default function ReserverAnnonce() {
@@ -51,6 +52,8 @@ export default function ReserverAnnonce() {
     }
 
     try {
+      await effectuerPaiement(Number(annonceId), annonce.prix_propose, token);
+
       await api.post(
         `/annonces/${annonceId}/reserver`,
         { entrepot_arrivee_id: entrepotArriveeId },
@@ -60,7 +63,12 @@ export default function ReserverAnnonce() {
       setTimeout(() => navigate("/annonces"), 1500);
     } catch (err) {
       console.error("Erreur réservation :", err);
-      setMessage(err.response?.data?.message || "Erreur lors de la réservation.");
+      const msg =
+        err.response?.data?.message ||
+        (err.response?.data?.errors
+          ? Object.values(err.response.data.errors).flat()[0]
+          : "Erreur lors de la réservation.");
+      setMessage(msg);
     }
   };
 
