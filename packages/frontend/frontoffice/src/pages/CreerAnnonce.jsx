@@ -1,13 +1,10 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
-import PaiementForm from "../components/PaiementForm";
+import { createCheckoutSession } from "../services/paiement";
 
 export default function CreerAnnonce() {
   const { user, token } = useAuth();
-  const navigate = useNavigate();
-
   // Déterminer le type selon le rôle
   let typeAnnonce = null;
   if (user?.role === "client") typeAnnonce = "livraison_client";
@@ -23,7 +20,7 @@ export default function CreerAnnonce() {
     entrepot_arrivee_id: "",
   });
   const [message, setMessage] = useState("");
-  const [paiementEffectue, setPaiementEffectue] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchEntrepots = async () => {
@@ -54,27 +51,26 @@ export default function CreerAnnonce() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (typeAnnonce === "livraison_client" && user?.role === "client" && !paiementEffectue) {
-      setMessage("Veuillez effectuer le paiement avant de créer l'annonce.");
-      return;
-    }
+    setMessage("");
+    setLoading(true);
 
     try {
-      await api.post(
-        "/annonces",
-        { ...form, type: typeAnnonce },
-        { headers: { Authorization: `Bearer ${token}` } }
+      localStorage.setItem(
+        "annonceForm",
+        JSON.stringify({ form, type: typeAnnonce })
       );
-      alert("Annonce créée avec succès.");
-      navigate("/annonces");
+      const { checkout_url } = await createCheckoutSession(
+        { montant: form.prix_propose, type: typeAnnonce },
+        token,
+        "creer"
+      );
+      window.location.href = checkout_url;
     } catch (err) {
       console.error(err);
-      const msg =
-        err.response?.data?.message ||
-        (err.response?.data?.errors
-          ? Object.values(err.response.data.errors).flat()[0]
-          : "Erreur lors de la création de l'annonce.");
+      const msg = err.response?.data?.message ||
+        "Erreur lors de la redirection de paiement.";
       setMessage(msg);
+      setLoading(false);
     }
   };
 
@@ -155,23 +151,12 @@ export default function CreerAnnonce() {
           className="w-full p-2 border rounded"
         />
 
-        {typeAnnonce === "livraison_client" && !paiementEffectue && (
-          <PaiementForm
-            annonceId={null}
-            montant={form.prix_propose}
-            onPaid={() => setPaiementEffectue(true)}
-          />
-        )}
-        {typeAnnonce === "livraison_client" && paiementEffectue && (
-          <p className="text-green-700">Paiement confirmé.</p>
-        )}
-
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
-          disabled={entrepots.length === 0}
+          disabled={loading || entrepots.length === 0}
+          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-50"
         >
-          Créer l'annonce
+          {loading ? "Redirection..." : "Créer l'annonce"}
         </button>
       </form>
     </div>

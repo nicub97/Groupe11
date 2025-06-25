@@ -17,6 +17,7 @@ import CreerAnnonce from "../pages/CreerAnnonce";
 import AnnonceDetail from "../pages/AnnonceDetail";
 import AdresseLivraison from "../pages/AdresseLivraison";
 import Paiement from "../pages/Paiement";
+import PaiementSuccess from "../pages/PaiementSuccess";
 import DetailsService from "../pages/DetailsService";
 import MesAnnonces from "../pages/MesAnnonces";
 import AnnoncesDisponibles from "../pages/AnnoncesDisponibles";
@@ -89,6 +90,14 @@ export default function AppRouter() {
             element={
               <PrivateRoute>
                 <Paiement />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/paiement/success"
+            element={
+              <PrivateRoute>
+                <PaiementSuccess />
               </PrivateRoute>
             }
           />
