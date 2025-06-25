@@ -238,16 +238,27 @@ class AnnonceController extends Controller
 
             // Déterminer la ville de départ actuelle
             $depart_actuel = $annonce->entrepotDepart?->ville ?? '';
-            $lastStep = $etapes->where('statut', 'terminee')->last();
+
+            $lastStep = $etapes
+                ->where('statut', 'terminee');
+
+            if ($annonce->type === 'produit_livre') {
+                $lastStep = $lastStep->where('est_commercant', false);
+            } elseif ($annonce->type === 'livraison_client') {
+                $lastStep = $lastStep->where('est_client', false);
+            }
+
+            $lastStep = $lastStep->last();
+
             if ($lastStep) {
                 $depart_actuel = $lastStep->lieu_arrivee;
             }
 
             // Vérifier compatibilité avec un trajet du livreur
-            $compatible = $trajets->first(fn($trajet) =>
-                $trajet->entrepotDepart &&
-                strcasecmp($trajet->entrepotDepart->ville, $depart_actuel) === 0
-            );
+            $compatible = $trajets->first(function ($trajet) use ($depart_actuel) {
+                return $trajet->entrepotDepart &&
+                    strcasecmp(trim($trajet->entrepotDepart->ville), trim($depart_actuel)) === 0;
+            });
 
             if ($compatible) {
                 $disponibles[] = $annonce;
@@ -290,23 +301,29 @@ class AnnonceController extends Controller
         $depart_actuel = $annonce->entrepotDepart?->ville ?? '';
 
         // On récupère la dernière étape terminée **selon le type d’annonce**
-        $lastStep = $annonce->etapesLivraison()
-            ->where('statut', 'terminee')
-            ->when(
-                $annonce->type === 'produit_livre',
-                fn($q) => $q->where('est_commercant', false)
-            )
-            ->orderByDesc('created_at')
-            ->first();
+        $lastStepQuery = $annonce->etapesLivraison()
+            ->where('statut', 'terminee');
+
+        if ($annonce->type === 'produit_livre') {
+            $lastStepQuery->where('est_commercant', false);
+        } elseif ($annonce->type === 'livraison_client') {
+            $lastStepQuery->where('est_client', false);
+        }
+
+        $lastStep = $lastStepQuery->orderByDesc('created_at')->first();
 
         if ($lastStep) {
+            logger()->info("Dernière étape terminée de l'annonce {$annonce->id} : {$lastStep->lieu_depart} -> {$lastStep->lieu_arrivee}");
             $depart_actuel = $lastStep->lieu_arrivee;
+        } else {
+            logger()->info("Aucune étape terminée pour l'annonce {$annonce->id}, départ initial : {$depart_actuel}");
         }
-        
+
         // Vérifier si un trajet correspond
-        $trajetCompatible = $trajets->first(fn($trajet) =>
-            $trajet->entrepotDepart && strcasecmp($trajet->entrepotDepart->ville, $depart_actuel) === 0
-        );
+        $trajetCompatible = $trajets->first(function ($trajet) use ($depart_actuel) {
+            return $trajet->entrepotDepart
+                && strcasecmp(trim($trajet->entrepotDepart->ville), trim($depart_actuel)) === 0;
+        });
         
         if (is_null($trajetCompatible)) {
             logger()->error("❌ Aucun trajet trouvé pour départ_actuel = $depart_actuel");
