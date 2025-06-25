@@ -139,6 +139,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/paiements', [PaiementController::class, 'index']);
     Route::get('/paiements/{id}', [PaiementController::class, 'show']);
     Route::post('/paiements', [PaiementController::class, 'store']);
+    Route::post('/paiements/checkout-session', [PaiementController::class, 'createCheckoutSession']);
 
     // Colis
     Route::get('/colis', [ColisController::class, 'index']);
