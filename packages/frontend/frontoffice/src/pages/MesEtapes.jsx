@@ -60,6 +60,8 @@ export default function MesEtapes() {
                   Saisir le code pour retirer
                 </Link>
               );
+            } else if (!codeRetrait?.utilise && !e.est_client && !e.est_commercant) {
+              infoMessage = "⏳ En attente de retrait par vous";
             } else if (!codeRetrait?.utilise && !colisEstDisponible) {
               infoMessage = "⏳ En attente de dépôt du commerçant ou client";
             } else if (!codeDepot?.utilise && codeDepot) {
