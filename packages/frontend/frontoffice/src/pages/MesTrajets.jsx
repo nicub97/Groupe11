@@ -41,7 +41,13 @@ export default function MesTrajets() {
   };
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm((prev) => {
+      if (name === "entrepot_depart_id" && value === prev.entrepot_arrivee_id) {
+        return { ...prev, entrepot_depart_id: value, entrepot_arrivee_id: "" };
+      }
+      return { ...prev, [name]: value };
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -101,9 +107,11 @@ export default function MesTrajets() {
           className="w-full p-2 border rounded"
         >
           <option value="">Ville d’arrivée</option>
-          {entrepots.map((e) => (
-            <option key={e.id} value={e.id}>{e.ville}</option>
-          ))}
+          {entrepots
+            .filter((e) => e.id !== Number(form.entrepot_depart_id))
+            .map((e) => (
+              <option key={e.id} value={e.id}>{e.ville}</option>
+            ))}
         </select>
 
         <input

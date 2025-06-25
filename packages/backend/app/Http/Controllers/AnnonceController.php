@@ -73,7 +73,7 @@ class AnnonceController extends Controller
 
         // Si client → il faut entrepot_arrivee_id
         if ($user->role === 'client') {
-            $rules['entrepot_arrivee_id'] = 'required|exists:entrepots,id';
+            $rules['entrepot_arrivee_id'] = 'required|exists:entrepots,id|different:entrepot_depart_id';
         }
 
         $validated = $request->validate($rules);
