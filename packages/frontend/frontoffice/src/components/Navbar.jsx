@@ -1,27 +1,83 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Transition } from "@headlessui/react";
 
 export default function Navbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if (user?.role === "livreur" && location.pathname === "/") {
+      navigate("/mes-trajets");
+    }
+  }, [user, location, navigate]);
 
   const handleLogout = () => {
     logout();
     navigate("/login");
   };
 
+  const getMenuItems = () => {
+    if (!user) return [];
+
+    const common = [
+      { path: "/monprofil", label: "Mon Profil" },
+      { path: "/notifications", label: "Notifications" },
+    ];
+
+    if (user.role === "client") {
+      return [
+        ...common,
+        { path: "/annonces", label: "Annonces" },
+        { path: "/mes-annonces", label: "Mes annonces" },
+        { path: "/prestations/catalogue", label: "Prestations" },
+        { path: "/interventions", label: "Interventions" },
+      ];
+    }
+
+    if (user.role === "prestataire") {
+      return [
+        ...common,
+        { path: "/mes-prestations", label: "Mes prestations" },
+        { path: "/prestations/publier", label: "Publier une prestation" },
+        { path: "/interventions", label: "Interventions" },
+        { path: "/planning", label: "Planning" },
+        { path: "/factures", label: "Factures" },
+      ];
+    }
+
+    if (user.role === "commercant") {
+      return [
+        ...common,
+        { path: "/annonces", label: "Annonces" },
+        { path: "/mes-annonces", label: "Mes annonces" },
+      ];
+    }
+
+    if (user.role === "livreur") {
+      return [
+        ...common,
+        { path: "/mes-trajets", label: "Mes trajets" },
+        { path: "/annonces-disponibles", label: "Annonces disponibles" },
+        { path: "/mes-etapes", label: "Mes étapes" },
+      ];
+    }
+
+    return common;
+  };
+
+  const menuItems = getMenuItems();
+
   return (
     <header className="bg-white text-green-900 shadow-md sticky top-0 z-50 border-b border-gray-200">
       <nav className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
-        {/* Logo */}
         <Link to="/" className="text-2xl font-bold hover:text-lime-300 transition">
           EcoDeli
         </Link>
 
-        {/* Menu desktop */}
         <ul className="hidden sm:flex gap-6 text-sm font-medium items-center">
           <li><Link to="/" className="hover:text-lime-300 transition">Accueil</Link></li>
 
@@ -32,8 +88,11 @@ export default function Navbar() {
             </>
           ) : (
             <>
-              <li><Link to="/profil" className="hover:text-lime-300 transition">Mon profil</Link></li>
-              <li><Link to="/annonces" className="hover:text-lime-300 transition">Annonces</Link></li>
+              {menuItems.map((item) => (
+                <li key={item.path}>
+                  <Link to={item.path} className="hover:text-lime-300 transition">{item.label}</Link>
+                </li>
+              ))}
               <li>
                 <button onClick={handleLogout} className="hover:text-red-300 transition">
                   Se déconnecter
@@ -43,13 +102,11 @@ export default function Navbar() {
           )}
         </ul>
 
-        {/* Menu burger (mobile only) */}
         <div className="sm:hidden">
           <button
             onClick={() => setMenuOpen(!menuOpen)}
             className="flex items-center gap-2 border border-white px-3 py-1 rounded-md hover:bg-white hover:text-green-700 transition"
           >
-            {/* Icon burger */}
             <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
               <path d="M4 6h16M4 12h16M4 18h16" />
             </svg>
@@ -58,7 +115,6 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* Menu mobile animé */}
       <Transition
         show={menuOpen}
         enter="transition ease-out duration-300"
@@ -71,7 +127,6 @@ export default function Navbar() {
         <div className="sm:hidden bg-white px-6 pb-4 space-y-2 text-sm font-medium text-green-900">
           <ul>
             <li><Link to="/" className="block hover:text-lime-300">Accueil</Link></li>
-
             {!user ? (
               <>
                 <li><Link to="/login" className="block hover:text-lime-300">Connexion</Link></li>
@@ -79,12 +134,11 @@ export default function Navbar() {
               </>
             ) : (
               <>
-                <li><Link to="/profil" className="block hover:text-lime-300">Mon profil</Link></li>
-                <li><Link to="/annonces" className="block hover:text-lime-300">Annonces</Link></li>
+                {menuItems.map((item) => (
+                  <li key={item.path}><Link to={item.path} className="block hover:text-lime-300">{item.label}</Link></li>
+                ))}
                 <li>
-                  <button onClick={handleLogout} className="block hover:text-red-300">
-                    Se déconnecter
-                  </button>
+                  <button onClick={handleLogout} className="block hover:text-red-300">Se déconnecter</button>
                 </li>
               </>
             )}

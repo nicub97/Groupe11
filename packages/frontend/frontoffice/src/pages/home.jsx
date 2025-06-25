@@ -8,11 +8,8 @@ export default function Home() {
         <p className="text-lg sm:text-xl text-gray-700 max-w-xl mx-auto">
           Rejoignez une communauté de livraison collaborative, locale et responsable 🌍
         </p>
-        <div className="font-sans text-xl text-primary">Tailwind fonctionne 💚</div>
-        <div className="text-primary text-3xl font-bold p-4">
-          ✅ Tailwind fonctionne pas
-        </div>
-
+        <div className="font-sans text-xl text-primary">Tailwind fonctionne </div>
+        
       </div>
     </section>
   );
