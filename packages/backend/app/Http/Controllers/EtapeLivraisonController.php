@@ -10,6 +10,7 @@ use App\Models\Annonce;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
+use App\Services\PaiementService;
 
 class EtapeLivraisonController extends Controller
 {
@@ -156,6 +157,8 @@ class EtapeLivraisonController extends Controller
                 $etape->statut = 'terminee';
                 $etape->save();
             }
+
+            PaiementService::distribuerPaiement($etape->annonce);
 
             return response()->json(['message' => '✅ Colis retiré. Livraison terminée.']);
         }
