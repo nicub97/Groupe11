@@ -43,28 +43,29 @@ export default function AnnoncesList() {
   const createAnnonce = async () => {
     try {
       const res = await api.post("/annonces", form);
-      setAnnonces([...annonces, res.data]);
+      setAnnonces([...annonces, res.data.annonce]);
       resetForm();
     } catch (err) {
       if (err.response?.data?.errors) {
         setErrors(err.response.data.errors);
       } else {
-        alert("Erreur lors de la création");
+        setApiError(err.response?.data?.message || "Erreur lors de la création");
       }
     }
   };
 
   const updateAnnonce = async () => {
     try {
-      const res = await api.put(`/annonces/${editingId}`, form);
-      setAnnonces(annonces.map((a) => (a.id === editingId ? res.data : a)));
+      const res = await api.patch(`/annonces/${editingId}`, form);
+      setAnnonces((prev) =>
+        prev.map((a) => (a.id === editingId ? res.data.annonce : a))
+      );
       resetForm();
     } catch (err) {
       if (err.response?.data?.errors) {
         setErrors(err.response.data.errors);
-      } else {
-        alert("Erreur lors de la mise à jour");
       }
+      setApiError(err.response?.data?.message || "Erreur lors de la mise à jour");
     }
   };
 
@@ -86,12 +87,17 @@ export default function AnnoncesList() {
   const deleteAnnonce = async (id) => {
     if (!window.confirm("Confirmer la suppression de l'annonce ?")) return;
     setApiError("");
+
+    if (!id) {
+      setApiError("ID de l'annonce manquant pour la suppression");
+      return;
+    }
+
     try {
       await api.delete(`/annonces/${id}`);
       setAnnonces((prev) => prev.filter((a) => a.id !== id));
     } catch (err) {
-      const message = err.response?.data?.errors?.message ||
-        "Erreur lors de la suppression";
+      const message = err.response?.data?.message || "Erreur lors de la suppression";
       setApiError(message);
     }
   };
