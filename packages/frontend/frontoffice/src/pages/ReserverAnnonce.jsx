@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../services/api";
-import { effectuerPaiement } from "../services/paiement";
+import PaiementForm from "../components/PaiementForm";
 import { useAuth } from "../context/AuthContext";
 
 export default function ReserverAnnonce() {
@@ -13,6 +13,7 @@ export default function ReserverAnnonce() {
   const [entrepots, setEntrepots] = useState([]);
   const [entrepotArriveeId, setEntrepotArriveeId] = useState("");
   const [message, setMessage] = useState("");
+  const [paiementEffectue, setPaiementEffectue] = useState(false);
 
   useEffect(() => {
     if (user?.role !== "client") {
@@ -51,9 +52,12 @@ export default function ReserverAnnonce() {
       return;
     }
 
-    try {
-      await effectuerPaiement(Number(annonceId), annonce.prix_propose, token);
+    if (!paiementEffectue) {
+      setMessage("Veuillez effectuer le paiement avant de confirmer la réservation.");
+      return;
+    }
 
+    try {
       await api.post(
         `/annonces/${annonceId}/reserver`,
         { entrepot_arrivee_id: entrepotArriveeId },
@@ -98,6 +102,19 @@ export default function ReserverAnnonce() {
           ))}
         </select>
       </div>
+
+      {!paiementEffectue && (
+        <div className="mb-4">
+          <PaiementForm
+            annonceId={Number(annonceId)}
+            montant={annonce.prix_propose}
+            onPaid={() => setPaiementEffectue(true)}
+          />
+        </div>
+      )}
+      {paiementEffectue && (
+        <p className="mb-4 text-green-700">Paiement confirmé.</p>
+      )}
 
       <button
         onClick={reserver}

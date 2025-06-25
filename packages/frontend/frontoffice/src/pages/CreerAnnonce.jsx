@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
-import { effectuerPaiement } from "../services/paiement";
+import PaiementForm from "../components/PaiementForm";
 
 export default function CreerAnnonce() {
   const { user, token } = useAuth();
@@ -23,6 +23,7 @@ export default function CreerAnnonce() {
     entrepot_arrivee_id: "",
   });
   const [message, setMessage] = useState("");
+  const [paiementEffectue, setPaiementEffectue] = useState(false);
 
   useEffect(() => {
     const fetchEntrepots = async () => {
@@ -53,11 +54,12 @@ export default function CreerAnnonce() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    try {
-      if (typeAnnonce === "livraison_client" && user?.role === "client") {
-        await effectuerPaiement(null, form.prix_propose, token);
-      }
+    if (typeAnnonce === "livraison_client" && user?.role === "client" && !paiementEffectue) {
+      setMessage("Veuillez effectuer le paiement avant de créer l'annonce.");
+      return;
+    }
 
+    try {
       await api.post(
         "/annonces",
         { ...form, type: typeAnnonce },
@@ -152,6 +154,17 @@ export default function CreerAnnonce() {
           onChange={handleChange}
           className="w-full p-2 border rounded"
         />
+
+        {typeAnnonce === "livraison_client" && !paiementEffectue && (
+          <PaiementForm
+            annonceId={null}
+            montant={form.prix_propose}
+            onPaid={() => setPaiementEffectue(true)}
+          />
+        )}
+        {typeAnnonce === "livraison_client" && paiementEffectue && (
+          <p className="text-green-700">Paiement confirmé.</p>
+        )}
 
         <button
           type="submit"
