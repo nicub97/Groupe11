@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
+import { effectuerPaiement } from "../services/paiement";
 
 export default function CreerAnnonce() {
   const { user, token } = useAuth();
@@ -21,6 +22,7 @@ export default function CreerAnnonce() {
     entrepot_depart_id: "",
     entrepot_arrivee_id: "",
   });
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     const fetchEntrepots = async () => {
@@ -52,6 +54,10 @@ export default function CreerAnnonce() {
     e.preventDefault();
 
     try {
+      if (typeAnnonce === "livraison_client" && user?.role === "client") {
+        await effectuerPaiement(null, form.prix_propose, token);
+      }
+
       await api.post(
         "/annonces",
         { ...form, type: typeAnnonce },
@@ -61,13 +67,19 @@ export default function CreerAnnonce() {
       navigate("/annonces");
     } catch (err) {
       console.error(err);
-      alert("Erreur lors de la création de l'annonce.");
+      const msg =
+        err.response?.data?.message ||
+        (err.response?.data?.errors
+          ? Object.values(err.response.data.errors).flat()[0]
+          : "Erreur lors de la création de l'annonce.");
+      setMessage(msg);
     }
   };
 
   return (
     <div className="max-w-xl mx-auto mt-10 p-6 bg-white shadow rounded">
       <h2 className="text-2xl font-bold mb-4">Créer une annonce</h2>
+      {message && <p className="text-red-600 mb-2">{message}</p>}
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
           type="text"
