@@ -63,6 +63,12 @@ export default function SuiviAnnonce() {
     (c) => c.type === "retrait"
   );
 
+  const depotTermine = annonce.etapes_livraison?.some(
+    (etape) =>
+      (etape.est_client === true || etape.est_commercant === true) &&
+      etape.statut === "terminee"
+  );
+
   const validerCode = async (type, etape_id) => {
     setLoading(true);
     setEtatCode(null);
@@ -114,6 +120,12 @@ export default function SuiviAnnonce() {
           message={message}
           etatCode={etatCode}
         />
+      )}
+
+      {depotTermine && (
+        <p className="text-green-600 font-semibold mt-4">
+          ✅ Dépôt effectué. En attente du retrait du livreur.
+        </p>
       )}
 
       {!isCommercant && etapeRetraitClient && (
