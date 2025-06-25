@@ -14,6 +14,19 @@ export default function PaiementSuccess() {
     const annonceId = searchParams.get("annonce_id");
     const entrepotId = localStorage.getItem("reservationEntrepot");
     const annonceData = localStorage.getItem("annonceForm");
+    const annoncePhoto = localStorage.getItem("annoncePhoto");
+
+    const dataURLtoBlob = (dataUrl) => {
+      const arr = dataUrl.split(',');
+      const mime = arr[0].match(/:(.*?);/)[1];
+      const bstr = atob(arr[1]);
+      let n = bstr.length;
+      const u8arr = new Uint8Array(n);
+      while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+      }
+      return new Blob([u8arr], { type: mime });
+    };
 
     const finalize = async () => {
       try {
@@ -27,12 +40,22 @@ export default function PaiementSuccess() {
           setMessage("Réservation confirmée !");
         } else if (context === "creer" && annonceData) {
           const data = JSON.parse(annonceData);
-          await api.post(
-            "/annonces",
-            { ...data.form, type: data.type },
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
+          const formData = new FormData();
+          for (const key in data.form) {
+            formData.append(key, data.form[key]);
+          }
+          formData.append("type", data.type);
+          if (annoncePhoto) {
+            formData.append("photo", dataURLtoBlob(annoncePhoto), "photo.png");
+          }
+          await api.post("/annonces", formData, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "multipart/form-data",
+            },
+          });
           localStorage.removeItem("annonceForm");
+          localStorage.removeItem("annoncePhoto");
           setMessage("Annonce créée avec succès !");
         } else {
           setMessage("Paiement confirmé.");

@@ -17,10 +17,11 @@ export default function CreerAnnonce() {
     titre: "",
     description: "",
     prix_propose: "",
-    photo: "",
     entrepot_depart_id: "",
     entrepot_arrivee_id: "",
   });
+  const [photoFile, setPhotoFile] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState("");
   const [message, setMessage] = useState("");
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -51,6 +52,19 @@ export default function CreerAnnonce() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  const handlePhotoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setPhotoFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => setPhotoPreview(reader.result);
+      reader.readAsDataURL(file);
+    } else {
+      setPhotoFile(null);
+      setPhotoPreview("");
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -64,6 +78,9 @@ export default function CreerAnnonce() {
           "annonceForm",
           JSON.stringify({ form, type: typeAnnonce })
         );
+        if (photoPreview) {
+          localStorage.setItem("annoncePhoto", photoPreview);
+        }
         const { checkout_url } = await createCheckoutSession(
           { montant: form.prix_propose, type: typeAnnonce },
           token,
@@ -71,21 +88,29 @@ export default function CreerAnnonce() {
         );
         window.location.href = checkout_url;
       } else {
-        await api.post(
-          "/annonces",
-          { ...form, type: typeAnnonce },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        const data = new FormData();
+        for (const key in form) {
+          data.append(key, form[key]);
+        }
+        data.append("type", typeAnnonce);
+        if (photoFile) data.append("photo", photoFile);
+        await api.post("/annonces", data, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        });
         setMessage("✅ Annonce créée avec succès !");
         setSuccess(true);
         setForm({
           titre: "",
           description: "",
           prix_propose: "",
-          photo: "",
           entrepot_depart_id: "",
           entrepot_arrivee_id: "",
         });
+        setPhotoFile(null);
+        setPhotoPreview("");
         setTimeout(() => navigate("/annonces"), 1500);
       }
     } catch (err) {
@@ -172,13 +197,18 @@ export default function CreerAnnonce() {
         )}
 
         <input
-          type="text"
-          name="photo"
-          placeholder="URL de la photo (optionnel)"
-          value={form.photo}
-          onChange={handleChange}
+          type="file"
+          accept="image/*"
+          onChange={handlePhotoChange}
           className="w-full p-2 border rounded"
         />
+        {photoPreview && (
+          <img
+            src={photoPreview}
+            alt="Aperçu"
+            className="h-32 object-contain mt-2"
+          />
+        )}
 
         <button
           type="submit"
