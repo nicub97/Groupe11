@@ -34,6 +34,10 @@ export default function Navbar() {
               Utilisateurs
             </Link>
 
+            <Link to="/admin/annonces" className="hover:text-gray-300 transition">
+              Annonces
+            </Link>
+
             <button
               onClick={handleLogout}
               className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded"
