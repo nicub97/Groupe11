@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 import { createCheckoutSession } from "../services/paiement";
 
 export default function CreerAnnonce() {
   const { user, token } = useAuth();
+  const navigate = useNavigate();
   // Déterminer le type selon le rôle
   let typeAnnonce = null;
   if (user?.role === "client") typeAnnonce = "livraison_client";
@@ -20,6 +22,7 @@ export default function CreerAnnonce() {
     entrepot_arrivee_id: "",
   });
   const [message, setMessage] = useState("");
+  const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -52,24 +55,48 @@ export default function CreerAnnonce() {
     e.preventDefault();
 
     setMessage("");
+    setSuccess(false);
     setLoading(true);
 
     try {
-      localStorage.setItem(
-        "annonceForm",
-        JSON.stringify({ form, type: typeAnnonce })
-      );
-      const { checkout_url } = await createCheckoutSession(
-        { montant: form.prix_propose, type: typeAnnonce },
-        token,
-        "creer"
-      );
-      window.location.href = checkout_url;
+      if (user?.role === "client") {
+        localStorage.setItem(
+          "annonceForm",
+          JSON.stringify({ form, type: typeAnnonce })
+        );
+        const { checkout_url } = await createCheckoutSession(
+          { montant: form.prix_propose, type: typeAnnonce },
+          token,
+          "creer"
+        );
+        window.location.href = checkout_url;
+      } else {
+        await api.post(
+          "/annonces",
+          { ...form, type: typeAnnonce },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setMessage("✅ Annonce créée avec succès !");
+        setSuccess(true);
+        setForm({
+          titre: "",
+          description: "",
+          prix_propose: "",
+          photo: "",
+          entrepot_depart_id: "",
+          entrepot_arrivee_id: "",
+        });
+        setTimeout(() => navigate("/annonces"), 1500);
+      }
     } catch (err) {
       console.error(err);
-      const msg = err.response?.data?.message ||
-        "Erreur lors de la redirection de paiement.";
+      const msg =
+        err.response?.data?.message ||
+        (user?.role === "client"
+          ? "Erreur lors de la redirection de paiement."
+          : "Erreur lors de la création de l'annonce.");
       setMessage(msg);
+      setSuccess(false);
       setLoading(false);
     }
   };
@@ -77,7 +104,9 @@ export default function CreerAnnonce() {
   return (
     <div className="max-w-xl mx-auto mt-10 p-6 bg-white shadow rounded">
       <h2 className="text-2xl font-bold mb-4">Créer une annonce</h2>
-      {message && <p className="text-red-600 mb-2">{message}</p>}
+      {message && (
+        <p className={`mb-2 ${success ? "text-green-600" : "text-red-600"}`}>{message}</p>
+      )}
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
           type="text"
