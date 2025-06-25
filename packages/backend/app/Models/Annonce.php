@@ -127,7 +127,7 @@ class Annonce extends Model
             ->first();
 
         if ($box) {
-            CodeBox::create([
+            $code = CodeBox::create([
                 'box_id' => $box->id,
                 'etape_livraison_id' => $etapeClient->id,
                 'type' => 'retrait',
@@ -135,7 +135,11 @@ class Annonce extends Model
             ]);
             $box->est_occupe = true;
             $box->save();
+
+            return $code;
         }
+
+        return null;
     }
 
 

@@ -14,6 +14,11 @@ class CodeBox extends Model
         'type',
         'code_temporaire',
         'utilise',
+        'mail_envoye_at',
+    ];
+
+    protected $casts = [
+        'mail_envoye_at' => 'datetime',
     ];
 
     public function etapeLivraison()
