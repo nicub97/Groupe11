@@ -5,6 +5,7 @@ import UsersList from "../pages/admin/UsersList";
 import EditUserForm from "../pages/admin/EditUserForm";
 import UserDetails from "../pages/admin/UserDetails";
 import AnnoncesList from "../pages/admin/AnnoncesList";
+import EntrepotsList from "../pages/admin/EntrepotsList";
 
 export default function AdminRoutes() {
   return (
@@ -15,6 +16,7 @@ export default function AdminRoutes() {
         <Route path="utilisateurs/:id/edit" element={<EditUserForm />} />
         <Route path="utilisateurs/:id" element={<UserDetails />} />
         <Route path="annonces" element={<AnnoncesList />} />
+        <Route path="entrepots" element={<EntrepotsList />} />
       </Route>
     </Routes>
   );

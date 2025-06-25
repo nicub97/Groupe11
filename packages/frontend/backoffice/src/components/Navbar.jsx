@@ -38,6 +38,10 @@ export default function Navbar() {
               Annonces
             </Link>
 
+            <Link to="/admin/entrepots" className="hover:text-gray-300 transition">
+              Entrep\xF4ts
+            </Link>
+
             <button
               onClick={handleLogout}
               className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded"
