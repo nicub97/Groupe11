@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../services/api";
-import PaiementForm from "../components/PaiementForm";
+import { createCheckoutSession } from "../services/paiement";
 import { useAuth } from "../context/AuthContext";
 
 export default function ReserverAnnonce() {
@@ -13,7 +13,7 @@ export default function ReserverAnnonce() {
   const [entrepots, setEntrepots] = useState([]);
   const [entrepotArriveeId, setEntrepotArriveeId] = useState("");
   const [message, setMessage] = useState("");
-  const [paiementEffectue, setPaiementEffectue] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (user?.role !== "client") {
@@ -52,27 +52,23 @@ export default function ReserverAnnonce() {
       return;
     }
 
-    if (!paiementEffectue) {
-      setMessage("Veuillez effectuer le paiement avant de confirmer la réservation.");
-      return;
-    }
-
+    setLoading(true);
+    setMessage("");
     try {
-      await api.post(
-        `/annonces/${annonceId}/reserver`,
-        { entrepot_arrivee_id: entrepotArriveeId },
-        { headers: { Authorization: `Bearer ${token}` } }
+      localStorage.setItem("reservationEntrepot", entrepotArriveeId);
+      const { checkout_url } = await createCheckoutSession(
+        { annonce_id: Number(annonceId), type: annonce.type },
+        token,
+        "reserver"
       );
-      setMessage("✅ Réservation effectuée avec succès !");
-      setTimeout(() => navigate("/annonces"), 1500);
+      window.location.href = checkout_url;
     } catch (err) {
       console.error("Erreur réservation :", err);
       const msg =
         err.response?.data?.message ||
-        (err.response?.data?.errors
-          ? Object.values(err.response.data.errors).flat()[0]
-          : "Erreur lors de la réservation.");
+        "Erreur lors de la redirection de paiement.";
       setMessage(msg);
+      setLoading(false);
     }
   };
 
@@ -103,24 +99,12 @@ export default function ReserverAnnonce() {
         </select>
       </div>
 
-      {!paiementEffectue && (
-        <div className="mb-4">
-          <PaiementForm
-            annonceId={Number(annonceId)}
-            montant={annonce.prix_propose}
-            onPaid={() => setPaiementEffectue(true)}
-          />
-        </div>
-      )}
-      {paiementEffectue && (
-        <p className="mb-4 text-green-700">Paiement confirmé.</p>
-      )}
-
       <button
         onClick={reserver}
-        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+        disabled={loading}
+        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
       >
-        Confirmer la réservation
+        {loading ? "Redirection..." : "Réserver"}
       </button>
 
       {message && <p className="mt-4 text-sm text-blue-700">{message}</p>}

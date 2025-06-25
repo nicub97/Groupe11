@@ -1,14 +1,9 @@
 import api from "./api";
 
-export async function effectuerPaiement(annonceId, montant, token) {
+export async function createCheckoutSession(payload, token, context) {
   const res = await api.post(
-    "/paiements",
-    {
-      annonce_id: annonceId,
-      montant,
-      sens: "debit",
-      type: "portefeuille",
-    },
+    `/paiements/checkout-session?context=${context}`,
+    payload,
     { headers: { Authorization: `Bearer ${token}` } }
   );
   return res.data;
