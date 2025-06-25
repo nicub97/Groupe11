@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Config;
 use App\Models\Paiement;
+use App\Models\Annonce;
+use Stripe\StripeClient;
 
 class PaiementController extends Controller
 {
@@ -62,5 +65,50 @@ class PaiementController extends Controller
         }
 
         return response()->json($paiement);
+    }
+
+    /**
+     * Crée une session Stripe Checkout et renvoie son URL.
+     */
+    public function createCheckoutSession(Request $request)
+    {
+        $validated = $request->validate([
+            'annonce_id' => 'nullable|integer|exists:annonces,id',
+            'montant' => 'nullable|numeric|min:0',
+            'type' => 'required|in:produit_livre,livraison_client',
+        ]);
+
+        if (isset($validated['montant'])) {
+            $amount = (int) ($validated['montant'] * 100);
+        } elseif (isset($validated['annonce_id'])) {
+            $annonce = Annonce::find($validated['annonce_id']);
+            $amount = $annonce ? (int) ($annonce->prix_propose * 100) : 0;
+        } else {
+            $amount = 0;
+        }
+
+        $stripe = new StripeClient(Config::get('services.stripe.secret'));
+
+        $session = $stripe->checkout->sessions->create([
+            'payment_method_types' => ['card'],
+            'mode' => 'payment',
+            'line_items' => [[
+                'price_data' => [
+                    'currency' => 'eur',
+                    'product_data' => ['name' => 'Paiement annonce'],
+                    'unit_amount' => $amount,
+                ],
+                'quantity' => 1,
+            ]],
+            'success_url' => sprintf(
+                '%s/paiement/success?session_id={CHECKOUT_SESSION_ID}&context=%s&annonce_id=%s',
+                rtrim(env('FRONTEND_URL', ''), '/'),
+                $request->query('context', 'reservation'),
+                $validated['annonce_id'] ?? ''
+            ),
+            'cancel_url' => rtrim(env('FRONTEND_URL', ''), '/') . '/paiement/cancel',
+        ]);
+
+        return response()->json(['checkout_url' => $session->url]);
     }
 }

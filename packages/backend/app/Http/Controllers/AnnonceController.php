@@ -11,7 +11,6 @@ use App\Models\CodeBox;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use App\Services\PaiementService;
 
 class AnnonceController extends Controller
 {
@@ -91,13 +90,7 @@ class AnnonceController extends Controller
 
         $annonce->save();
 
-        if ($annonce->type === 'livraison_client' && $user->role === 'client') {
-            $paiementOk = PaiementService::paiementValide($annonce->id, $user->id);
-            if (! $paiementOk) {
-                DB::rollBack();
-                return response()->json(['message' => 'Paiement requis pour publier cette annonce.'], 422);
-            }
-        }
+
 
         DB::commit();
 
@@ -440,10 +433,6 @@ class AnnonceController extends Controller
 
         if ($annonce->id_client !== null || $annonce->entrepot_arrivee_id !== null) {
             return response()->json(['message' => 'Annonce déjà réservée.'], 400);
-        }
-
-        if (! PaiementService::paiementValide($annonce->id, $user->id)) {
-            return response()->json(['message' => 'Paiement requis pour réserver cette annonce.'], 422);
         }
 
         $annonce->id_client = $user->id;
