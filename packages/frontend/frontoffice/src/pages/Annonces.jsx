@@ -22,7 +22,12 @@ export default function Annonces() {
         });
 
         // Filtrer uniquement les annonces de type "produit_livre"
-        const annoncesFiltrees = res.data.filter(a => a.type === "produit_livre");
+        // et non déjà réservées (id_client défini ET au moins une étape créée)
+        const annoncesFiltrees = res.data.filter((a) => {
+          if (a.type !== "produit_livre") return false;
+          const dejaReservee = a.id_client && a.etapes_livraison?.length > 0;
+          return !dejaReservee;
+        });
         setAnnonces(annoncesFiltrees);
       } catch (error) {
         console.error("Erreur lors du chargement des annonces :", error);
