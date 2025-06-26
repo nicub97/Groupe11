@@ -73,7 +73,11 @@ class AnnonceController extends Controller
 
         // Si client → il faut entrepot_arrivee_id
         if ($user->role === 'client') {
-            $rules['entrepot_arrivee_id'] = 'required|exists:entrepots,id|different:entrepot_depart_id';
+            $rules['entrepot_arrivee_id'] = 'required|exists:entrepots,id';
+        }
+
+        if ($request->type === 'livraison_client') {
+            $rules['entrepot_arrivee_id'] = ($rules['entrepot_arrivee_id'] ?? 'required|exists:entrepots,id') . '|different:entrepot_depart_id';
         }
 
         $validated = $request->validate($rules);
@@ -341,6 +345,12 @@ class AnnonceController extends Controller
         if ($annonce->type !== 'produit_livre') {
             return response()->json(['message' => 'Cette annonce ne peut pas être réservée.'], 400);
         }
+
+        abort_if(
+            $request->entrepot_arrivee_id == $annonce->entrepot_depart_id,
+            422,
+            "L'entrepôt d'arrivée doit être différent de l'entrepôt de départ."
+        );
 
         if ($annonce->id_client !== null || $annonce->entrepot_arrivee_id !== null) {
             return response()->json(['message' => 'Annonce déjà réservée.'], 400);
