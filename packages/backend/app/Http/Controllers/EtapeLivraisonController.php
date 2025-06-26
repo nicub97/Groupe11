@@ -103,21 +103,6 @@ class EtapeLivraisonController extends Controller
         $etape->statut = 'terminee';
         $etape->save();
 
-        $annonce = $etape->annonce;
-
-        // 🎯 Si c’est la dernière étape vers l'entrepôt final, créer étape client finale
-        if (
-            $etape->est_client === false &&
-            $etape->lieu_arrivee === $annonce->entrepotArrivee?->ville
-        ) {
-            $code = $annonce->genererEtapeRetraitClientFinaleSiBesoin();
-            if ($code && !$code->mail_envoye_at) {
-                $dest = $annonce->client;
-                Mail::to($dest->email)->send(new CodeRetraitMail($code));
-                $code->mail_envoye_at = now();
-                $code->save();
-            }
-        }
 
         return response()->json(['message' => '✅ Étape clôturée avec succès.']);
     }
