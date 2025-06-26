@@ -17,13 +17,13 @@ export default function MesEtapes() {
       });
 
       const toutes = res.data;
-      const livreurEtapes = toutes.filter((e) => !e.est_client && !e.est_commercant);
+      const livreurEtapes = toutes.filter(
+        (e) => !e.est_client && !e.est_commercant && e.statut === "en_cours"
+      );
 
       setToutesEtapes(toutes);
       setEtapes(livreurEtapes);
-      setEnAttenteDepot(
-        toutes.some((e) => e.est_client === true && e.statut !== "terminee")
-      );
+      setEnAttenteDepot(livreurEtapes.length === 0);
     } catch (err) {
       console.error("Erreur chargement etapes:", err);
     }
@@ -38,11 +38,7 @@ export default function MesEtapes() {
       <h2 className="text-2xl font-bold mb-6">Mes étapes de livraison</h2>
 
       {etapes.length === 0 ? (
-        enAttenteDepot ? (
-          <p>⏳ En attente du dépôt du client.</p>
-        ) : (
-          <p>Aucune étape en cours.</p>
-        )
+        <p>⏳ En attente du dépôt du client.</p>
       ) : (
         <ul className="space-y-6">
           {etapes.map((e) => {

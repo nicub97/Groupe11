@@ -31,42 +31,18 @@ export default function SuiviAnnonce() {
 
   if (!annonce || !user) return <p className="text-center mt-10">Chargement...</p>;
 
-  const isCommercant = user.role === "commercant";
+  const etapesClient = annonce.etapes_livraison?.filter((e) => e.est_client);
 
-  const etapeDepotCommercant = annonce.etapes_livraison?.find(
-    (etape) =>
-      etape.est_commercant === true &&
-      etape.codes?.some((c) => c.type === "depot" && !c.utilise)
+  const etapeDepotClient = etapesClient?.find((e) =>
+    e.codes?.some((c) => c.type === "depot" && !c.utilise)
   );
 
-  const etapeDepotClient = annonce.etapes_livraison?.find(
-    (etape) =>
-      etape.est_client === true &&
-      etape.codes?.some((c) => c.type === "depot" && !c.utilise)
+  const depotEffectue = etapesClient?.some((e) =>
+    e.codes?.some((c) => c.type === "depot" && c.utilise)
   );
 
-  const etapeRetraitClient = annonce.etapes_livraison?.find(
-    (etape) =>
-      etape.est_client === true &&
-      etape.codes?.some((c) => c.type === "retrait" && !c.utilise)
-  );
-
-  const etapeFinalePourClient = annonce.etapes_livraison?.find(
-    (etape) =>
-      etape.est_client === false &&
-      etape.lieu_arrivee === annonce.entrepot_arrivee?.ville &&
-      etape.statut === "terminee" &&
-      etape.codes?.some((c) => c.type === "retrait")
-  );
-
-  const codeRetraitClientFinal = etapeFinalePourClient?.codes?.find(
-    (c) => c.type === "retrait"
-  );
-
-  const depotTermine = annonce.etapes_livraison?.some(
-    (etape) =>
-      (etape.est_client === true || etape.est_commercant === true) &&
-      etape.statut === "terminee"
+  const etapeRetraitClient = etapesClient?.find((e) =>
+    e.codes?.some((c) => c.type === "retrait" && !c.utilise)
   );
 
   const validerCode = async (type, etape_id) => {
@@ -98,7 +74,7 @@ export default function SuiviAnnonce() {
       <p className="mb-2">Description : {annonce.description}</p>
       <p className="mb-4">Statut : {annonce.statut}</p>
 
-      {!isCommercant && etapeDepotClient && (
+      {etapeDepotClient && (
         <EtapeForm
           titre="🚚 Dépôt initial"
           code={code}
@@ -110,27 +86,15 @@ export default function SuiviAnnonce() {
         />
       )}
 
-      {isCommercant && etapeDepotCommercant && (
-        <EtapeForm
-          titre="🏪 Dépôt du commerçant"
-          code={code}
-          setCode={setCode}
-          loading={loading}
-          valider={() => validerCode("depot", etapeDepotCommercant.id)}
-          message={message}
-          etatCode={etatCode}
-        />
-      )}
-
-      {depotTermine && (
+      {depotEffectue && (
         <p className="text-green-600 font-semibold mt-4">
           ✅ Dépôt effectué. En attente du retrait du livreur.
         </p>
       )}
 
-      {!isCommercant && etapeRetraitClient && (
+      {etapeRetraitClient && (
         <EtapeForm
-          titre="📦 Retrait (étape client)"
+          titre="📦 Retrait du colis"
           code={code}
           setCode={setCode}
           loading={loading}
@@ -139,28 +103,6 @@ export default function SuiviAnnonce() {
           etatCode={etatCode}
           isRetrait
         />
-      )}
-
-      {!isCommercant && etapeFinalePourClient && (
-        <div className="mt-10">
-          <h3 className="text-lg font-semibold mb-2">📦 Retrait du colis final</h3>
-          {codeRetraitClientFinal?.utilise ? (
-            <p className="text-green-600 font-semibold">
-              ✅ Colis déjà retiré par le client.
-            </p>
-          ) : (
-            <EtapeForm
-              titre=""
-              code={code}
-              setCode={setCode}
-              loading={loading}
-              valider={() => validerCode("retrait", etapeFinalePourClient.id)}
-              message={message}
-              etatCode={etatCode}
-              isRetrait
-            />
-          )}
-        </div>
       )}
     </div>
   );
