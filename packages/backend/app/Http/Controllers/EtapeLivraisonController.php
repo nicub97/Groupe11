@@ -191,50 +191,39 @@ class EtapeLivraisonController extends Controller
 
         // 🎯 Cas 1 : Étape client = marquer dépôt + créer étape livreur
         if ($etape->est_client && $request->type === 'depot') {
-            if ($etape->statut === 'en_cours') {
-                $etape->statut = 'terminee';
-                $etape->save();
-            }
+            $etape->statut = 'terminee';
+            $etape->save();
 
             $annonce = $etape->annonce;
-            $existe = $annonce->etapesLivraison()
-                ->where('est_client', false)
-                ->exists();
+            $trajet = TrajetLivreur::with(['entrepotDepart', 'entrepotArrivee'])
+                ->where('livreur_id', $etape->livreur_id)
+                ->whereHas('entrepotDepart', function ($q) use ($etape) {
+                    $q->where('ville', $etape->lieu_depart);
+                })
+                ->first();
 
-            if (!$existe) {
-                $trajets = TrajetLivreur::with(['entrepotDepart', 'entrepotArrivee'])
-                    ->where('livreur_id', $etape->livreur_id)
-                    ->get();
+            if (! $trajet || ! $trajet->entrepotArrivee) {
+                return response()->json(['message' => 'Trajet livreur introuvable.'], 400);
+            }
 
-                $depart = $etape->lieu_depart;
-                $trajet = $trajets->first(function ($t) use ($depart) {
-                    return $t->entrepotDepart &&
-                        strcasecmp(trim($t->entrepotDepart->ville), trim($depart)) === 0;
-                });
+            $etapeLivreur = EtapeLivraison::create([
+                'annonce_id' => $etape->annonce_id,
+                'livreur_id' => $etape->livreur_id,
+                'lieu_depart' => $trajet->entrepotDepart->ville,
+                'lieu_arrivee' => $trajet->entrepotArrivee->ville,
+                'statut' => 'en_cours',
+                'est_client' => false,
+                'est_commercant' => false,
+            ]);
 
-                if (! $trajet || ! $trajet->entrepotArrivee) {
-                    return response()->json(['message' => 'Trajet livreur introuvable.'], 400);
-                }
+            CodeBox::create([
+                'box_id' => $codeBox->box_id,
+                'etape_livraison_id' => $etapeLivreur->id,
+                'type' => 'retrait',
+                'code_temporaire' => Str::upper(Str::random(6)),
+            ]);
 
-                $arrivee = $trajet->entrepotArrivee->ville;
-
-                $etapeLivreur = EtapeLivraison::create([
-                    'annonce_id' => $annonce->id,
-                    'livreur_id' => $etape->livreur_id,
-                    'lieu_depart' => $depart,
-                    'lieu_arrivee' => $arrivee,
-                    'statut' => 'en_cours',
-                    'est_client' => false,
-                    'est_commercant' => false,
-                ]);
-
-                CodeBox::create([
-                    'box_id' => $codeBox->box_id,
-                    'etape_livraison_id' => $etapeLivreur->id,
-                    'type' => 'retrait',
-                    'code_temporaire' => Str::upper(Str::random(6)),
-                ]);
-
+            if ($trajet->entrepotArrivee->id !== $annonce->entrepot_arrivee_id) {
                 CodeBox::create([
                     'box_id' => $codeBox->box_id,
                     'etape_livraison_id' => $etapeLivreur->id,
