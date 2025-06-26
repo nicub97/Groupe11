@@ -189,11 +189,45 @@ class EtapeLivraisonController extends Controller
             }
         }
 
-        // 🎯 Cas 1 : Étape client = marquer dépôt + clôturer
+        // 🎯 Cas 1 : Étape client = marquer dépôt + créer étape livreur
         if ($etape->est_client && $request->type === 'depot') {
             if ($etape->statut === 'en_cours') {
                 $etape->statut = 'terminee';
                 $etape->save();
+            }
+
+            $annonce = $etape->annonce;
+            $existe = $annonce->etapesLivraison()
+                ->where('est_client', false)
+                ->exists();
+
+            if (!$existe) {
+                $depart = $annonce->entrepotDepart->ville;
+                $arrivee = $annonce->entrepotArrivee->ville;
+
+                $etapeLivreur = EtapeLivraison::create([
+                    'annonce_id' => $annonce->id,
+                    'livreur_id' => $etape->livreur_id,
+                    'lieu_depart' => $depart,
+                    'lieu_arrivee' => $arrivee,
+                    'statut' => 'en_cours',
+                    'est_client' => false,
+                    'est_commercant' => false,
+                ]);
+
+                CodeBox::create([
+                    'box_id' => $codeBox->box_id,
+                    'etape_livraison_id' => $etapeLivreur->id,
+                    'type' => 'retrait',
+                    'code_temporaire' => Str::upper(Str::random(6)),
+                ]);
+
+                CodeBox::create([
+                    'box_id' => $codeBox->box_id,
+                    'etape_livraison_id' => $etapeLivreur->id,
+                    'type' => 'depot',
+                    'code_temporaire' => Str::upper(Str::random(6)),
+                ]);
             }
 
             return response()->json(['message' => 'Code de dépôt client validé. Étape clôturée.']);
