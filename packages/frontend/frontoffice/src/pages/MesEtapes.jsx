@@ -8,6 +8,7 @@ export default function MesEtapes() {
   const navigate = useNavigate();
   const [etapes, setEtapes] = useState([]);
   const [toutesEtapes, setToutesEtapes] = useState([]);
+  const [enAttenteDepot, setEnAttenteDepot] = useState(false);
 
   const fetchEtapes = async () => {
     try {
@@ -20,6 +21,9 @@ export default function MesEtapes() {
 
       setToutesEtapes(toutes);
       setEtapes(livreurEtapes);
+      setEnAttenteDepot(
+        toutes.some((e) => e.est_client === true && e.statut !== "terminee")
+      );
     } catch (err) {
       console.error("Erreur chargement etapes:", err);
     }
@@ -34,7 +38,11 @@ export default function MesEtapes() {
       <h2 className="text-2xl font-bold mb-6">Mes étapes de livraison</h2>
 
       {etapes.length === 0 ? (
-        <p>Aucune étape en cours.</p>
+        enAttenteDepot ? (
+          <p>⏳ En attente du dépôt du client.</p>
+        ) : (
+          <p>Aucune étape en cours.</p>
+        )
       ) : (
         <ul className="space-y-6">
           {etapes.map((e) => {
