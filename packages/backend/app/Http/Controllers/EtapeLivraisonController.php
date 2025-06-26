@@ -137,6 +137,14 @@ class EtapeLivraisonController extends Controller
             return response()->json(['message' => 'Non autorisé.'], 403);
         }
 
+        // Blocage : un retrait ne peut être validé si une étape client ou
+        // commerçant précédente de la même annonce n'est pas terminée.
+        if ($request->type === 'retrait' && ! $etape->peutRetirer()) {
+            return response()->json([
+                'message' => 'Le colis n\'a pas encore été déposé.'
+            ], 400);
+        }
+
         $codeBox = CodeBox::where('etape_livraison_id', $etape->id)
             ->where('type', $request->type)
             ->where('code_temporaire', $request->code)

@@ -44,27 +44,36 @@ export default function MesEtapes() {
             let infoMessage = "";
             let boutonAction = null;
 
-            // ✅ Vérifie si un dépôt a été effectué par le client ou le commerçant
+            // Étapes client/commerçant précédentes non terminées pour la même annonce
+            const etapeBlocante = toutesEtapes.some(
+              (et) =>
+                et.annonce_id === e.annonce_id &&
+                (et.est_client === true || et.est_commercant === true) &&
+                et.statut !== "terminee" &&
+                new Date(et.created_at) < new Date(e.created_at)
+            );
+
             const colisEstDisponible = toutesEtapes.some(
               (et) =>
+                et.annonce_id === e.annonce_id &&
                 (et.est_client === true || et.est_commercant === true) &&
                 et.codes?.some((c) => c.type === "depot" && c.utilise)
             );
 
-            if (!codeRetrait?.utilise && colisEstDisponible) {
-              infoMessage = "🔓 Prêt pour retrait du colis";
-              boutonAction = (
-                <Link
-                  to={`/validation-code/${e.id}?type=retrait`}
-                  className="inline-block mt-3 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-                >
-                  Saisir le code pour retirer
-                </Link>
-              );
-            } else if (!codeRetrait?.utilise && e.statut === "en_cours") {
-              if (e.est_client || e.est_commercant) {
+            if (!codeRetrait?.utilise && e.statut === "en_cours") {
+              if (etapeBlocante) {
                 infoMessage = "⏳ En attente de dépôt du commerçant ou client";
-              } else {
+              } else if (colisEstDisponible) {
+                infoMessage = "🔓 Prêt pour retrait du colis";
+                boutonAction = (
+                  <Link
+                    to={`/validation-code/${e.id}?type=retrait`}
+                    className="inline-block mt-3 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                  >
+                    Saisir le code pour retirer
+                  </Link>
+                );
+              } else if (!e.est_client && !e.est_commercant) {
                 infoMessage = "⏳ En attente de retrait par vous";
                 boutonAction = (
                   <button

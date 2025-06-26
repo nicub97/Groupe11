@@ -14,7 +14,7 @@ export default function ValidationCodeBox() {
   const [message, setMessage] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [step, setStep] = useState(queryType || null);
+  const [step, setStep] = useState(null);
   const [etape, setEtape] = useState(null);
 
   const fetchEtapeInfos = async () => {
@@ -30,43 +30,41 @@ export default function ValidationCodeBox() {
       const retrait = codes.find((c) => c.type === "retrait");
       const depot = codes.find((c) => c.type === "depot");
 
-      if (!queryType) {
-        if (e.est_client) {
-          // Étape client
-          if (retrait && !retrait.utilise) {
-            setStep("retrait");
-          } else if (depot && !depot.utilise) {
-            setStep("depot");
-          } else {
-            setStep(null);
-          }
-        } else {
-          // Étape livreur
-          if (retrait && !retrait.utilise) {
-            // Le client ou commerçant a-t-il bien déposé ?
-            const annonceEtapes = await api.get(`/annonces/${e.annonce.id}`, {
-              headers: { Authorization: `Bearer ${token}` },
-            });
+      let nextStep = null;
 
-            const depotEffectue = annonceEtapes.data.etapes_livraison?.some(
-              (et) =>
-                et.id !== e.id &&
-                et.lieu_arrivee === e.lieu_depart &&
-                et.codes?.some((c) => c.type === "depot" && c.utilise === true)
-            );
+      if (e.est_client) {
+        if (retrait && !retrait.utilise) {
+          nextStep = "retrait";
+        } else if (depot && !depot.utilise) {
+          nextStep = "depot";
+        }
+      } else {
+        if (retrait && !retrait.utilise) {
+          const annonceEtapes = await api.get(`/annonces/${e.annonce.id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
 
-            if (depotEffectue) {
-              setStep("retrait");
-            } else {
-              setStep(null); // bloqué tant que rien n’a été déposé
-            }
-          } else if (depot && !depot.utilise) {
-            setStep("depot");
-          } else {
-            setStep(null);
+          const blocage = annonceEtapes.data.etapes_livraison?.some(
+            (et) =>
+              (et.est_client === true || et.est_commercant === true) &&
+              et.statut !== "terminee" &&
+              new Date(et.created_at) < new Date(e.created_at)
+          );
+
+          if (!blocage) {
+            nextStep = "retrait";
           }
+        } else if (depot && !depot.utilise) {
+          nextStep = "depot";
         }
       }
+
+      // Si un type est spécifié dans l'URL, on vérifie qu'il est autorisé
+      if (queryType && queryType !== nextStep) {
+        nextStep = null;
+      }
+
+      setStep(nextStep);
     } catch (err) {
       console.error("Erreur chargement infos:", err);
     }
