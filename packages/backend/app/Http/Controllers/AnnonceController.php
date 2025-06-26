@@ -293,7 +293,77 @@ class AnnonceController extends Controller
             return response()->json(['message' => 'Cette annonce est déjà en cours de livraison.'], 400);
         }
 
+        // Détermination de la ville de départ courante (dernier lieu atteint)
         $depart_actuel = $annonce->entrepotDepart->ville;
+        $lastStep = $annonce->etapesLivraison
+            ->where('statut', 'terminee')
+            ->last();
+        if ($lastStep) {
+            $depart_actuel = $lastStep->lieu_arrivee;
+        }
+
+        $depotTermine = $annonce->etapesLivraison()
+            ->where(function ($q) {
+                $q->where('est_client', true)
+                  ->orWhere('est_commercant', true);
+            })
+            ->where('statut', 'terminee')
+            ->exists();
+
+        if ($depotTermine) {
+            $trajet = TrajetLivreur::with(['entrepotDepart', 'entrepotArrivee'])
+                ->where('livreur_id', $user->id)
+                ->whereHas('entrepotDepart', function ($q) use ($depart_actuel) {
+                    $q->where('ville', $depart_actuel);
+                })
+                ->first();
+
+            if (! $trajet || ! $trajet->entrepotArrivee) {
+                return response()->json(['message' => 'Trajet livreur introuvable.'], 400);
+            }
+
+            $lastStep = $annonce->etapesLivraison()
+                ->where('statut', 'terminee')
+                ->orderByDesc('created_at')
+                ->first();
+
+            $boxId = CodeBox::where('etape_livraison_id', $lastStep->id)
+                ->where('type', 'depot')
+                ->value('box_id');
+
+            $etapeLivreur = EtapeLivraison::create([
+                'annonce_id' => $annonce->id,
+                'livreur_id' => $user->id,
+                'lieu_depart' => $trajet->entrepotDepart->ville,
+                'lieu_arrivee' => $trajet->entrepotArrivee->ville,
+                'statut' => 'en_cours',
+                'est_client' => false,
+                'est_commercant' => false,
+            ]);
+
+            if ($boxId) {
+                CodeBox::create([
+                    'box_id' => $boxId,
+                    'etape_livraison_id' => $etapeLivreur->id,
+                    'type' => 'retrait',
+                    'code_temporaire' => Str::upper(Str::random(6)),
+                ]);
+
+                if ($trajet->entrepotArrivee->id !== $annonce->entrepot_arrivee_id) {
+                    CodeBox::create([
+                        'box_id' => $boxId,
+                        'etape_livraison_id' => $etapeLivreur->id,
+                        'type' => 'depot',
+                        'code_temporaire' => Str::upper(Str::random(6)),
+                    ]);
+                }
+            }
+
+            return response()->json([
+                'message' => 'Annonce acceptée. Retrait livreur en attente.',
+                'etape' => $etapeLivreur,
+            ]);
+        }
 
         // Création de l'étape de dépôt du client dans l'entrepôt de départ
         $entrepot = $annonce->entrepotDepart;
