@@ -47,7 +47,8 @@ export default function ValidationCodeBox() {
 
           const depotEffectue = annonceEtapes.data.etapes_livraison?.some(
             (et) =>
-              (et.est_client || et.est_commercant) &&
+              et.id !== e.id &&
+              et.lieu_arrivee === e.lieu_depart &&
               et.codes?.some((c) => c.type === "depot" && c.utilise === true)
           );
 
