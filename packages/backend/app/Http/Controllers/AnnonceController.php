@@ -339,6 +339,7 @@ class AnnonceController extends Controller
                 'statut' => 'en_cours',
                 'est_client' => false,
                 'est_commercant' => false,
+                'est_mini_etape' => false,
             ]);
 
             if ($boxId) {
@@ -346,17 +347,15 @@ class AnnonceController extends Controller
                     'box_id' => $boxId,
                     'etape_livraison_id' => $etapeLivreur->id,
                     'type' => 'retrait',
-                    'code_temporaire' => Str::upper(Str::random(6)),
+                    'code_temporaire' => Str::random(6),
                 ]);
 
-                if ($trajet->entrepotArrivee->id !== $annonce->entrepot_arrivee_id) {
-                    CodeBox::create([
-                        'box_id' => $boxId,
-                        'etape_livraison_id' => $etapeLivreur->id,
-                        'type' => 'depot',
-                        'code_temporaire' => Str::upper(Str::random(6)),
-                    ]);
-                }
+                CodeBox::create([
+                    'box_id' => $boxId,
+                    'etape_livraison_id' => $etapeLivreur->id,
+                    'type' => 'depot',
+                    'code_temporaire' => Str::random(6),
+                ]);
             }
 
             return response()->json([
@@ -380,13 +379,14 @@ class AnnonceController extends Controller
             'statut' => 'en_cours',
             'est_client' => true,
             'est_commercant' => false,
+            'est_mini_etape' => false,
         ]);
 
         CodeBox::create([
             'box_id' => $box->id,
             'etape_livraison_id' => $etapeClient->id,
             'type' => 'depot',
-            'code_temporaire' => Str::upper(Str::random(6)),
+            'code_temporaire' => Str::random(6),
         ]);
 
         $box->est_occupe = true;
