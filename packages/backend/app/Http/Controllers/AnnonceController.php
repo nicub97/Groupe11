@@ -281,7 +281,7 @@ class AnnonceController extends Controller
             return response()->json(['message' => 'Accès refusé'], 403);
         }
 
-        $annonce = Annonce::with(['etapesLivraison', 'entrepotDepart', 'entrepotArrivee'])->findOrFail($id);
+        $annonce = Annonce::with(['etapesLivraison', 'entrepotDepart'])->findOrFail($id);
 
         $enCours = $annonce->etapesLivraison()->where('statut', '!=', 'terminee')->exists();
 
@@ -289,58 +289,10 @@ class AnnonceController extends Controller
             return response()->json(['message' => 'Cette annonce est déjà en cours de livraison.'], 400);
         }
 
-        $trajets = TrajetLivreur::with(['entrepotDepart', 'entrepotArrivee'])
-            ->where('livreur_id', $user->id)
-            ->get();
+        $depart_actuel = $annonce->entrepotDepart->ville;
 
-        if ($trajets->isEmpty()) {
-            return response()->json(['message' => 'Aucun trajet disponible.'], 400);
-        }
-
-        // Déterminer le point de départ
-        $depart_actuel = $annonce->entrepotDepart?->ville ?? '';
-
-        // On récupère la dernière étape terminée **selon le type d’annonce**
-        $lastStepQuery = $annonce->etapesLivraison()
-            ->where('statut', 'terminee');
-
-        if ($annonce->type === 'produit_livre') {
-            $lastStepQuery->where('est_commercant', false);
-        } elseif ($annonce->type === 'livraison_client') {
-            $lastStepQuery->where('est_client', false);
-        }
-
-        $lastStep = $lastStepQuery->orderByDesc('created_at')->first();
-
-        if ($lastStep) {
-            logger()->info("Dernière étape terminée de l'annonce {$annonce->id} : {$lastStep->lieu_depart} -> {$lastStep->lieu_arrivee}");
-            $depart_actuel = $lastStep->lieu_arrivee;
-        } else {
-            logger()->info("Aucune étape terminée pour l'annonce {$annonce->id}, départ initial : {$depart_actuel}");
-        }
-
-        // Vérifier si un trajet correspond
-        $trajetCompatible = $trajets->first(function ($trajet) use ($depart_actuel) {
-            return $trajet->entrepotDepart
-                && strcasecmp(trim($trajet->entrepotDepart->ville), trim($depart_actuel)) === 0;
-        });
-        
-        if (is_null($trajetCompatible)) {
-            logger()->error("❌ Aucun trajet trouvé pour départ_actuel = $depart_actuel");
-            logger()->info("📦 Trajets disponibles : " . json_encode($trajets));
-        }
-
-        if (! $trajetCompatible || ! $trajetCompatible->entrepotArrivee) {
-            return response()->json(['message' => 'Aucun trajet compatible avec l’annonce.'], 400);
-        }
-
-        $destination = $trajetCompatible->entrepotArrivee->ville;
-        $villeFinale = $annonce->entrepotArrivee?->ville;
-
-        $isDerniereEtape = strcasecmp($destination, $villeFinale) === 0;
-
-        // Création d'une seule mini-étape pour le dépôt du client
-        $entrepot = Entrepot::where('ville', $depart_actuel)->first();
+        // Création de l'étape de dépôt du client dans l'entrepôt de départ
+        $entrepot = $annonce->entrepotDepart;
         $box = $entrepot?->boxes()->where('est_occupe', false)->first();
         if (!$box) {
             return response()->json(['message' => 'Aucune box disponible pour le client.'], 400);
