@@ -8,7 +8,7 @@ export default function ValidationCodeBox() {
   const [searchParams] = useSearchParams();
   const queryType = searchParams.get("type");
   const navigate = useNavigate();
-  const { token } = useAuth();
+  const { token, user } = useAuth();
 
   const [code, setCode] = useState("");
   const [message, setMessage] = useState(null);
@@ -24,7 +24,20 @@ export default function ValidationCodeBox() {
       });
 
       const e = res.data;
+
+      // Vérifie que l'étape appartient au livreur connecté
+      if (e.livreur_id !== user.id) {
+        setError("Étape non autorisée.");
+        setStep(null);
+        return;
+      }
+
       setEtape(e);
+
+      if (e.statut !== "en_cours") {
+        setStep(null);
+        return;
+      }
 
       const codes = e.codes || [];
       const retrait = codes.find((c) => c.type === "retrait");
@@ -33,33 +46,17 @@ export default function ValidationCodeBox() {
       let nextStep = null;
 
       if (e.est_client) {
+        if (depot && !depot.utilise) {
+          nextStep = "depot";
+        }
+      } else {
         if (retrait && !retrait.utilise) {
           nextStep = "retrait";
         } else if (depot && !depot.utilise) {
           nextStep = "depot";
         }
-      } else {
-        if (retrait && !retrait.utilise) {
-          const annonceEtapes = await api.get(`/annonces/${e.annonce.id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-
-          const blocage = annonceEtapes.data.etapes_livraison?.some(
-            (et) =>
-              (et.est_client === true || et.est_commercant === true) &&
-              et.statut !== "terminee" &&
-              new Date(et.created_at) < new Date(e.created_at)
-          );
-
-          if (!blocage) {
-            nextStep = "retrait";
-          }
-        } else if (depot && !depot.utilise) {
-          nextStep = "depot";
-        }
       }
 
-      // Si un type est spécifié dans l'URL, on vérifie qu'il est autorisé
       if (queryType && queryType !== nextStep) {
         nextStep = null;
       }
@@ -72,7 +69,7 @@ export default function ValidationCodeBox() {
 
   useEffect(() => {
     fetchEtapeInfos();
-  }, [id, token]);
+  }, [id, token, user]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -117,6 +114,12 @@ export default function ValidationCodeBox() {
       setLoading(false);
     }
   };
+
+  if (error) {
+    return (
+      <p className="text-center mt-10 text-red-600 font-medium">{error}</p>
+    );
+  }
 
   if (!step) {
     return (
