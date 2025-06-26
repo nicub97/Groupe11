@@ -276,7 +276,7 @@ export default function AppRouter() {
           />
 
           <Route
-            path="/etapes/:etapeId/validation-code"
+            path="/validation-code/:id"
             element={
               <PrivateRoute>
                 <ValidationCodeBox />

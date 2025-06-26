@@ -55,7 +55,7 @@ export default function MesEtapes() {
               infoMessage = "🔓 Prêt pour retrait du colis";
               boutonAction = (
                 <Link
-                  to={`/etapes/${e.id}/validation-code`}
+                  to={`/validation-code/${e.id}?type=retrait`}
                   className="inline-block mt-3 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
                 >
                   Saisir le code pour retirer
@@ -81,7 +81,7 @@ export default function MesEtapes() {
               infoMessage = "📦 Prêt pour dépôt à l'arrivée";
               boutonAction = (
                 <Link
-                  to={`/etapes/${e.id}/validation-code`}
+                  to={`/validation-code/${e.id}?type=depot`}
                   className="inline-block mt-3 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
                 >
                   Saisir le code pour déposer
