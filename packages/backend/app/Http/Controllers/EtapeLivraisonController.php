@@ -105,10 +105,10 @@ class EtapeLivraisonController extends Controller
 
         $annonce = $etape->annonce;
 
-        // 🎯 Si c’est la dernière étape vers l'entrepôt final, créer étape client finale
+        // 🎯 Si le dépôt a eu lieu dans l'entrepôt final, créer l'étape client finale
         if (
-            $etape->est_client === false &&
-            $etape->lieu_arrivee === $annonce->entrepotArrivee?->ville
+            !$etape->est_client &&
+            $codeDepot->box?->entrepot?->ville === $annonce->entrepotArrivee?->ville
         ) {
             $code = $annonce->genererEtapeRetraitClientFinaleSiBesoin();
             if ($code && !$code->mail_envoye_at) {
@@ -257,8 +257,8 @@ class EtapeLivraisonController extends Controller
                 $annonce = $etape->annonce;
 
                 if (
-                    $etape->est_client === false &&
-                    $etape->lieu_arrivee === $annonce->entrepotArrivee->ville
+                    !$etape->est_client &&
+                    $codeBox->box?->entrepot?->ville === $annonce->entrepotArrivee->ville
                 ) {
                     $code = $annonce->genererEtapeRetraitClientFinaleSiBesoin();
                     if ($code && !$code->mail_envoye_at) {

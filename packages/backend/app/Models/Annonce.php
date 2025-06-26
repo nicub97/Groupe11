@@ -89,25 +89,39 @@ class Annonce extends Model
 
     public function genererEtapeRetraitClientFinaleSiBesoin()
     {
-        $etapes = $this->etapesLivraison;
+        $etapes = $this->etapesLivraison()->orderBy('created_at')->get();
 
-        // Si une étape client finale existe déjà, on ne la recrée pas
+        // Ne rien faire si une étape client finale existe déjà
         $dejaCreee = $etapes->contains(fn($e) =>
             $e->est_client === true &&
             $e->lieu_depart === $this->entrepotArrivee->ville &&
             $e->lieu_arrivee === $this->entrepotArrivee->ville &&
             $e->statut !== 'annulee'
         );
+        if ($dejaCreee) {
+            return null;
+        }
 
-        if ($dejaCreee) return;
+        // On récupère la dernière étape terminée
+        $etapePrecedente = $etapes->where('statut', 'terminee')->last();
 
-        // Dernière étape livreur terminée
-        $etapePrecedente = $etapes->where('est_client', false)
-            ->where('statut', 'terminee')
-            ->where('lieu_arrivee', $this->entrepotArrivee->ville)
-            ->last();
+        // Elle doit correspondre à l'arrivée finale et ne pas être une étape client
+        if (
+            ! $etapePrecedente ||
+            $etapePrecedente->est_client ||
+            $etapePrecedente->lieu_arrivee !== $this->entrepotArrivee?->ville
+        ) {
+            return null;
+        }
 
-        if (! $etapePrecedente) return;
+        // Vérifier qu'aucune autre étape n'a été créée après
+        $existsAfter = $this->etapesLivraison()
+            ->where('created_at', '>', $etapePrecedente->created_at)
+            ->exists();
+
+        if ($existsAfter) {
+            return null;
+        }
 
         $livreur = $etapePrecedente->livreur;
 
