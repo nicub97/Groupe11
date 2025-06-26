@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
 
 export default function ValidationCodeBox() {
-  const { etapeId } = useParams();
+  const { id } = useParams();
+  const [searchParams] = useSearchParams();
+  const queryType = searchParams.get("type");
   const navigate = useNavigate();
   const { token } = useAuth();
 
@@ -12,12 +14,12 @@ export default function ValidationCodeBox() {
   const [message, setMessage] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [step, setStep] = useState(null);
+  const [step, setStep] = useState(queryType || null);
   const [etape, setEtape] = useState(null);
 
   const fetchEtapeInfos = async () => {
     try {
-      const res = await api.get(`/etapes/${etapeId}`, {
+      const res = await api.get(`/etapes/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -28,39 +30,41 @@ export default function ValidationCodeBox() {
       const retrait = codes.find((c) => c.type === "retrait");
       const depot = codes.find((c) => c.type === "depot");
 
-      if (e.est_client) {
-        // Étape client
-        if (retrait && !retrait.utilise) {
-          setStep("retrait");
-        } else if (depot && !depot.utilise) {
-          setStep("depot");
-        } else {
-          setStep(null);
-        }
-      } else {
-        // Étape livreur
-        if (retrait && !retrait.utilise) {
-          // Le client ou commerçant a-t-il bien déposé ?
-          const annonceEtapes = await api.get(`/annonces/${e.annonce.id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-
-          const depotEffectue = annonceEtapes.data.etapes_livraison?.some(
-            (et) =>
-              et.id !== e.id &&
-              et.lieu_arrivee === e.lieu_depart &&
-              et.codes?.some((c) => c.type === "depot" && c.utilise === true)
-          );
-
-          if (depotEffectue) {
+      if (!queryType) {
+        if (e.est_client) {
+          // Étape client
+          if (retrait && !retrait.utilise) {
             setStep("retrait");
+          } else if (depot && !depot.utilise) {
+            setStep("depot");
           } else {
-            setStep(null); // bloqué tant que rien n’a été déposé
+            setStep(null);
           }
-        } else if (depot && !depot.utilise) {
-          setStep("depot");
         } else {
-          setStep(null);
+          // Étape livreur
+          if (retrait && !retrait.utilise) {
+            // Le client ou commerçant a-t-il bien déposé ?
+            const annonceEtapes = await api.get(`/annonces/${e.annonce.id}`, {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+
+            const depotEffectue = annonceEtapes.data.etapes_livraison?.some(
+              (et) =>
+                et.id !== e.id &&
+                et.lieu_arrivee === e.lieu_depart &&
+                et.codes?.some((c) => c.type === "depot" && c.utilise === true)
+            );
+
+            if (depotEffectue) {
+              setStep("retrait");
+            } else {
+              setStep(null); // bloqué tant que rien n’a été déposé
+            }
+          } else if (depot && !depot.utilise) {
+            setStep("depot");
+          } else {
+            setStep(null);
+          }
         }
       }
     } catch (err) {
@@ -70,7 +74,7 @@ export default function ValidationCodeBox() {
 
   useEffect(() => {
     fetchEtapeInfos();
-  }, [etapeId, token]);
+  }, [id, token]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -84,7 +88,7 @@ export default function ValidationCodeBox() {
         {
           code,
           type: step,
-          etape_id: etapeId,
+          etape_id: id,
         },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -103,7 +107,7 @@ export default function ValidationCodeBox() {
           }, 1000);
         }
       } else {
-        await api.patch(`/etapes/${etapeId}/cloturer`, null, {
+        await api.patch(`/etapes/${id}/cloturer`, null, {
           headers: { Authorization: `Bearer ${token}` },
         });
         alert("✅ Colis déposé. Étape clôturée.");
@@ -127,7 +131,7 @@ export default function ValidationCodeBox() {
   return (
     <div className="max-w-xl mx-auto mt-10 p-6 bg-white shadow rounded">
       <h2 className="text-2xl font-bold mb-4">
-        Validation du code pour l'étape #{etapeId}
+        Validation du code pour l'étape #{id}
       </h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
