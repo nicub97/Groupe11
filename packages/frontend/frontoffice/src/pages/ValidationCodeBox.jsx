@@ -25,11 +25,25 @@ export default function ValidationCodeBox() {
 
       const e = res.data;
 
-      // Vérifie que l'étape appartient au livreur connecté
-      if (e.livreur_id !== user.id) {
-        setError("Étape non autorisée.");
-        setStep(null);
-        return;
+      // Vérifie que l'utilisateur correspond au rôle attendu pour l'étape
+      if (e.est_client) {
+        if (user.role !== "client") {
+          setError("Étape réservée au client.");
+          setStep(null);
+          return;
+        }
+      } else if (e.est_commercant) {
+        if (user.role !== "commercant") {
+          setError("Étape réservée au commerçant.");
+          setStep(null);
+          return;
+        }
+      } else {
+        if (user.role !== "livreur" || e.livreur_id !== user.id) {
+          setError("Étape réservée au livreur.");
+          setStep(null);
+          return;
+        }
       }
 
       setEtape(e);
@@ -45,16 +59,10 @@ export default function ValidationCodeBox() {
 
       let nextStep = null;
 
-      if (e.est_client) {
-        if (depot && !depot.utilise) {
-          nextStep = "depot";
-        }
-      } else {
-        if (retrait && !retrait.utilise) {
-          nextStep = "retrait";
-        } else if (depot && !depot.utilise) {
-          nextStep = "depot";
-        }
+      if (retrait && !retrait.utilise) {
+        nextStep = "retrait";
+      } else if (depot && !depot.utilise) {
+        nextStep = "depot";
       }
 
       if (queryType && queryType !== nextStep) {
