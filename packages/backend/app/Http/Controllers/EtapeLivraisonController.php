@@ -259,13 +259,40 @@ class EtapeLivraisonController extends Controller
                 $annonce = $etape->annonce;
 
                 if (
-                    $etape->est_client === false &&
-                    $etape->lieu_arrivee === $annonce->entrepotArrivee->ville
+                    $etape->lieu_arrivee === $annonce->entrepotArrivee->ville &&
+                    !EtapeLivraison::where('annonce_id', $annonce->id)
+                        ->where('est_client', true)
+                        ->where('lieu_depart', $etape->lieu_arrivee)
+                        ->where('lieu_arrivee', $etape->lieu_arrivee)
+                        ->exists()
                 ) {
-                    $code = $annonce->genererEtapeRetraitClientFinaleSiBesoin();
-                    if ($code && !$code->mail_envoye_at) {
-                        $dest = $annonce->client;
-                        Mail::to($dest->email)->send(new CodeRetraitMail($code));
+                    $etapeClient = EtapeLivraison::create([
+                        'annonce_id' => $annonce->id,
+                        'livreur_id' => $etape->livreur_id,
+                        'lieu_depart' => $etape->lieu_arrivee,
+                        'lieu_arrivee' => $etape->lieu_arrivee,
+                        'statut' => 'en_cours',
+                        'est_client' => true,
+                        'est_commercant' => false,
+                    ]);
+
+                    $box = Entrepot::where('ville', $etape->lieu_arrivee)
+                        ->first()?->boxes()
+                        ->where('est_occupe', false)
+                        ->first();
+
+                    if ($box) {
+                        $code = CodeBox::create([
+                            'box_id' => $box->id,
+                            'etape_livraison_id' => $etapeClient->id,
+                            'type' => 'retrait',
+                            'code_temporaire' => Str::upper(Str::random(6)),
+                        ]);
+
+                        $box->est_occupe = true;
+                        $box->save();
+
+                        Mail::to($annonce->client->email)->send(new CodeRetraitMail($code));
                         $code->mail_envoye_at = now();
                         $code->save();
                     }
