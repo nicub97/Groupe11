@@ -33,16 +33,24 @@ export default function SuiviAnnonce() {
 
   const etapesClient = annonce.etapes_livraison?.filter((e) => e.est_client);
 
-  const etapeDepotClient = etapesClient?.find((e) =>
-    e.codes?.some((c) => c.type === "depot" && !c.utilise)
+  const etapeDepotClient = etapesClient?.find(
+    (e) =>
+      e.statut === "en_cours" &&
+      e.codes?.some((c) => c.type === "depot" && !c.utilise)
   );
 
   const depotEffectue = etapesClient?.some((e) =>
     e.codes?.some((c) => c.type === "depot" && c.utilise)
   );
 
-  const etapeRetraitClient = etapesClient?.find((e) =>
-    e.codes?.some((c) => c.type === "retrait" && !c.utilise)
+  const retraitEffectue = etapesClient?.some((e) =>
+    e.codes?.some((c) => c.type === "retrait" && c.utilise)
+  );
+
+  const etapeRetraitClient = etapesClient?.find(
+    (e) =>
+      e.statut === "en_cours" &&
+      e.codes?.some((c) => c.type === "retrait" && !c.utilise)
   );
 
   const validerCode = async (type, etape_id) => {
@@ -86,9 +94,9 @@ export default function SuiviAnnonce() {
         />
       )}
 
-      {depotEffectue && (
-        <p className="text-green-600 font-semibold mt-4">
-          ✅ Dépôt effectué. En attente du retrait du livreur.
+      {depotEffectue && !etapeRetraitClient && !retraitEffectue && (
+        <p className="text-gray-600 font-medium mt-4">
+          ⏳ Colis en cours d'acheminement.
         </p>
       )}
 
@@ -103,6 +111,12 @@ export default function SuiviAnnonce() {
           etatCode={etatCode}
           isRetrait
         />
+      )}
+
+      {retraitEffectue && (
+        <p className="text-green-600 font-semibold mt-4">
+          ✅ Colis retiré. Livraison terminée.
+        </p>
       )}
     </div>
   );
