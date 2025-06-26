@@ -339,103 +339,36 @@ class AnnonceController extends Controller
 
         $isDerniereEtape = strcasecmp($destination, $villeFinale) === 0;
 
-        $etapesCreees = [];
-
-        if ($depart_actuel === $annonce->entrepotDepart->ville) {
-            if ($annonce->type === 'produit_livre') {
-                // Étape dépôt du commerçant
-                $etapeCommercant = EtapeLivraison::create([
-                    'annonce_id' => $annonce->id,
-                    'livreur_id' => $user->id,
-                    'lieu_depart' => $depart_actuel,
-                    'lieu_arrivee' => $depart_actuel,
-                    'statut' => 'en_cours',
-                    'est_client' => false,
-                    'est_commercant' => true,
-                ]);
-
-                $entrepot = Entrepot::where('ville', $depart_actuel)->first();
-                $box = $entrepot?->boxes()->where('est_occupe', false)->first();
-                if (!$box) return response()->json(['message' => 'Aucune box disponible pour le commerçant.'], 400);
-
-                CodeBox::create([
-                    'box_id' => $box->id,
-                    'etape_livraison_id' => $etapeCommercant->id,
-                    'type' => 'depot',
-                    'code_temporaire' => Str::upper(Str::random(6)),
-                ]);
-
-                $box->est_occupe = true;
-                $box->save();
-
-                $etapesCreees[] = $etapeCommercant;
-            } else {
-                // Étape dépôt du client
-                $etapeClient = EtapeLivraison::create([
-                    'annonce_id' => $annonce->id,
-                    'livreur_id' => $user->id,
-                    'lieu_depart' => $depart_actuel,
-                    'lieu_arrivee' => $depart_actuel,
-                    'statut' => 'en_cours',
-                    'est_client' => true,
-                ]);
-
-                $entrepot = Entrepot::where('ville', $depart_actuel)->first();
-                $box = $entrepot?->boxes()->where('est_occupe', false)->first();
-                if (!$box) return response()->json(['message' => 'Aucune box disponible pour le client.'], 400);
-
-                CodeBox::create([
-                    'box_id' => $box->id,
-                    'etape_livraison_id' => $etapeClient->id,
-                    'type' => 'depot',
-                    'code_temporaire' => Str::upper(Str::random(6)),
-                ]);
-
-                $box->est_occupe = true;
-                $box->save();
-
-                $etapesCreees[] = $etapeClient;
-            }
+        // Création d'une seule mini-étape pour le dépôt du client
+        $entrepot = Entrepot::where('ville', $depart_actuel)->first();
+        $box = $entrepot?->boxes()->where('est_occupe', false)->first();
+        if (!$box) {
+            return response()->json(['message' => 'Aucune box disponible pour le client.'], 400);
         }
 
-        // 🚚 Étape pour le livreur (retrait + dépôt OU retrait seul si destination finale)
-        $etapeLivreur = EtapeLivraison::create([
+        $etapeClient = EtapeLivraison::create([
             'annonce_id' => $annonce->id,
             'livreur_id' => $user->id,
             'lieu_depart' => $depart_actuel,
-            'lieu_arrivee' => $destination,
+            'lieu_arrivee' => $depart_actuel,
             'statut' => 'en_cours',
-            'est_client' => false,
-        ]);
-
-        $entrepot = Entrepot::where('ville', $depart_actuel)->first();
-        $box = $entrepot?->boxes()->where('est_occupe', false)->first();
-        if (!$box) return response()->json(['message' => 'Aucune box disponible pour le livreur.'], 400);
-
-        // retrait obligatoire
-        CodeBox::create([
-            'box_id' => $box->id,
-            'etape_livraison_id' => $etapeLivreur->id,
-            'type' => 'retrait',
-            'code_temporaire' => Str::upper(Str::random(6)),
+            'est_client' => true,
+            'est_commercant' => false,
         ]);
 
         CodeBox::create([
             'box_id' => $box->id,
-            'etape_livraison_id' => $etapeLivreur->id,
+            'etape_livraison_id' => $etapeClient->id,
             'type' => 'depot',
             'code_temporaire' => Str::upper(Str::random(6)),
         ]);
 
-
         $box->est_occupe = true;
         $box->save();
 
-        $etapesCreees[] = $etapeLivreur;
-
         return response()->json([
-            'message' => 'Annonce acceptée, étapes créées.',
-            'etapes' => $etapesCreees,
+            'message' => 'Annonce acceptée. Dépôt client en attente.',
+            'etape' => $etapeClient,
         ]);
     }
 

@@ -202,8 +202,21 @@ class EtapeLivraisonController extends Controller
                 ->exists();
 
             if (!$existe) {
-                $depart = $annonce->entrepotDepart->ville;
-                $arrivee = $annonce->entrepotArrivee->ville;
+                $trajets = TrajetLivreur::with(['entrepotDepart', 'entrepotArrivee'])
+                    ->where('livreur_id', $etape->livreur_id)
+                    ->get();
+
+                $depart = $etape->lieu_depart;
+                $trajet = $trajets->first(function ($t) use ($depart) {
+                    return $t->entrepotDepart &&
+                        strcasecmp(trim($t->entrepotDepart->ville), trim($depart)) === 0;
+                });
+
+                if (! $trajet || ! $trajet->entrepotArrivee) {
+                    return response()->json(['message' => 'Trajet livreur introuvable.'], 400);
+                }
+
+                $arrivee = $trajet->entrepotArrivee->ville;
 
                 $etapeLivreur = EtapeLivraison::create([
                     'annonce_id' => $annonce->id,
