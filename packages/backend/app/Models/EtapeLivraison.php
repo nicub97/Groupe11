@@ -19,11 +19,13 @@ class EtapeLivraison extends Model
         'statut',
         'est_client',
         'est_commercant',
+        'est_mini_etape',
     ];
 
     protected $casts = [
         'est_client' => 'boolean',
         'est_commercant' => 'boolean',
+        'est_mini_etape' => 'boolean',
     ];
 
     public function annonce()
