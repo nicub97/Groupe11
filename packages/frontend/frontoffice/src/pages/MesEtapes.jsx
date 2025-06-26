@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function MesEtapes() {
   const { token } = useAuth();
+  const navigate = useNavigate();
   const [etapes, setEtapes] = useState([]);
   const [toutesEtapes, setToutesEtapes] = useState([]);
 
@@ -60,10 +61,22 @@ export default function MesEtapes() {
                   Saisir le code pour retirer
                 </Link>
               );
-            } else if (!codeRetrait?.utilise && !e.est_client && !e.est_commercant) {
-              infoMessage = "⏳ En attente de retrait par vous";
-            } else if (!codeRetrait?.utilise && !colisEstDisponible) {
-              infoMessage = "⏳ En attente de dépôt du commerçant ou client";
+            } else if (!codeRetrait?.utilise && e.statut === "en_cours") {
+              if (e.est_client || e.est_commercant) {
+                infoMessage = "⏳ En attente de dépôt du commerçant ou client";
+              } else {
+                infoMessage = "⏳ En attente de retrait par vous";
+                boutonAction = (
+                  <button
+                    onClick={() =>
+                      navigate(`/validation-code/${e.id}?type=retrait`)
+                    }
+                    className="inline-block mt-3 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                  >
+                    Saisir le code pour retirer
+                  </button>
+                );
+              }
             } else if (!codeDepot?.utilise && codeDepot) {
               infoMessage = "📦 Prêt pour dépôt à l'arrivée";
               boutonAction = (
