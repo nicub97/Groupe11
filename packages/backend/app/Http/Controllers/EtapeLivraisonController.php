@@ -174,8 +174,8 @@ class EtapeLivraisonController extends Controller
             }
         }
 
-        // 🎯 Cas 1 : Étape client = marquer dépôt + créer étape livreur
-        if ($etape->est_client && $request->type === 'depot') {
+        // 🎯 Cas 1 : Étape de dépôt initial (client ou commerçant)
+        if (($etape->est_client || $etape->est_commercant) && $request->type === 'depot') {
             $etape->statut = 'terminee';
             $etape->save();
 
@@ -216,9 +216,10 @@ class EtapeLivraisonController extends Controller
                 'code_temporaire' => Str::random(6),
             ]);
 
-            return response()->json(['message' => 'Code de dépôt client validé. Étape clôturée.']);
+            return response()->json(['message' => 'Code de dépôt validé. Étape clôturée.']);
         }
 
+        // 🎯 Cas 2 : Retrait final par le client
         if ($etape->est_client && $request->type === 'retrait') {
             if ($etape->statut === 'en_cours') {
                 $etape->statut = 'terminee';
@@ -230,8 +231,8 @@ class EtapeLivraisonController extends Controller
             return response()->json(['message' => '✅ Colis retiré. Livraison terminée.']);
         }
 
-        // 🎯 Cas 2 : Étape livreur
-        if (!$etape->est_client) {
+        // 🎯 Cas 3 : Étape livreur
+        if (! $etape->est_client && ! $etape->est_commercant) {
             if ($request->type === 'retrait') {
                 return response()->json(['message' => 'Code de retrait validé. Vous pouvez maintenant déposer.']);
             }
