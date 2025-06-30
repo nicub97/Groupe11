@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
+import { createCheckoutSession } from "../services/paiement";
 import { useAuth } from "../context/AuthContext";
 import { Link } from "react-router-dom";
 
 export default function MesAnnonces() {
   const { token } = useAuth();
   const [annonces, setAnnonces] = useState([]);
+  const [payLoadingId, setPayLoadingId] = useState(null);
 
   useEffect(() => {
     const fetchAnnonces = async () => {
@@ -32,6 +34,27 @@ export default function MesAnnonces() {
     } catch (err) {
       console.error("Erreur suppression :", err);
       alert("Échec de l'annulation.");
+    }
+  };
+
+  const handlePay = async (annonce) => {
+    setPayLoadingId(annonce.id);
+    try {
+      localStorage.setItem("paymentContext", "payer");
+      localStorage.setItem("payerAnnonceId", annonce.id);
+      const { checkout_url } = await createCheckoutSession(
+        { annonce_id: annonce.id, type: annonce.type },
+        token,
+        "payer"
+      );
+      window.location.href = checkout_url;
+    } catch (err) {
+      console.error("Erreur paiement :", err);
+      alert(
+        err.response?.data?.message ||
+          "Erreur lors de la redirection de paiement."
+      );
+      setPayLoadingId(null);
     }
   };
 
@@ -72,6 +95,16 @@ export default function MesAnnonces() {
                     </span>
                   )
                 )}
+
+                {a.is_paid ? (
+                  <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                    Annonce payée
+                  </span>
+                ) : (
+                  <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded-full">
+                    Paiement en attente
+                  </span>
+                )}
               </h3>
               <p className="text-gray-600 mb-2">{a.description}</p>
               <p><strong>Prix :</strong> {a.prix_propose} €</p>
@@ -108,6 +141,16 @@ export default function MesAnnonces() {
               <Link to={`/annonces/${a.id}/suivi`} className="text-blue-600 underline block mt-3">
                 Suivre l'annonce
               </Link>
+
+              {!a.is_paid && (
+                <button
+                  onClick={() => handlePay(a)}
+                  disabled={payLoadingId === a.id}
+                  className="mt-2 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:opacity-50"
+                >
+                  {payLoadingId === a.id ? "Redirection..." : "Payer maintenant"}
+                </button>
+              )}
 
               {/* ❗️Afficher le bouton seulement si aucune étape n’est liée */}
               {a.etapes_livraison?.length === 0 && (!a.id_client || a.type !== "produit_livre") && (

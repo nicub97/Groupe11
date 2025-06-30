@@ -60,10 +60,18 @@ export default function PaiementSuccess() {
           localStorage.removeItem("annonceForm");
           localStorage.removeItem("annoncePhoto");
           setMessage("Annonce créée avec succès !");
+        } else if (context === "payer" && annonceId) {
+          await api.post(`/annonces/${annonceId}/payer`, null, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          localStorage.removeItem("payerAnnonceId");
+          localStorage.removeItem("paymentContext");
+          setMessage("Annonce payée !");
         } else {
           setMessage("Paiement confirmé.");
         }
-        setTimeout(() => navigate("/annonces"), 1500);
+        const redirect = context === "payer" ? "/mes-annonces" : "/annonces";
+        setTimeout(() => navigate(redirect), 1500);
       } catch (err) {
         setMessage(err.response?.data?.message || "Erreur après paiement.");
       }

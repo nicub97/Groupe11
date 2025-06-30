@@ -21,6 +21,10 @@ export default function PaiementCancel() {
       } else {
         navigate("/annonces", { replace: true });
       }
+    } else if (context === "payer") {
+      localStorage.removeItem("payerAnnonceId");
+      localStorage.removeItem("paymentContext");
+      navigate("/mes-annonces?cancel=1", { replace: true });
     } else {
       navigate("/", { replace: true });
     }
