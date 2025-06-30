@@ -23,6 +23,7 @@ class Annonce extends Model
         'id_prestataire',
         'entrepot_depart_id',
         'entrepot_arrivee_id',
+        'is_paid',
     ];
 
     public function client()
