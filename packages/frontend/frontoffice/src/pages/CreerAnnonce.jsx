@@ -1,13 +1,11 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
-import { createCheckoutSession } from "../services/paiement";
 
 export default function CreerAnnonce() {
   const { user, token } = useAuth();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   // Déterminer le type selon le rôle
   let typeAnnonce = null;
   if (user?.role === "client") typeAnnonce = "livraison_client";
@@ -41,14 +39,6 @@ export default function CreerAnnonce() {
     fetchEntrepots();
   }, [token]);
 
-  useEffect(() => {
-    if (searchParams.get("cancel") === "1") {
-      setMessage(
-        "Le paiement a échoué ou a été annulé. Aucune annonce n’a été créée.",
-      );
-      setSuccess(false);
-    }
-  }, [searchParams]);
 
   if (!typeAnnonce) {
     return (
@@ -89,54 +79,35 @@ export default function CreerAnnonce() {
     setLoading(true);
 
     try {
-      if (user?.role === "client") {
-        localStorage.setItem(
-          "annonceForm",
-          JSON.stringify({ form, type: typeAnnonce }),
-        );
-        if (photoPreview) {
-          localStorage.setItem("annoncePhoto", photoPreview);
-        }
-        localStorage.setItem("paymentContext", "creer");
-        const { checkout_url } = await createCheckoutSession(
-          { montant: form.prix_propose, type: typeAnnonce },
-          token,
-          "creer",
-        );
-        window.location.href = checkout_url;
-      } else {
-        const data = new FormData();
-        for (const key in form) {
-          data.append(key, form[key]);
-        }
-        data.append("type", typeAnnonce);
-        if (photoFile) data.append("photo", photoFile);
-        await api.post("/annonces", data, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        });
-        setMessage("✅ Annonce créée avec succès !");
-        setSuccess(true);
-        setForm({
-          titre: "",
-          description: "",
-          prix_propose: "",
-          entrepot_depart_id: "",
-          entrepot_arrivee_id: "",
-        });
-        setPhotoFile(null);
-        setPhotoPreview("");
-        setTimeout(() => navigate("/annonces"), 1500);
+      const data = new FormData();
+      for (const key in form) {
+        data.append(key, form[key]);
       }
+      data.append("type", typeAnnonce);
+      if (photoFile) data.append("photo", photoFile);
+      await api.post("/annonces", data, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      setMessage("✅ Annonce créée avec succès !");
+      setSuccess(true);
+      setForm({
+        titre: "",
+        description: "",
+        prix_propose: "",
+        entrepot_depart_id: "",
+        entrepot_arrivee_id: "",
+      });
+      setPhotoFile(null);
+      setPhotoPreview("");
+      setTimeout(() => navigate("/annonces"), 1500);
     } catch (err) {
       console.error(err);
       const msg =
         err.response?.data?.message ||
-        (user?.role === "client"
-          ? "Erreur lors de la redirection de paiement."
-          : "Erreur lors de la création de l'annonce.");
+        "Erreur lors de la création de l'annonce.";
       setMessage(msg);
       setSuccess(false);
       setLoading(false);
@@ -237,7 +208,7 @@ export default function CreerAnnonce() {
           disabled={loading || entrepots.length === 0}
           className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-50"
         >
-          {loading ? "Redirection..." : "Créer l'annonce"}
+          {loading ? "Création..." : "Créer l'annonce"}
         </button>
       </form>
     </div>
