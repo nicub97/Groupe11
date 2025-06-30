@@ -293,24 +293,15 @@ class AnnonceController extends Controller
             return response()->json(['message' => 'Cette annonce est déjà en cours de livraison.'], 400);
         }
 
-        // Détermination de la ville de départ courante (dernier lieu atteint)
-        $depart_actuel = $annonce->entrepotDepart->ville;
-        $lastStep = $annonce->etapesLivraison
+        $lastStep = $annonce->etapesLivraison()
             ->where('statut', 'terminee')
-            ->last();
+            ->orderByDesc('created_at')
+            ->first();
+
+        // 🚚 Si des étapes existent déjà, on crée directement l'étape livreur
         if ($lastStep) {
             $depart_actuel = $lastStep->lieu_arrivee;
-        }
 
-        $depotTermine = $annonce->etapesLivraison()
-            ->where(function ($q) {
-                $q->where('est_client', true)
-                  ->orWhere('est_commercant', true);
-            })
-            ->where('statut', 'terminee')
-            ->exists();
-
-        if ($depotTermine) {
             $trajet = TrajetLivreur::with(['entrepotDepart', 'entrepotArrivee'])
                 ->where('livreur_id', $user->id)
                 ->whereHas('entrepotDepart', function ($q) use ($depart_actuel) {
@@ -321,11 +312,6 @@ class AnnonceController extends Controller
             if (! $trajet || ! $trajet->entrepotArrivee) {
                 return response()->json(['message' => 'Trajet livreur introuvable.'], 400);
             }
-
-            $lastStep = $annonce->etapesLivraison()
-                ->where('statut', 'terminee')
-                ->orderByDesc('created_at')
-                ->first();
 
             $boxId = CodeBox::where('etape_livraison_id', $lastStep->id)
                 ->where('type', 'depot')
@@ -364,27 +350,27 @@ class AnnonceController extends Controller
             ]);
         }
 
-        // Création de l'étape de dépôt du client dans l'entrepôt de départ
+        // ➡️ Aucune étape terminée : création de la mini-étape de dépôt initial
         $entrepot = $annonce->entrepotDepart;
         $box = $entrepot?->boxes()->where('est_occupe', false)->first();
-        if (!$box) {
+        if (! $box) {
             return response()->json(['message' => 'Aucune box disponible pour le client.'], 400);
         }
 
-        $etapeClient = EtapeLivraison::create([
+        $etapeDepot = EtapeLivraison::create([
             'annonce_id' => $annonce->id,
             'livreur_id' => $user->id,
-            'lieu_depart' => $depart_actuel,
-            'lieu_arrivee' => $depart_actuel,
+            'lieu_depart' => $entrepot->ville,
+            'lieu_arrivee' => $entrepot->ville,
             'statut' => 'en_cours',
-            'est_client' => true,
-            'est_commercant' => false,
-            'est_mini_etape' => false,
+            'est_client' => $annonce->type === 'livraison_client',
+            'est_commercant' => $annonce->type === 'produit_livre',
+            'est_mini_etape' => true,
         ]);
 
         CodeBox::create([
             'box_id' => $box->id,
-            'etape_livraison_id' => $etapeClient->id,
+            'etape_livraison_id' => $etapeDepot->id,
             'type' => 'depot',
             'code_temporaire' => Str::random(6),
         ]);
@@ -393,8 +379,8 @@ class AnnonceController extends Controller
         $box->save();
 
         return response()->json([
-            'message' => 'Annonce acceptée. Dépôt client en attente.',
-            'etape' => $etapeClient,
+            'message' => 'Annonce acceptée. Dépôt en attente.',
+            'etape' => $etapeDepot,
         ]);
     }
 
