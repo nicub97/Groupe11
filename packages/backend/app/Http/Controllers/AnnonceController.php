@@ -215,6 +215,7 @@ class AnnonceController extends Controller
         }
 
         $annonces = Annonce::with(['etapesLivraison', 'entrepotDepart', 'entrepotArrivee'])
+            ->where('is_paid', true)
             ->whereIn('type', ['livraison_client', 'produit_livre'])
             ->get();
 
@@ -417,6 +418,35 @@ class AnnonceController extends Controller
         $annonce->save();
 
         return response()->json(['message' => 'Annonce réservée avec succès.']);
+    }
+
+    public function payerAnnonce($id)
+    {
+        $user = Auth::user();
+
+        $annonce = Annonce::find($id);
+
+        if (! $annonce) {
+            return response()->json(['message' => 'Annonce introuvable.'], 404);
+        }
+
+        $estAuteur = (
+            $user->role === 'client' && $annonce->id_client === $user->id
+        ) || (
+            $user->role === 'commercant' && $annonce->id_commercant === $user->id
+        );
+
+        if (! $estAuteur && $user->role !== 'admin') {
+            return response()->json(['message' => 'Action non autorisée.'], 403);
+        }
+
+        $annonce->is_paid = true;
+        $annonce->save();
+
+        return response()->json([
+            'message' => "Annonce marquée comme payée.",
+            'annonce' => $annonce,
+        ]);
     }
 
 }

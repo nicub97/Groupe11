@@ -68,6 +68,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
     // Annonces
     Route::patch('/annonces/{id}', [AnnonceController::class, 'update']);
     Route::delete('/annonces/{id}', [AnnonceController::class, 'destroy']);
+    Route::post('/annonces/{id}/payer', [AnnonceController::class, 'payerAnnonce']);
 
     // Client
     Route::get('/clients', [ClientController::class, 'index']);
