@@ -21,12 +21,12 @@ export default function Annonces() {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        // Filtrer uniquement les annonces de type "produit_livre"
-        // et non déjà réservées (id_client défini ET au moins une étape créée)
+        // Filtrer uniquement les annonces de type "produit_livre" qui ne sont
+        // pas encore réservées (ni client ni entrepôt d'arrivée définis)
         const annoncesFiltrees = res.data.filter((a) => {
           if (a.type !== "produit_livre") return false;
-          const dejaReservee = a.id_client && a.etapes_livraison?.length > 0;
-          return !dejaReservee;
+          const estReservee = a.id_client !== null || a.entrepot_arrivee_id !== null;
+          return !estReservee;
         });
         setAnnonces(annoncesFiltrees);
       } catch (error) {
@@ -51,7 +51,7 @@ export default function Annonces() {
       )}
 
       {annonces.length === 0 ? (
-        <p>Aucune annonce trouvée.</p>
+        <p>Aucune annonce disponible pour le moment.</p>
       ) : (
         <ul className="space-y-4">
           {annonces.map((annonce) => (
