@@ -214,7 +214,13 @@ class AnnonceController extends Controller
             return response()->json(['annonces_disponibles' => []]);
         }
 
-        $annonces = Annonce::with(['etapesLivraison', 'entrepotDepart', 'entrepotArrivee'])
+        $annonces = Annonce::with([
+                'etapesLivraison',
+                'entrepotDepart',
+                'entrepotArrivee',
+                'client',
+                'commercant'
+            ])
             ->where('is_paid', true)
             ->whereIn('type', ['livraison_client', 'produit_livre'])
             ->get();
@@ -222,23 +228,32 @@ class AnnonceController extends Controller
         $disponibles = [];
 
         foreach ($annonces as $annonce) {
-            // ❗ Spécifique aux annonces produit_livre : ignorer si pas encore réservée
-            if (
-                $annonce->type === 'produit_livre' &&
-                (
-                    ! $annonce->id_client ||
-                    ! $annonce->entrepotArrivee
-                )
-            ) {
-                continue;
-            }
-
             $etapes = $annonce->etapesLivraison;
 
-            // ⚠️ S'il y a déjà des étapes, il ne faut AUCUNE étape livreur en cours
-            if ($etapes->count() > 0) {
-                $enCours = $etapes->first(fn($e) => $e->statut !== 'terminee' && $e->est_client === false);
-                if ($enCours) continue;
+            if ($annonce->type === 'produit_livre') {
+                if ($annonce->id_commercant === null) {
+                    // Annonce créée par un client : toutes les étapes doivent être terminées
+                    if (! $annonce->entrepotDepart || ! $annonce->entrepotArrivee) {
+                        continue;
+                    }
+
+                    if ($etapes->first(fn($e) => $e->statut !== 'terminee')) {
+                        continue;
+                    }
+                } else {
+                    // Annonce d'un commerçant : doit être réservée par un client
+                    if (! $annonce->id_client || ! $annonce->entrepotArrivee) {
+                        continue;
+                    }
+
+                    if ($etapes->first(fn($e) => $e->statut !== 'terminee' && $e->est_client === false)) {
+                        continue;
+                    }
+                }
+            } else {
+                if ($etapes->first(fn($e) => $e->statut !== 'terminee' && $e->est_client === false)) {
+                    continue;
+                }
             }
 
             // Déterminer la ville de départ actuelle
