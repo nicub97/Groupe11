@@ -86,49 +86,47 @@ export default function AnnoncesDisponibles() {
     <div className="max-w-4xl mx-auto mt-10 p-6 bg-white shadow rounded">
       <h2 className="text-2xl font-bold mb-6">Annonces disponibles</h2>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+      <div className="flex flex-wrap items-end gap-4 mb-6">
         <input
           type="text"
           placeholder="Rechercher..."
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
-          className="p-2 border rounded w-full"
+          className="p-2 border rounded flex-1 min-w-[150px]"
         />
-        <div className="flex space-x-2">
-          <input
-            type="number"
-            placeholder="Prix min"
-            value={minPrice}
-            onChange={(e) => setMinPrice(e.target.value)}
-            className="p-2 border rounded w-full"
-          />
-          <input
-            type="number"
-            placeholder="Prix max"
-            value={maxPrice}
-            onChange={(e) => setMaxPrice(e.target.value)}
-            className="p-2 border rounded w-full"
-          />
-        </div>
+        <input
+          type="number"
+          placeholder="Prix min"
+          value={minPrice}
+          onChange={(e) => setMinPrice(e.target.value)}
+          className="p-2 border rounded w-28"
+        />
+        <input
+          type="number"
+          placeholder="Prix max"
+          value={maxPrice}
+          onChange={(e) => setMaxPrice(e.target.value)}
+          className="p-2 border rounded w-28"
+        />
         <input
           type="date"
           value={dateDepart}
           onChange={(e) => setDateDepart(e.target.value)}
-          className="p-2 border rounded w-full"
+          className="p-2 border rounded"
         />
         <input
           type="date"
           value={dateArrivee}
           onChange={(e) => setDateArrivee(e.target.value)}
-          className="p-2 border rounded w-full"
+          className="p-2 border rounded"
         />
+        <button
+          onClick={handleReset}
+          className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+        >
+          Réinitialiser les filtres
+        </button>
       </div>
-      <button
-        onClick={handleReset}
-        className="mb-6 px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
-      >
-        Réinitialiser les filtres
-      </button>
 
       {filteredAnnonces.length === 0 ? (
         <p>Aucune annonce compatible pour le moment.</p>
