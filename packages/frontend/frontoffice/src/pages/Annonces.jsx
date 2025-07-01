@@ -8,6 +8,12 @@ export default function Annonces() {
   const { user, token } = useAuth();
   const navigate = useNavigate();
 
+  const [searchText, setSearchText] = useState("");
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
+  const [dateDepart, setDateDepart] = useState("");
+  const [dateArrivee, setDateArrivee] = useState("");
+
   useEffect(() => {
     if (user?.role === "livreur") {
       navigate("/annonces-disponibles");
@@ -37,6 +43,44 @@ export default function Annonces() {
     fetchAnnonces();
   }, [token]);
 
+  const handleReset = () => {
+    setSearchText("");
+    setMinPrice("");
+    setMaxPrice("");
+    setDateDepart("");
+    setDateArrivee("");
+  };
+
+  const filteredAnnonces = annonces.filter((annonce) => {
+    const keyword = searchText.toLowerCase();
+
+    if (keyword) {
+      const inDesc = (annonce.description || "").toLowerCase().includes(keyword);
+      const inVille =
+        (annonce.entrepot_depart?.ville || "")
+          .toLowerCase()
+          .includes(keyword) ||
+        (annonce.entrepot_arrivee?.ville || "")
+          .toLowerCase()
+          .includes(keyword);
+      const inType = (annonce.type || "").toLowerCase().includes(keyword);
+      if (!(inDesc || inVille || inType)) return false;
+    }
+
+    const price = Number(annonce.prix_propose);
+    if (minPrice && price < Number(minPrice)) return false;
+    if (maxPrice && price > Number(maxPrice)) return false;
+
+    if (dateDepart && new Date(annonce.date_depart) < new Date(dateDepart)) {
+      return false;
+    }
+    if (dateArrivee && new Date(annonce.date_arrivee) > new Date(dateArrivee)) {
+      return false;
+    }
+
+    return true;
+  });
+
   return (
     <div className="max-w-4xl mx-auto mt-8">
       <h2 className="text-2xl font-bold mb-6">Annonces disponibles</h2>
@@ -50,11 +94,53 @@ export default function Annonces() {
         </button>
       )}
 
-      {annonces.length === 0 ? (
+      <div className="flex flex-wrap items-end gap-4 mb-6">
+        <input
+          type="text"
+          placeholder="Rechercher..."
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          className="p-2 border rounded flex-1 min-w-[150px]"
+        />
+        <input
+          type="number"
+          placeholder="Prix min"
+          value={minPrice}
+          onChange={(e) => setMinPrice(e.target.value)}
+          className="p-2 border rounded w-28"
+        />
+        <input
+          type="number"
+          placeholder="Prix max"
+          value={maxPrice}
+          onChange={(e) => setMaxPrice(e.target.value)}
+          className="p-2 border rounded w-28"
+        />
+        <input
+          type="date"
+          value={dateDepart}
+          onChange={(e) => setDateDepart(e.target.value)}
+          className="p-2 border rounded"
+        />
+        <input
+          type="date"
+          value={dateArrivee}
+          onChange={(e) => setDateArrivee(e.target.value)}
+          className="p-2 border rounded"
+        />
+        <button
+          onClick={handleReset}
+          className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+        >
+          Réinitialiser les filtres
+        </button>
+      </div>
+
+      {filteredAnnonces.length === 0 ? (
         <p>Aucune annonce disponible pour le moment.</p>
       ) : (
         <ul className="space-y-4">
-          {annonces.map((annonce) => (
+          {filteredAnnonces.map((annonce) => (
             <li key={annonce.id} className="p-4 border rounded bg-white shadow">
               <h3
                 onClick={() => navigate(`/annonces/${annonce.id}`)}
