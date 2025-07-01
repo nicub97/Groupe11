@@ -53,6 +53,16 @@ export default function SuiviAnnonce() {
       e.codes?.some((c) => c.type === "retrait" && !c.utilise)
   );
 
+  const derniereEtape = annonce.etapes_livraison?.[
+    annonce.etapes_livraison.length - 1
+  ];
+
+  const livraisonTerminee =
+    derniereEtape &&
+    derniereEtape.est_client === true &&
+    derniereEtape.est_mini_etape === true &&
+    derniereEtape.statut === "terminee";
+
   const validerCode = async (type, etape_id) => {
     setLoading(true);
     setEtatCode(null);
@@ -81,6 +91,12 @@ export default function SuiviAnnonce() {
       <h2 className="text-2xl font-bold mb-4">Suivi de l'annonce : {annonce.titre}</h2>
       <p className="mb-2">Description : {annonce.description}</p>
       <p className="mb-4">Statut : {annonce.statut}</p>
+
+      {livraisonTerminee && (
+        <div className="mb-4 bg-green-100 border border-green-500 text-green-700 px-4 py-3 rounded">
+          ✅ Livraison terminée. Le colis a bien été récupéré.
+        </div>
+      )}
 
       {etapeDepotClient && (
         <EtapeForm
