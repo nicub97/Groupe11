@@ -86,6 +86,30 @@ export default function SuiviAnnonce() {
     }
   };
 
+  const formatDate = (d) =>
+    d ? new Date(d).toLocaleString() : "-";
+
+  const renderEtape = (e) => {
+    const type = e.est_client
+      ? "client"
+      : e.est_commercant
+      ? "commerçant"
+      : "livreur";
+    const date =
+      e.statut === "terminee" && e.updated_at ? e.updated_at : e.created_at;
+
+    return (
+      <tr key={e.id} className="border-b">
+        <td className="px-2 py-1 capitalize">{type}</td>
+        <td className="px-2 py-1">
+          {e.lieu_depart} → {e.lieu_arrivee}
+        </td>
+        <td className="px-2 py-1">{e.statut}</td>
+        <td className="px-2 py-1">{formatDate(date)}</td>
+      </tr>
+    );
+  };
+
   return (
     <div className="max-w-3xl mx-auto mt-10 p-6 bg-white shadow rounded">
       <h2 className="text-2xl font-bold mb-4">Suivi de l'annonce : {annonce.titre}</h2>
@@ -134,6 +158,27 @@ export default function SuiviAnnonce() {
           ✅ Colis retiré. Livraison terminée.
         </p>
       )}
+
+      <div className="mt-8">
+        <h3 className="font-semibold mb-2">📦 Détails des étapes :</h3>
+        {annonce.etapes_livraison?.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-sm border">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="border px-2 py-1 text-left">Type</th>
+                  <th className="border px-2 py-1 text-left">Trajet</th>
+                  <th className="border px-2 py-1 text-left">Statut</th>
+                  <th className="border px-2 py-1 text-left">Date</th>
+                </tr>
+              </thead>
+              <tbody>{annonce.etapes_livraison.map(renderEtape)}</tbody>
+            </table>
+          </div>
+        ) : (
+          <p className="text-gray-600">Aucune étape de livraison.</p>
+        )}
+      </div>
     </div>
   );
 }
