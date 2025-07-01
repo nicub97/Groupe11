@@ -7,6 +7,11 @@ export default function AnnoncesDisponibles() {
   const { token } = useAuth();
   const [annonces, setAnnonces] = useState([]);
   const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
+  const [dateDepart, setDateDepart] = useState("");
+  const [dateArrivee, setDateArrivee] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -40,17 +45,95 @@ export default function AnnoncesDisponibles() {
     }
   };
 
+  const handleReset = () => {
+    setSearch("");
+    setMinPrice("");
+    setMaxPrice("");
+    setDateDepart("");
+    setDateArrivee("");
+  };
+
+  const filteredAnnonces = annonces.filter((a) => {
+    const keyword = search.toLowerCase();
+
+    if (keyword) {
+      const inCity =
+        (a.lieu_depart || "").toLowerCase().includes(keyword) ||
+        (a.lieu_arrivee || "").toLowerCase().includes(keyword);
+      const inDesc = (a.description || "").toLowerCase().includes(keyword);
+      const inType = (a.type || "").toLowerCase().includes(keyword);
+      if (!(inCity || inDesc || inType)) return false;
+    }
+
+    const price = Number(a.prix_propose);
+    if (minPrice && price < Number(minPrice)) return false;
+    if (maxPrice && price > Number(maxPrice)) return false;
+
+    if (dateDepart && new Date(a.date_depart) < new Date(dateDepart)) {
+      return false;
+    }
+    if (dateArrivee && new Date(a.date_arrivee) > new Date(dateArrivee)) {
+      return false;
+    }
+
+    return true;
+  });
+
   if (error) return <p className="text-red-600 text-center mt-10">{error}</p>;
 
   return (
     <div className="max-w-4xl mx-auto mt-10 p-6 bg-white shadow rounded">
       <h2 className="text-2xl font-bold mb-6">Annonces disponibles</h2>
 
-      {annonces.length === 0 ? (
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+        <input
+          type="text"
+          placeholder="Rechercher..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="p-2 border rounded w-full"
+        />
+        <div className="flex space-x-2">
+          <input
+            type="number"
+            placeholder="Prix min"
+            value={minPrice}
+            onChange={(e) => setMinPrice(e.target.value)}
+            className="p-2 border rounded w-full"
+          />
+          <input
+            type="number"
+            placeholder="Prix max"
+            value={maxPrice}
+            onChange={(e) => setMaxPrice(e.target.value)}
+            className="p-2 border rounded w-full"
+          />
+        </div>
+        <input
+          type="date"
+          value={dateDepart}
+          onChange={(e) => setDateDepart(e.target.value)}
+          className="p-2 border rounded w-full"
+        />
+        <input
+          type="date"
+          value={dateArrivee}
+          onChange={(e) => setDateArrivee(e.target.value)}
+          className="p-2 border rounded w-full"
+        />
+      </div>
+      <button
+        onClick={handleReset}
+        className="mb-6 px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+      >
+        Réinitialiser les filtres
+      </button>
+
+      {filteredAnnonces.length === 0 ? (
         <p>Aucune annonce compatible pour le moment.</p>
       ) : (
         <ul className="space-y-6">
-          {annonces.map((a) => (
+          {filteredAnnonces.map((a) => (
             <li key={a.id} className="border p-4 rounded shadow">
               <h3 className="text-xl font-semibold">{a.titre}</h3>
               <p>{a.description}</p>
