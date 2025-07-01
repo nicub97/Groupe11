@@ -68,7 +68,6 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
     // Annonces
     Route::patch('/annonces/{id}', [AnnonceController::class, 'update']);
     Route::delete('/annonces/{id}', [AnnonceController::class, 'destroy']);
-    Route::post('/annonces/{id}/payer', [AnnonceController::class, 'payerAnnonce']);
 
     // Client
     Route::get('/clients', [ClientController::class, 'index']);
@@ -127,6 +126,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/annonces', [AnnonceController::class, 'index']);
     Route::get('/annonces/{id}', [AnnonceController::class, 'show']);
     Route::get('/mes-annonces', [AnnonceController::class, 'mesAnnonces']);
+    Route::post('/annonces/{annonce}/payer', [AnnonceController::class, 'payer'])->name('annonces.payer')->middleware('can:pay,annonce');
+    Route::get('/annonces/{annonce}/paiement-callback', [AnnonceController::class, 'paiementCallback'])->name('annonces.payer.callback');
     Route::post('/annonces', [AnnonceController::class, 'store']);
     Route::patch('/annonces/{id}', [AnnonceController::class, 'update']);
     Route::delete('/annonces/{id}', [AnnonceController::class, 'destroy']);
