@@ -9,10 +9,10 @@ export default function Annonces() {
   const navigate = useNavigate();
 
   const [searchText, setSearchText] = useState("");
-  const [minPrice, setMinPrice] = useState("");
-  const [maxPrice, setMaxPrice] = useState("");
-  const [dateDepart, setDateDepart] = useState("");
-  const [dateArrivee, setDateArrivee] = useState("");
+  const [minPrice, setMinPrice] = useState(null);
+  const [maxPrice, setMaxPrice] = useState(null);
+  const [dateDepart, setDateDepart] = useState(null);
+  const [dateArrivee, setDateArrivee] = useState(null);
 
   useEffect(() => {
     if (user?.role === "livreur") {
@@ -45,17 +45,19 @@ export default function Annonces() {
 
   const handleReset = () => {
     setSearchText("");
-    setMinPrice("");
-    setMaxPrice("");
-    setDateDepart("");
-    setDateArrivee("");
+    setMinPrice(null);
+    setMaxPrice(null);
+    setDateDepart(null);
+    setDateArrivee(null);
   };
 
   const filteredAnnonces = annonces.filter((annonce) => {
     const keyword = searchText.toLowerCase();
 
     if (keyword) {
-      const inDesc = (annonce.description || "").toLowerCase().includes(keyword);
+      const inDesc = (annonce.description || "")
+        .toLowerCase()
+        .includes(keyword);
       const inVille =
         (annonce.entrepot_depart?.ville || "")
           .toLowerCase()
@@ -63,18 +65,17 @@ export default function Annonces() {
         (annonce.entrepot_arrivee?.ville || "")
           .toLowerCase()
           .includes(keyword);
-      const inType = (annonce.type || "").toLowerCase().includes(keyword);
-      if (!(inDesc || inVille || inType)) return false;
+      if (!(inDesc || inVille)) return false;
     }
 
     const price = Number(annonce.prix_propose);
-    if (minPrice && price < Number(minPrice)) return false;
-    if (maxPrice && price > Number(maxPrice)) return false;
+    if (minPrice !== null && price < minPrice) return false;
+    if (maxPrice !== null && price > maxPrice) return false;
 
-    if (dateDepart && new Date(annonce.date_depart) < new Date(dateDepart)) {
+    if (dateDepart !== null && new Date(annonce.date_depart) < new Date(dateDepart)) {
       return false;
     }
-    if (dateArrivee && new Date(annonce.date_arrivee) > new Date(dateArrivee)) {
+    if (dateArrivee !== null && new Date(annonce.date_arrivee) > new Date(dateArrivee)) {
       return false;
     }
 
@@ -105,27 +106,35 @@ export default function Annonces() {
         <input
           type="number"
           placeholder="Prix min"
-          value={minPrice}
-          onChange={(e) => setMinPrice(e.target.value)}
+          value={minPrice ?? ""}
+          onChange={(e) =>
+            setMinPrice(e.target.value === "" ? null : Number(e.target.value))
+          }
           className="p-2 border rounded w-28"
         />
         <input
           type="number"
           placeholder="Prix max"
-          value={maxPrice}
-          onChange={(e) => setMaxPrice(e.target.value)}
+          value={maxPrice ?? ""}
+          onChange={(e) =>
+            setMaxPrice(e.target.value === "" ? null : Number(e.target.value))
+          }
           className="p-2 border rounded w-28"
         />
         <input
           type="date"
-          value={dateDepart}
-          onChange={(e) => setDateDepart(e.target.value)}
+          value={dateDepart ?? ""}
+          onChange={(e) =>
+            setDateDepart(e.target.value === "" ? null : e.target.value)
+          }
           className="p-2 border rounded"
         />
         <input
           type="date"
-          value={dateArrivee}
-          onChange={(e) => setDateArrivee(e.target.value)}
+          value={dateArrivee ?? ""}
+          onChange={(e) =>
+            setDateArrivee(e.target.value === "" ? null : e.target.value)
+          }
           className="p-2 border rounded"
         />
         <button
