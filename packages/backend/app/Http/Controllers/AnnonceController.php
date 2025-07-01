@@ -420,33 +420,51 @@ class AnnonceController extends Controller
         return response()->json(['message' => 'Annonce réservée avec succès.']);
     }
 
-    public function payerAnnonce($id)
+    public function payer(Request $request, Annonce $annonce)
     {
-        $user = Auth::user();
+        $this->authorize('pay', $annonce);
 
-        $annonce = Annonce::find($id);
+        $stripe = new \Stripe\StripeClient(config('services.stripe.secret'));
 
-        if (! $annonce) {
-            return response()->json(['message' => 'Annonce introuvable.'], 404);
-        }
-
-        $estAuteur = (
-            $user->role === 'client' && $annonce->id_client === $user->id
-        ) || (
-            $user->role === 'commercant' && $annonce->id_commercant === $user->id
-        );
-
-        if (! $estAuteur && $user->role !== 'admin') {
-            return response()->json(['message' => 'Action non autorisée.'], 403);
-        }
-
-        $annonce->is_paid = true;
-        $annonce->save();
-
-        return response()->json([
-            'message' => "Annonce marquée comme payée.",
-            'annonce' => $annonce,
+        // Crée une session Checkout Stripe
+        $session = $stripe->checkout->sessions->create([
+            'payment_method_types' => ['card'],
+            'mode' => 'payment',
+            'line_items' => [[
+                'price_data' => [
+                    'currency' => 'eur',
+                    'product_data' => ['name' => 'Paiement annonce'],
+                    'unit_amount' => (int) ($annonce->prix_propose * 100),
+                ],
+                'quantity' => 1,
+            ]],
+            'success_url' => route('annonces.payer.callback', [
+                'annonce' => $annonce->id,
+                'session_id' => '{CHECKOUT_SESSION_ID}',
+            ]),
+            'cancel_url' => rtrim(env('FRONTEND_URL', ''), '/') . '/paiement/cancel',
         ]);
+
+        return response()->json(['checkout_url' => $session->url]);
+    }
+
+    public function paiementCallback(Request $request, Annonce $annonce)
+    {
+        $sessionId = $request->query('session_id');
+
+        if (! $sessionId) {
+            return response()->json(['message' => 'Session manquante.'], 400);
+        }
+
+        $stripe = new \Stripe\StripeClient(config('services.stripe.secret'));
+        $session = $stripe->checkout->sessions->retrieve($sessionId);
+
+        if ($session && $session->payment_status === 'paid') {
+            $annonce->is_paid = true;
+            $annonce->save();
+        }
+
+        return redirect(rtrim(env('FRONTEND_URL', ''), '/') . '/paiement/success');
     }
 
 }
