@@ -5,9 +5,9 @@ import { useNavigate } from "react-router-dom";
 
 export default function AnnoncesDisponibles() {
   const { token } = useAuth();
-  const [annonces, setAnnonces] = useState([]);
+  const [annoncesDisponibles, setAnnoncesDisponibles] = useState([]);
   const [error, setError] = useState("");
-  const [search, setSearch] = useState("");
+  const [searchText, setSearchText] = useState("");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [dateDepart, setDateDepart] = useState("");
@@ -20,7 +20,7 @@ export default function AnnoncesDisponibles() {
         const res = await api.get("/annonces-disponibles", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setAnnonces(res.data.annonces_disponibles);
+        setAnnoncesDisponibles(res.data.annonces_disponibles);
       } catch (err) {
         console.error("Erreur API :", err);
         setError("Erreur lors du chargement des annonces.");
@@ -46,33 +46,34 @@ export default function AnnoncesDisponibles() {
   };
 
   const handleReset = () => {
-    setSearch("");
+    setSearchText("");
     setMinPrice("");
     setMaxPrice("");
     setDateDepart("");
     setDateArrivee("");
   };
 
-  const filteredAnnonces = annonces.filter((a) => {
-    const keyword = search.toLowerCase();
+  const filteredAnnonces = annoncesDisponibles.filter((annonce) => {
+    const keyword = searchText.toLowerCase();
 
     if (keyword) {
+      const inDesc = (annonce.description || "")
+        .toLowerCase()
+        .includes(keyword);
       const inCity =
-        (a.lieu_depart || "").toLowerCase().includes(keyword) ||
-        (a.lieu_arrivee || "").toLowerCase().includes(keyword);
-      const inDesc = (a.description || "").toLowerCase().includes(keyword);
-      const inType = (a.type || "").toLowerCase().includes(keyword);
-      if (!(inCity || inDesc || inType)) return false;
+        (annonce.lieu_depart || "").toLowerCase().includes(keyword) ||
+        (annonce.lieu_arrivee || "").toLowerCase().includes(keyword);
+      if (!(inDesc || inCity)) return false;
     }
 
-    const price = Number(a.prix_propose);
+    const price = Number(annonce.prix_propose);
     if (minPrice && price < Number(minPrice)) return false;
     if (maxPrice && price > Number(maxPrice)) return false;
 
-    if (dateDepart && new Date(a.date_depart) < new Date(dateDepart)) {
+    if (dateDepart && new Date(annonce.date_depart) < new Date(dateDepart)) {
       return false;
     }
-    if (dateArrivee && new Date(a.date_arrivee) > new Date(dateArrivee)) {
+    if (dateArrivee && new Date(annonce.date_arrivee) > new Date(dateArrivee)) {
       return false;
     }
 
@@ -89,8 +90,8 @@ export default function AnnoncesDisponibles() {
         <input
           type="text"
           placeholder="Rechercher..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
           className="p-2 border rounded w-full"
         />
         <div className="flex space-x-2">
