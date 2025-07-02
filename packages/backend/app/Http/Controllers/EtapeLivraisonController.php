@@ -144,6 +144,15 @@ class EtapeLivraisonController extends Controller
         $codeBox->utilise = true;
         $codeBox->save();
 
+        // Libérer la box lorsque le code de retrait est validé
+        if ($request->type === 'retrait') {
+            $box = $codeBox->box;
+            if ($box) {
+                $box->est_occupe = false;
+                $box->save();
+            }
+        }
+
         // Envoi du code par email une seule fois
         if (!$codeBox->mail_envoye_at) {
             $destinataire = null;
