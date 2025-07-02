@@ -32,6 +32,7 @@ export default function AddUser() {
 
     try {
       await api.post("/utilisateurs", form);
+      alert("Utilisateur créé !");
       navigate("/admin/utilisateurs");
     } catch (err) {
       if (err.response?.data?.errors) {
