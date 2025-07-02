@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import api from "../../services/api";
 
 export default function UsersList() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     api.get("/utilisateurs")
@@ -17,7 +18,15 @@ export default function UsersList() {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Liste des utilisateurs</h1>
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold">Liste des utilisateurs</h1>
+        <button
+          onClick={() => navigate("/admin/utilisateurs/ajouter")}
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+        >
+          Ajouter un utilisateur
+        </button>
+      </div>
 
       <div className="overflow-x-auto">
         <table className="min-w-full bg-white rounded shadow">
