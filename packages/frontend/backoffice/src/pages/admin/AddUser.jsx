@@ -17,7 +17,13 @@ export default function AddUser() {
   const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
+    setErrors((prev) => {
+      const updated = { ...prev };
+      delete updated[name];
+      return updated;
+    });
   };
 
   const handleSubmit = async (e) => {
