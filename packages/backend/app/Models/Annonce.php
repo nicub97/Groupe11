@@ -21,6 +21,7 @@ class Annonce extends Model
         'id_client',
         'id_commercant',
         'id_prestataire',
+        'id_livreur_reservant',
         'entrepot_depart_id',
         'entrepot_arrivee_id',
         'is_paid',
@@ -34,6 +35,11 @@ class Annonce extends Model
     public function commercant()
     {
         return $this->belongsTo(Utilisateur::class, 'id_commercant');
+    }
+
+    public function livreurReservant()
+    {
+        return $this->belongsTo(Utilisateur::class, 'id_livreur_reservant');
     }
 
     public function commandes()

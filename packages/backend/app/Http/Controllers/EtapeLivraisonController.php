@@ -188,43 +188,6 @@ class EtapeLivraisonController extends Controller
             $etape->statut = 'terminee';
             $etape->save();
 
-            $annonce = $etape->annonce;
-            $trajet = TrajetLivreur::with(['entrepotDepart', 'entrepotArrivee'])
-                ->where('livreur_id', $etape->livreur_id)
-                ->whereHas('entrepotDepart', function ($q) use ($etape) {
-                    $q->where('ville', $etape->lieu_depart);
-                })
-                ->first();
-
-            if (! $trajet || ! $trajet->entrepotArrivee) {
-                return response()->json(['message' => 'Trajet livreur introuvable.'], 400);
-            }
-
-            $etapeLivreur = EtapeLivraison::create([
-                'annonce_id' => $etape->annonce_id,
-                'livreur_id' => $etape->livreur_id,
-                'lieu_depart' => $trajet->entrepotDepart->ville,
-                'lieu_arrivee' => $trajet->entrepotArrivee->ville,
-                'statut' => 'en_cours',
-                'est_client' => false,
-                'est_commercant' => false,
-                'est_mini_etape' => false,
-            ]);
-
-            CodeBox::create([
-                'box_id' => $codeBox->box_id,
-                'etape_livraison_id' => $etapeLivreur->id,
-                'type' => 'retrait',
-                'code_temporaire' => Str::random(6),
-            ]);
-
-            CodeBox::create([
-                'box_id' => $codeBox->box_id,
-                'etape_livraison_id' => $etapeLivreur->id,
-                'type' => 'depot',
-                'code_temporaire' => Str::random(6),
-            ]);
-
             return response()->json(['message' => 'Code de dépôt validé. Étape clôturée.']);
         }
 
@@ -251,6 +214,9 @@ class EtapeLivraisonController extends Controller
                 $etape->save();
 
                 $annonce = $etape->annonce;
+
+                $annonce->id_livreur_reservant = null;
+                $annonce->save();
 
                 if (
                     $etape->lieu_arrivee === $annonce->entrepotArrivee->ville &&
