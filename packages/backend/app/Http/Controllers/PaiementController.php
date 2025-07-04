@@ -76,7 +76,10 @@ class PaiementController extends Controller
             'annonce_id' => 'nullable|integer|exists:annonces,id',
             'montant' => 'nullable|numeric|min:0',
             'type' => 'required|in:produit_livre,livraison_client',
+            'context' => 'sometimes|in:reserver,payer',
         ]);
+
+        $context = $validated['context'] ?? 'reserver';
 
         if (isset($validated['montant'])) {
             $amount = (int) ($validated['montant'] * 100);
@@ -103,7 +106,7 @@ class PaiementController extends Controller
             'success_url' => sprintf(
                 '%s/paiement/success?session_id={CHECKOUT_SESSION_ID}&context=%s&annonce_id=%s',
                 rtrim(env('FRONTEND_URL', ''), '/'),
-                $request->query('context', 'reservation'),
+                $context,
                 $validated['annonce_id'] ?? ''
             ),
             'cancel_url' => rtrim(env('FRONTEND_URL', ''), '/') . '/paiement/cancel',
