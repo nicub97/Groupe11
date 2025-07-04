@@ -221,8 +221,14 @@ class AnnonceController extends Controller
                 'client',
                 'commercant'
             ])
-            ->where('is_paid', true)
             ->whereIn('type', ['livraison_client', 'produit_livre'])
+            ->where(function ($q) {
+                $q->where('is_paid', true)
+                  ->orWhereDoesntHave('etapesLivraison', function ($q2) {
+                      $q2->where('est_client', false)
+                          ->where('statut', '!=', 'terminee');
+                  });
+            })
             ->get();
 
         $disponibles = [];
