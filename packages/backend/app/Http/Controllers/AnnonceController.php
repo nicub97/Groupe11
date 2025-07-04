@@ -12,6 +12,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class AnnonceController extends Controller
 {
@@ -405,16 +406,31 @@ class AnnonceController extends Controller
                 $annonce->save();
 
                 if (! $annonce->id_livreur_reservant) {
+                    Log::warning('paiementCallback interrompu : livreur reservant manquant', [
+                        'annonce_id' => $annonce->id,
+                        'context' => 'paiementCallback',
+                    ]);
+                    report(new \Exception('paiementCallback interrompu : livreur reservant manquant'));
                     return;
                 }
 
                 if ($annonce->etapesLivraison()->exists()) {
+                    Log::warning('paiementCallback interrompu : etapes de livraison déjà existantes', [
+                        'annonce_id' => $annonce->id,
+                        'context' => 'paiementCallback',
+                    ]);
+                    report(new \Exception('paiementCallback interrompu : etapes de livraison déjà existantes'));
                     return;
                 }
 
                 $entrepot = $annonce->entrepotDepart;
                 $box = $entrepot?->boxes()->where('est_occupe', false)->first();
                 if (! $box) {
+                    Log::warning('paiementCallback interrompu : aucune box disponible', [
+                        'annonce_id' => $annonce->id,
+                        'context' => 'paiementCallback',
+                    ]);
+                    report(new \Exception('paiementCallback interrompu : aucune box disponible'));
                     return;
                 }
 
@@ -445,6 +461,11 @@ class AnnonceController extends Controller
                     ->first();
 
                 if (! $trajet || ! $trajet->entrepotArrivee) {
+                    Log::warning('paiementCallback interrompu : trajet livreur manquant ou incomplet', [
+                        'annonce_id' => $annonce->id,
+                        'context' => 'paiementCallback',
+                    ]);
+                    report(new \Exception('paiementCallback interrompu : trajet livreur manquant ou incomplet'));
                     return;
                 }
 
