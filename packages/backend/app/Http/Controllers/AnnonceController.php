@@ -441,9 +441,7 @@ class AnnonceController extends Controller
 
                 $trajet = TrajetLivreur::with(['entrepotDepart', 'entrepotArrivee'])
                     ->where('livreur_id', $annonce->id_livreur_reservant)
-                    ->whereHas('entrepotDepart', function ($q) use ($entrepot) {
-                        $q->where('ville', $entrepot->ville);
-                    })
+                    ->where('entrepot_depart_id', $entrepot->id)
                     ->first();
 
                 if (! $trajet || ! $trajet->entrepotArrivee) {
