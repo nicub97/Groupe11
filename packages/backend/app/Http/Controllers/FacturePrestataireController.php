@@ -15,20 +15,21 @@ class FacturePrestataireController extends Controller
     public function genererFactureMensuelle($mois)
     {
         $user = Auth::user();
+        $prestataireId = $user->role === 'prestataire' ? $user->prestataire?->id : null;
 
         if ($user->role !== 'prestataire') {
             return response()->json(['message' => 'Accès réservé aux prestataires.'], 403);
         }
 
         // Vérifier si facture déjà générée
-        if (FacturePrestataire::where('prestataire_id', $user->id)->where('mois', $mois)->exists()) {
+        if (FacturePrestataire::where('prestataire_id', $prestataireId)->where('mois', $mois)->exists()) {
             return response()->json(['message' => 'Facture déjà générée pour ce mois.'], 409);
         }
 
         // Récupérer les prestations validées du mois donné
         $interventions = Intervention::with('prestation')
-            ->whereHas('prestation', function ($query) use ($user, $mois) {
-                $query->where('prestataire_id', $user->id)
+            ->whereHas('prestation', function ($query) use ($mois, $prestataireId) {
+                $query->where('prestataire_id', $prestataireId)
                     ->whereMonth('date_heure', substr($mois, 5, 2))
                     ->whereYear('date_heure', substr($mois, 0, 4))
                     ->where('statut', 'terminée');
@@ -49,11 +50,11 @@ class FacturePrestataireController extends Controller
             'prestataire' => $user
         ]);
 
-        $chemin = "factures/prestataire_{$user->id}_{$mois}.pdf";
+        $chemin = "factures/prestataire_{$prestataireId}_{$mois}.pdf";
         Storage::disk('public')->put($chemin, $pdf->output());
 
         $facture = FacturePrestataire::create([
-            'prestataire_id' => $user->id,
+            'prestataire_id' => $prestataireId,
             'mois' => $mois,
             'montant_total' => $total,
             'chemin_pdf' => $chemin,
@@ -65,13 +66,14 @@ class FacturePrestataireController extends Controller
     public function mesFactures()
     {
         $user = Auth::user();
+        $prestataireId = $user->role === 'prestataire' ? $user->prestataire?->id : null;
 
         if ($user->role !== 'prestataire') {
             return response()->json(['message' => 'Accès refusé.'], 403);
         }
 
         return response()->json(
-            FacturePrestataire::where('prestataire_id', $user->id)->latest()->get()
+            FacturePrestataire::where('prestataire_id', $prestataireId)->latest()->get()
         );
     }
 }

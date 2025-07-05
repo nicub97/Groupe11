@@ -11,13 +11,14 @@ class PlanningPrestataireController extends Controller
     public function index()
     {
         $user = Auth::user();
+        $prestataireId = $user->role === 'prestataire' ? $user->prestataire?->id : null;
 
         if ($user->role !== 'prestataire') {
             return response()->json(['message' => 'Accès réservé aux prestataires.'], 403);
         }
 
         return response()->json(
-            PlanningPrestataire::where('prestataire_id', $user->id)
+            PlanningPrestataire::where('prestataire_id', $prestataireId)
                 ->orderBy('date_disponible')
                 ->orderBy('heure_debut')
                 ->get()
@@ -27,6 +28,7 @@ class PlanningPrestataireController extends Controller
     public function store(Request $request)
     {
         $user = Auth::user();
+        $prestataireId = $user->role === 'prestataire' ? $user->prestataire?->id : null;
 
         if ($user->role !== 'prestataire') {
             return response()->json(['message' => 'Seuls les prestataires peuvent ajouter un planning.'], 403);
@@ -39,7 +41,7 @@ class PlanningPrestataireController extends Controller
         ]);
 
         $planning = PlanningPrestataire::create([
-            'prestataire_id' => $user->id,
+            'prestataire_id' => $prestataireId,
             ...$validated,
         ]);
 
@@ -49,6 +51,7 @@ class PlanningPrestataireController extends Controller
     public function destroy($id)
     {
         $user = Auth::user();
+        $prestataireId = $user->role === 'prestataire' ? $user->prestataire?->id : null;
 
         $planning = PlanningPrestataire::find($id);
 
@@ -56,7 +59,7 @@ class PlanningPrestataireController extends Controller
             return response()->json(['message' => 'Créneau introuvable.'], 404);
         }
 
-        if ($planning->prestataire_id !== $user->id) {
+        if ($user->role === 'prestataire' && $planning->prestataire_id !== $prestataireId) {
             return response()->json(['message' => 'Suppression non autorisée.'], 403);
         }
 
