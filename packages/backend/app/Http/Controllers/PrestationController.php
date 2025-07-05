@@ -149,11 +149,29 @@ class PrestationController extends Controller
             'statut' => 'required|in:acceptée,refusée,terminée',
         ]);
 
-        if ($prestation->statut !== 'en_attente') {
-            return response()->json(['message' => 'Statut déjà défini.'], 400);
+        // ne pas modifier une prestation déjà refusée ou terminée
+        if (in_array($prestation->statut, ['refusée', 'terminée'])) {
+            return response()->json([
+                'message' => 'Impossible de modifier une prestation finalisée.'
+            ], 403);
         }
 
-        $prestation->statut = $request->statut;
+        $transitionsValides = [
+            'en_attente' => ['acceptée', 'refusée'],
+            'acceptée'   => ['terminée'],
+        ];
+
+        $statutActuel = $prestation->statut;
+        $nouveauStatut = $request->input('statut');
+
+        if (! isset($transitionsValides[$statutActuel]) ||
+            ! in_array($nouveauStatut, $transitionsValides[$statutActuel])) {
+            return response()->json([
+                'message' => 'Transition de statut non autorisée.'
+            ], 422);
+        }
+
+        $prestation->statut = $nouveauStatut;
         $prestation->save();
 
         // Créer notification pour le client (si la prestation a bien un client)
