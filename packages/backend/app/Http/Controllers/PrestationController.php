@@ -95,7 +95,7 @@ class PrestationController extends Controller
         $user = Auth::user();
         $clientId = $user->role === 'client' ? $user->client?->id : null;
 
-        if ($user->role === 'client' && $prestation->client_id !== $clientId) {
+        if ($user->role !== 'admin' && $prestation->client_id !== $clientId) {
             return response()->json(['message' => 'Modification non autorisée.'], 403);
         }
 
@@ -123,7 +123,7 @@ class PrestationController extends Controller
         $user = Auth::user();
         $clientId = $user->role === 'client' ? $user->client?->id : null;
 
-        if ($user->role === 'client' && $prestation->client_id !== $clientId) {
+        if ($user->role !== 'admin' && $prestation->client_id !== $clientId) {
             return response()->json(['message' => 'Suppression non autorisée.'], 403);
         }
 
