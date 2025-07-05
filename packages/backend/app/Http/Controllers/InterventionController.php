@@ -6,6 +6,7 @@ use App\Models\Intervention;
 use App\Models\Prestation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class InterventionController extends Controller
 {
@@ -44,8 +45,19 @@ class InterventionController extends Controller
 
         $prestation = Prestation::find($validated['prestation_id']);
 
-        if ($prestation->prestataire_id !== $prestataireId) {
-            return response()->json(['message' => 'Non autorisé.'], 403);
+        // Vérifier que le prestataire est bien celui lié à la prestation
+        if ($prestation->prestataire_id !== ($user->prestataire->id ?? null)) {
+            return response()->json(['message' => 'Accès interdit.'], 403);
+        }
+
+        // Empêcher la création d'une intervention avant la date de la prestation
+        if (Carbon::now()->lt($prestation->date_heure)) {
+            return response()->json(['message' => "La prestation n'a pas encore eu lieu."], 422);
+        }
+
+        // Empêcher la duplication d'intervention pour la même prestation
+        if (Intervention::where('prestation_id', $prestation->id)->exists()) {
+            return response()->json(['message' => 'Une intervention a déjà été enregistrée.'], 422);
         }
 
         if ($prestation->statut !== 'acceptée' && $prestation->statut !== 'terminée') {
@@ -68,14 +80,19 @@ class InterventionController extends Controller
     {
         $intervention = Intervention::with('prestation')->find($id);
         $user = Auth::user();
-        $clientId = $user->role === 'client' ? $user->client?->id : null;
 
         if (! $intervention) {
             return response()->json(['message' => 'Intervention introuvable.'], 404);
         }
 
-        if ($user->role === 'client' && $intervention->prestation->client_id !== $clientId) {
-            return response()->json(['message' => 'Non autorisé.'], 403);
+        // Vérifier que l'utilisateur est bien le client lié à la prestation
+        if ($user->role !== 'client' || $intervention->prestation->client_id !== ($user->client->id ?? null)) {
+            return response()->json(['message' => 'Accès interdit.'], 403);
+        }
+
+        // Bloquer la mise à jour si une évaluation existe déjà
+        if ($intervention->note !== null || $intervention->commentaire_client !== null) {
+            return response()->json(['message' => 'Cette intervention a déjà été évaluée.'], 422);
         }
 
         $validated = $request->validate([
