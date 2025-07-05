@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Entrepot;
-use App\Models\Box;
+use App\Services\BoxService;
 
 class EntrepotsBoxesSeeder extends Seeder
 {
@@ -23,13 +23,7 @@ class EntrepotsBoxesSeeder extends Seeder
                 'code_postal' => rand(10000, 99999)
             ]);
 
-            for ($i = 1; $i <= 5; $i++) {
-                Box::create([
-                    'entrepot_id' => $entrepot->id,
-                    'code_box' => "BOX-{$ville}-{$i}",
-                    'est_occupe' => false
-                ]);
-            }
+            BoxService::createDefaultBoxes($entrepot);
         }
     }
 }
