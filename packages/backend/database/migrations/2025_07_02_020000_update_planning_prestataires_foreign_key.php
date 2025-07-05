@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('planning_prestataires', function (Blueprint $table) {
+        Schema::table('plannings_prestataires', function (Blueprint $table) {
             $table->dropForeign(['prestataire_id']);
             $table->foreign('prestataire_id')
                 ->references('id')->on('prestataires')
@@ -18,7 +18,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::table('planning_prestataires', function (Blueprint $table) {
+        Schema::table('plannings_prestataires', function (Blueprint $table) {
             $table->dropForeign(['prestataire_id']);
             $table->foreign('prestataire_id')
                 ->references('id')->on('utilisateurs')
