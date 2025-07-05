@@ -117,8 +117,29 @@ class EtapeLivraisonController extends Controller
 
         $user = Auth::user();
         $etape = EtapeLivraison::with('annonce')->findOrFail($request->etape_id);
+        $annonce = $etape->annonce;
 
-        if ($user->role === 'commercant' && $etape->annonce->id_commercant !== $user->id) {
+        // Restrictions d\'accès en fonction du rôle réel dans l\'annonce
+        if ($request->type === 'depot') {
+            if ($etape->est_client && $user->id !== $annonce->id_client) {
+                return response()->json([
+                    'message' => 'Accès interdit pour valider ce code.'
+                ], 403);
+            }
+            if ($etape->est_commercant && $user->id !== $annonce->id_commercant) {
+                return response()->json([
+                    'message' => 'Accès interdit pour valider ce code.'
+                ], 403);
+            }
+        }
+
+        if ($request->type === 'retrait' && $user->id !== $etape->livreur_id) {
+            return response()->json([
+                'message' => 'Accès interdit pour valider ce code.'
+            ], 403);
+        }
+
+        if ($user->role === 'commercant' && $annonce->id_commercant !== $user->id) {
             return response()->json(['message' => 'Non autorisé.'], 403);
         }
 
