@@ -188,6 +188,49 @@ class EtapeLivraisonController extends Controller
             $etape->statut = 'terminee';
             $etape->save();
 
+            if (
+                $etape->est_mini_etape &&
+                ! EtapeLivraison::where('annonce_id', $etape->annonce_id)
+                    ->where('livreur_id', $etape->livreur_id)
+                    ->where('est_mini_etape', false)
+                    ->exists()
+            ) {
+                $trajet = TrajetLivreur::with(['entrepotDepart', 'entrepotArrivee'])
+                    ->where('livreur_id', $etape->livreur_id)
+                    ->where('entrepot_depart_id', $etape->annonce->entrepot_depart_id)
+                    ->first();
+
+                if ($trajet && $trajet->entrepotArrivee) {
+                    $etapeLivreur = EtapeLivraison::create([
+                        'annonce_id' => $etape->annonce_id,
+                        'livreur_id' => $etape->livreur_id,
+                        'lieu_depart' => $trajet->entrepotDepart->ville,
+                        'lieu_arrivee' => $trajet->entrepotArrivee->ville,
+                        'statut' => 'en_cours',
+                        'est_client' => false,
+                        'est_commercant' => false,
+                        'est_mini_etape' => false,
+                    ]);
+
+                    $box = $codeBox->box;
+                    if ($box) {
+                        CodeBox::create([
+                            'box_id' => $box->id,
+                            'etape_livraison_id' => $etapeLivreur->id,
+                            'type' => 'retrait',
+                            'code_temporaire' => Str::random(6),
+                        ]);
+
+                        CodeBox::create([
+                            'box_id' => $box->id,
+                            'etape_livraison_id' => $etapeLivreur->id,
+                            'type' => 'depot',
+                            'code_temporaire' => Str::random(6),
+                        ]);
+                    }
+                }
+            }
+
             return response()->json(['message' => 'Code de dépôt validé. Étape clôturée.']);
         }
 
