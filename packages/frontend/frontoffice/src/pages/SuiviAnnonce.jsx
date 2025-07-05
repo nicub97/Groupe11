@@ -32,8 +32,15 @@ export default function SuiviAnnonce() {
   if (!annonce || !user) return <p className="text-center mt-10">Chargement...</p>;
 
   const etapesClient = annonce.etapes_livraison?.filter((e) => e.est_client);
+  const etapesCommercant = annonce.etapes_livraison?.filter((e) => e.est_commercant);
 
   const etapeDepotClient = etapesClient?.find(
+    (e) =>
+      e.statut === "en_cours" &&
+      e.codes?.some((c) => c.type === "depot" && !c.utilise)
+  );
+
+  const etapeDepotCommercant = etapesCommercant?.find(
     (e) =>
       e.statut === "en_cours" &&
       e.codes?.some((c) => c.type === "depot" && !c.utilise)
@@ -42,6 +49,9 @@ export default function SuiviAnnonce() {
   const depotEffectue = etapesClient?.some((e) =>
     e.codes?.some((c) => c.type === "depot" && c.utilise)
   );
+
+  const estCommercantActuel = user?.id === annonce?.id_commercant;
+  const estClientActuel = user?.id === annonce?.id_client;
 
   const retraitEffectue = etapesClient?.some((e) =>
     e.codes?.some((c) => c.type === "retrait" && c.utilise)
@@ -122,7 +132,7 @@ export default function SuiviAnnonce() {
         </div>
       )}
 
-      {etapeDepotClient && (
+      {etapeDepotClient && estClientActuel && (
         <EtapeForm
           titre="🚚 Dépôt initial"
           code={code}
@@ -134,13 +144,25 @@ export default function SuiviAnnonce() {
         />
       )}
 
+      {etapeDepotCommercant && estCommercantActuel && (
+        <EtapeForm
+          titre="🚚 Dépôt commerçant"
+          code={code}
+          setCode={setCode}
+          loading={loading}
+          valider={() => validerCode("depot", etapeDepotCommercant.id)}
+          message={message}
+          etatCode={etatCode}
+        />
+      )}
+
       {depotEffectue && !etapeRetraitClient && !retraitEffectue && (
         <p className="text-gray-600 font-medium mt-4">
           ⏳ Colis en cours d'acheminement.
         </p>
       )}
 
-      {etapeRetraitClient && (
+      {etapeRetraitClient && estClientActuel && (
         <EtapeForm
           titre="📦 Retrait du colis"
           code={code}
