@@ -20,7 +20,6 @@ class Annonce extends Model
         'photo',
         'id_client',
         'id_commercant',
-        'id_prestataire',
         'id_livreur_reservant',
         'entrepot_depart_id',
         'entrepot_arrivee_id',
