@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use App\Services\LivraisonService;
 
 class AnnonceController extends Controller
 {
@@ -323,6 +324,11 @@ class AnnonceController extends Controller
         DB::transaction(function () use ($annonce, $user) {
             $annonce->id_livreur_reservant = $user->id;
             $annonce->save();
+
+            if ($annonce->etapesLivraison()->where('est_mini_etape', false)->exists()) {
+                LivraisonService::creerNouvelleEtapeDepuisDepotIntermediaire($annonce, $user);
+                return;
+            }
 
             if (
                 $annonce->type === 'produit_livre' &&
