@@ -13,12 +13,15 @@ class InterventionController extends Controller
     {
         $user = Auth::user();
 
+        $prestataireId = $user->role === 'prestataire' ? $user->prestataire?->id : null;
+        $clientId = $user->role === 'client' ? $user->client?->id : null;
+
         $interventions = Intervention::with(['prestation.client', 'prestation.prestataire'])
-            ->whereHas('prestation', function ($query) use ($user) {
+            ->whereHas('prestation', function ($query) use ($user, $prestataireId, $clientId) {
                 if ($user->role === 'prestataire') {
-                    $query->where('prestataire_id', $user->id);
+                    $query->where('prestataire_id', $prestataireId);
                 } elseif ($user->role === 'client') {
-                    $query->where('client_id', $user->id);
+                    $query->where('client_id', $clientId);
                 }
             })->latest()->get();
 
@@ -28,6 +31,7 @@ class InterventionController extends Controller
     public function store(Request $request)
     {
         $user = Auth::user();
+        $prestataireId = $user->role === 'prestataire' ? $user->prestataire?->id : null;
 
         if ($user->role !== 'prestataire') {
             return response()->json(['message' => 'Seuls les prestataires peuvent valider une intervention.'], 403);
@@ -40,7 +44,7 @@ class InterventionController extends Controller
 
         $prestation = Prestation::find($validated['prestation_id']);
 
-        if ($prestation->prestataire_id !== $user->id) {
+        if ($prestation->prestataire_id !== $prestataireId) {
             return response()->json(['message' => 'Non autorisé.'], 403);
         }
 
@@ -64,12 +68,13 @@ class InterventionController extends Controller
     {
         $intervention = Intervention::with('prestation')->find($id);
         $user = Auth::user();
+        $clientId = $user->role === 'client' ? $user->client?->id : null;
 
         if (! $intervention) {
             return response()->json(['message' => 'Intervention introuvable.'], 404);
         }
 
-        if ($intervention->prestation->client_id !== $user->id) {
+        if ($user->role === 'client' && $intervention->prestation->client_id !== $clientId) {
             return response()->json(['message' => 'Non autorisé.'], 403);
         }
 

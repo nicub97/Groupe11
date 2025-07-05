@@ -67,7 +67,11 @@ class PrestationController extends Controller
         }
 
         $user = Auth::user();
-        if ($user->id !== $prestation->client_id && $user->id !== $prestation->prestataire_id) {
+        $clientId = $user->role === 'client' ? $user->client?->id : null;
+        $prestataireId = $user->role === 'prestataire' ? $user->prestataire?->id : null;
+
+        if (($user->role === 'client' && $prestation->client_id !== $clientId) ||
+            ($user->role === 'prestataire' && $prestation->prestataire_id !== $prestataireId)) {
             return response()->json(['message' => 'Accès non autorisé.'], 403);
         }
 
@@ -87,7 +91,9 @@ class PrestationController extends Controller
         }
 
         $user = Auth::user();
-        if ($user->id !== $prestation->client_id) {
+        $clientId = $user->role === 'client' ? $user->client?->id : null;
+
+        if ($user->role === 'client' && $prestation->client_id !== $clientId) {
             return response()->json(['message' => 'Modification non autorisée.'], 403);
         }
 
@@ -113,7 +119,9 @@ class PrestationController extends Controller
         }
 
         $user = Auth::user();
-        if ($user->id !== $prestation->client_id) {
+        $clientId = $user->role === 'client' ? $user->client?->id : null;
+
+        if ($user->role === 'client' && $prestation->client_id !== $clientId) {
             return response()->json(['message' => 'Suppression non autorisée.'], 403);
         }
 
@@ -129,10 +137,11 @@ class PrestationController extends Controller
     public function changerStatut(Request $request, $id)
     {
         $user = auth()->user();
+        $prestataireId = $user->role === 'prestataire' ? $user->prestataire?->id : null;
 
         $prestation = Prestation::with('prestataire')->find($id);
 
-        if (! $prestation || $user->role !== 'prestataire' || $prestation->prestataire->utilisateur_id !== $user->id) {
+        if (! $prestation || $user->role !== 'prestataire' || $prestation->prestataire_id !== $prestataireId) {
             return response()->json(['message' => 'Non autorisé.'], 403);
         }
 
