@@ -52,7 +52,7 @@ export default function Navbar() {
     if (user.role === "commercant") {
       return [
         ...common,
-        { path: "/annonces", label: "Annonces" },
+        { path: "/annonces/creer", label: "Créer une annonce" },
         { path: "/mes-annonces", label: "Mes annonces" },
       ];
     }
@@ -79,6 +79,14 @@ export default function Navbar() {
         </Link>
 
         <ul className="hidden sm:flex gap-6 text-sm font-medium items-center">
+          <li>
+            <button
+              onClick={() => navigate(-1)}
+              className="hover:text-lime-300 transition"
+            >
+              ← Retour
+            </button>
+          </li>
           <li><Link to="/" className="hover:text-lime-300 transition">Accueil</Link></li>
 
           {!user ? (
@@ -126,6 +134,14 @@ export default function Navbar() {
       >
         <div className="sm:hidden bg-white px-6 pb-4 space-y-2 text-sm font-medium text-green-900">
           <ul>
+            <li>
+              <button
+                onClick={() => navigate(-1)}
+                className="block hover:text-lime-300"
+              >
+                ← Retour
+              </button>
+            </li>
             <li><Link to="/" className="block hover:text-lime-300">Accueil</Link></li>
             {!user ? (
               <>
