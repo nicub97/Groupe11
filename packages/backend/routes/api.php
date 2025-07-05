@@ -28,7 +28,6 @@ use App\Http\Controllers\FacturePrestataireController;
 use App\Http\Controllers\StatAdminController;
 use App\Http\Controllers\Api\EmailVerificationController;
 use Laravel\Fortify\Http\Controllers\EmailVerificationNotificationController;
-use App\Http\Controllers\TwoFactorController;
 use App\Http\Controllers\TrajetLivreurController;
 
 // Authentification
@@ -228,10 +227,10 @@ Route::middleware('auth:sanctum')->group(function () {
         ->name('verification.send');
 
 
-    // Double Authentification
-    Route::get('/user/2fa-status', [TwoFactorController::class, 'status']);
-    Route::post('/user/2fa/enable', [TwoFactorController::class, 'enable']);
-    Route::post('/user/2fa/disable', [TwoFactorController::class, 'disable']);
+    // Double Authentification (désactivée)
+    // Route::get('/user/2fa-status', [TwoFactorController::class, 'status']);
+    // Route::post('/user/2fa/enable', [TwoFactorController::class, 'enable']);
+    // Route::post('/user/2fa/disable', [TwoFactorController::class, 'disable']);
 
     // Déconnexion
     Route::post('/logout', [AuthController::class, 'logout']);
