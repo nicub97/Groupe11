@@ -24,6 +24,7 @@ export default function Dashboard() {
     { title: 'Commerçants', value: stats.commercants },
     { title: 'Prestataires', value: stats.prestataires },
     { title: 'Livreurs', value: stats.livreurs },
+    { title: 'Prestations', value: stats.prestations },
   ];
 
   return (

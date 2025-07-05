@@ -38,6 +38,10 @@ export default function Navbar() {
               Annonces
             </Link>
 
+            <Link to="/admin/prestations" className="hover:text-gray-300 transition">
+              Prestations
+            </Link>
+
             <Link to="/admin/entrepots" className="hover:text-gray-300 transition">
               Entrep\xF4ts
             </Link>
