@@ -19,7 +19,6 @@ import AdresseLivraison from "../pages/AdresseLivraison";
 import Paiement from "../pages/Paiement";
 import PaiementSuccess from "../pages/PaiementSuccess";
 import PaiementCancel from "../pages/PaiementCancel";
-import DetailsService from "../pages/DetailsService";
 import MesAnnonces from "../pages/MesAnnonces";
 import AnnoncesDisponibles from "../pages/AnnoncesDisponibles";
 import MesLivraisons from "../pages/MesLivraisons";
@@ -113,14 +112,6 @@ export default function AppRouter() {
             element={
               <PrivateRoute>
                 <PaiementCancel />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/details-service/:commandeId"
-            element={
-              <PrivateRoute>
-                <DetailsService />
               </PrivateRoute>
             }
           />
