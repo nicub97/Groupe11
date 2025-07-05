@@ -7,6 +7,7 @@ use App\Models\Client;
 use App\Models\Commercant;
 use App\Models\Livreur;
 use App\Models\Prestataire;
+use App\Models\Prestation;
 use App\Models\Commande; // pour les prestations
 use App\Models\Colis;     // pour les livraisons
 
@@ -20,6 +21,7 @@ class StatAdminController extends Controller
             'commercants' => Commercant::count(),
             'prestataires' => Prestataire::count(),
             'livreurs' => Livreur::count(),
+            'prestations' => Prestation::count(),
         ]);
     }
 }

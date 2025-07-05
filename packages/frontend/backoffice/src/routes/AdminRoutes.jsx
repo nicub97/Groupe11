@@ -8,6 +8,7 @@ import EditUserForm from "../pages/admin/EditUserForm";
 import UserDetails from "../pages/admin/UserDetails";
 import AnnoncesList from "../pages/admin/AnnoncesList";
 import EntrepotsList from "../pages/admin/EntrepotsList";
+import PrestationList from "../pages/admin/PrestationList";
 
 export default function AdminRoutes() {
   return (
@@ -21,6 +22,7 @@ export default function AdminRoutes() {
         <Route path="utilisateurs/:id" element={<UserDetails />} />
         <Route path="annonces" element={<AnnoncesList />} />
         <Route path="entrepots" element={<EntrepotsList />} />
+        <Route path="prestations" element={<PrestationList />} />
       </Route>
     </Routes>
   );
