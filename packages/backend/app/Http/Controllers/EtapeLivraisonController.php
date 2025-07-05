@@ -233,21 +233,24 @@ class EtapeLivraisonController extends Controller
                         'est_mini_etape' => false,
                     ]);
 
-                    $box = $codeBox->box;
-                    if ($box) {
+                    $boxRetrait = $codeBox->box;
+                    if ($boxRetrait) {
                         CodeBox::create([
-                            'box_id' => $box->id,
+                            'box_id' => $boxRetrait->id,
                             'etape_livraison_id' => $etapeLivreur->id,
                             'type' => 'retrait',
                             'code_temporaire' => Str::random(6),
                         ]);
 
-                        CodeBox::create([
-                            'box_id' => $box->id,
-                            'etape_livraison_id' => $etapeLivreur->id,
-                            'type' => 'depot',
-                            'code_temporaire' => Str::random(6),
-                        ]);
+                        $boxDepot = Entrepot::where('ville', $etapeLivreur->lieu_arrivee)
+                            ->first()?->boxes()
+                            ->where('est_occupe', false)
+                            ->where('id', '!=', $boxRetrait->id)
+                            ->first();
+
+                        if ($boxDepot) {
+                            CodeBox::createDepotCode($etapeLivreur, $boxDepot);
+                        }
                     }
                 }
             }
