@@ -309,7 +309,7 @@ class AnnonceController extends Controller
             return response()->json(['message' => 'Accès refusé'], 403);
         }
 
-        $annonce = Annonce::with('etapesLivraison')->findOrFail($id);
+        $annonce = Annonce::with(['etapesLivraison', 'entrepotDepart'])->findOrFail($id);
 
         if ($annonce->id_livreur_reservant) {
             return response()->json(['message' => 'Annonce déjà réservée.'], 400);
@@ -320,8 +320,41 @@ class AnnonceController extends Controller
             return response()->json(['message' => 'Cette annonce est déjà en cours de livraison.'], 400);
         }
 
-        $annonce->id_livreur_reservant = $user->id;
-        $annonce->save();
+        DB::transaction(function () use ($annonce, $user) {
+            $annonce->id_livreur_reservant = $user->id;
+            $annonce->save();
+
+            if (
+                $annonce->type === 'produit_livre' &&
+                ! $annonce->etapesLivraison()->exists()
+            ) {
+                $entrepot = $annonce->entrepotDepart;
+                $box = $entrepot?->boxes()->where('est_occupe', false)->first();
+
+                if ($box) {
+                    $etapeDepot = EtapeLivraison::create([
+                        'annonce_id' => $annonce->id,
+                        'livreur_id' => $user->id,
+                        'lieu_depart' => $entrepot->ville,
+                        'lieu_arrivee' => $entrepot->ville,
+                        'statut' => 'en_cours',
+                        'est_client' => false,
+                        'est_commercant' => true,
+                        'est_mini_etape' => true,
+                    ]);
+
+                    CodeBox::create([
+                        'box_id' => $box->id,
+                        'etape_livraison_id' => $etapeDepot->id,
+                        'type' => 'depot',
+                        'code_temporaire' => Str::random(6),
+                    ]);
+
+                    $box->est_occupe = true;
+                    $box->save();
+                }
+            }
+        });
 
         return response()->json(['message' => 'Annonce réservée avec succès.']);
     }
@@ -455,44 +488,6 @@ class AnnonceController extends Controller
                 $box->est_occupe = true;
                 $box->save();
 
-                $trajet = TrajetLivreur::with(['entrepotDepart', 'entrepotArrivee'])
-                    ->where('livreur_id', $annonce->id_livreur_reservant)
-                    ->where('entrepot_depart_id', $entrepot->id)
-                    ->first();
-
-                if (! $trajet || ! $trajet->entrepotArrivee) {
-                    Log::warning('paiementCallback interrompu : trajet livreur manquant ou incomplet', [
-                        'annonce_id' => $annonce->id,
-                        'context' => 'paiementCallback',
-                    ]);
-                    report(new \Exception('paiementCallback interrompu : trajet livreur manquant ou incomplet'));
-                    return;
-                }
-
-                $etapeLivreur = EtapeLivraison::create([
-                    'annonce_id' => $annonce->id,
-                    'livreur_id' => $annonce->id_livreur_reservant,
-                    'lieu_depart' => $trajet->entrepotDepart->ville,
-                    'lieu_arrivee' => $trajet->entrepotArrivee->ville,
-                    'statut' => 'en_cours',
-                    'est_client' => false,
-                    'est_commercant' => false,
-                    'est_mini_etape' => false,
-                ]);
-
-                CodeBox::create([
-                    'box_id' => $box->id,
-                    'etape_livraison_id' => $etapeLivreur->id,
-                    'type' => 'retrait',
-                    'code_temporaire' => Str::random(6),
-                ]);
-
-                CodeBox::create([
-                    'box_id' => $box->id,
-                    'etape_livraison_id' => $etapeLivreur->id,
-                    'type' => 'depot',
-                    'code_temporaire' => Str::random(6),
-                ]);
             });
         }
 
