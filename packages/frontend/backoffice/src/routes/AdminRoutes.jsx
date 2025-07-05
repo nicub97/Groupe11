@@ -3,6 +3,7 @@ import AdminLayout from '../layouts/AdminLayout';
 import Dashboard from '../pages/admin/Dashboard';
 import UsersList from "../pages/admin/UsersList";
 import AddUser from "../pages/admin/AddUser";
+import AddAdmin from "../pages/admin/AddAdmin";
 import EditUserForm from "../pages/admin/EditUserForm";
 import UserDetails from "../pages/admin/UserDetails";
 import AnnoncesList from "../pages/admin/AnnoncesList";
@@ -15,6 +16,7 @@ export default function AdminRoutes() {
         <Route index element={<Dashboard />} />
         <Route path="utilisateurs" element={<UsersList />} />
         <Route path="utilisateurs/ajouter" element={<AddUser />} />
+        <Route path="utilisateurs/ajouter-admin" element={<AddAdmin />} />
         <Route path="utilisateurs/:id/edit" element={<EditUserForm />} />
         <Route path="utilisateurs/:id" element={<UserDetails />} />
         <Route path="annonces" element={<AnnoncesList />} />
