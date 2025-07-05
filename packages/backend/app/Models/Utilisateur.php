@@ -39,7 +39,7 @@ class Utilisateur extends Authenticatable implements MustVerifyEmail
         }
     }
 
-    // Annonces créées par le client (type livraison_client, service ou produit_livre)
+    // Annonces créées par le client (type livraison_client ou produit_livre)
     public function annoncesClient()
     {
         return $this->hasMany(Annonce::class, 'id_client');
@@ -51,11 +51,6 @@ class Utilisateur extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Annonce::class, 'id_commercant');
     }
 
-    // Annonces créées par le prestataire (type service)
-    public function annoncesPrestataire()
-    {
-        return $this->hasMany(Annonce::class, 'id_prestataire');
-    }
 
     // Annonces pour lesquelles l'utilisateur est livreur
     public function livraisons()
