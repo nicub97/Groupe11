@@ -3,6 +3,10 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
+
+use App\Models\Box;
+use App\Models\EtapeLivraison;
 
 class CodeBox extends Model
 {
@@ -29,5 +33,20 @@ class CodeBox extends Model
     public function box()
     {
         return $this->belongsTo(Box::class);
+    }
+
+    public static function createDepotCode(EtapeLivraison $etape, Box $box): self
+    {
+        $code = self::create([
+            'box_id' => $box->id,
+            'etape_livraison_id' => $etape->id,
+            'type' => 'depot',
+            'code_temporaire' => Str::random(6),
+        ]);
+
+        $box->est_occupe = true;
+        $box->save();
+
+        return $code;
     }
 }
