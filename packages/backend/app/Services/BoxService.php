@@ -14,9 +14,9 @@ class BoxService
     {
         $boxes = [];
 
-        for ($i = 0; $i < 5; $i++) {
+        for ($i = 1; $i <= 5; $i++) {
             $boxes[] = [
-                'code_box' => (string) Str::uuid(),
+                'code_box' => 'BOX-' . Str::slug($entrepot->ville) . '-' . $i,
                 'est_occupe' => false,
             ];
         }
