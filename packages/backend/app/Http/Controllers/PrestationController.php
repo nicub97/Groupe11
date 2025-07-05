@@ -6,6 +6,8 @@ use App\Models\Prestation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Notification;
+use App\Models\PlanningPrestataire;
+use Carbon\Carbon;
 
 class PrestationController extends Controller
 {
@@ -211,6 +213,18 @@ class PrestationController extends Controller
 
         if ($prestation->client_id !== null) {
             return response()->json(['message' => 'Cette prestation est déjà réservée.'], 400);
+        }
+
+        $disponible = PlanningPrestataire::where('prestataire_id', $prestation->prestataire_id)
+            ->whereDate('date_disponible', $prestation->date_heure)
+            ->whereTime('heure_debut', '<=', $prestation->date_heure)
+            ->whereTime('heure_fin', '>=', Carbon::parse($prestation->date_heure)->addMinutes($prestation->duree_estimee))
+            ->exists();
+
+        if (! $disponible) {
+            return response()->json([
+                'message' => "Le prestataire n'est pas disponible pour cette date et durée."
+            ], 422);
         }
 
         $prestation->client_id = $client->id;
