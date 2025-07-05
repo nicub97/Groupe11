@@ -20,12 +20,20 @@ export default function UsersList() {
     <div className="p-6">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Liste des utilisateurs</h1>
-        <button
-          onClick={() => navigate("/admin/utilisateurs/ajouter")}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-          Ajouter un utilisateur
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => navigate("/admin/utilisateurs/ajouter-admin")}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          >
+            Créer un admin
+          </button>
+          <button
+            onClick={() => navigate("/admin/utilisateurs/ajouter")}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          >
+            Ajouter un utilisateur
+          </button>
+        </div>
       </div>
 
       <div className="overflow-x-auto">
