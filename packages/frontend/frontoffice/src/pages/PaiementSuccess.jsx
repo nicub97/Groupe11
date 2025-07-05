@@ -15,6 +15,7 @@ export default function PaiementSuccess() {
     finalized.current = true;
     const context = searchParams.get("context");
     const annonceId = searchParams.get("annonce_id");
+    const sessionId = searchParams.get("session_id");
     const entrepotId = localStorage.getItem("reservationEntrepot");
     const annonceData = localStorage.getItem("annonceForm");
     const annoncePhoto = localStorage.getItem("annoncePhoto");
@@ -33,6 +34,17 @@ export default function PaiementSuccess() {
 
     const finalize = async () => {
       try {
+        if (annonceId && sessionId) {
+          try {
+            await api.get(`/annonces/${annonceId}/paiement-callback`, {
+              params: { session_id: sessionId },
+              headers: { Authorization: `Bearer ${token}` },
+            });
+          } catch (err) {
+            console.error("Erreur callback paiement :", err);
+          }
+        }
+
         if (context === "reserver" && annonceId && entrepotId) {
           await api.post(
             `/annonces/${annonceId}/reserver`,
@@ -61,9 +73,6 @@ export default function PaiementSuccess() {
           localStorage.removeItem("annoncePhoto");
           setMessage("Annonce créée avec succès !");
         } else if (context === "payer" && annonceId) {
-          await api.post(`/annonces/${annonceId}/payer`, null, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
           localStorage.removeItem("payerAnnonceId");
           localStorage.removeItem("paymentContext");
           setMessage("Annonce payée !");
