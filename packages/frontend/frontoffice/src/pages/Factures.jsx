@@ -5,6 +5,8 @@ import { useAuth } from "../context/AuthContext";
 export default function Factures() {
   const { token } = useAuth();
   const [factures, setFactures] = useState([]);
+  const [mois, setMois] = useState("");
+  const [message, setMessage] = useState("");
 
   const fetchFactures = async () => {
     try {
@@ -17,6 +19,20 @@ export default function Factures() {
     }
   };
 
+  const genererFacture = async () => {
+    if (!mois) return;
+    try {
+      await api.post(`/factures-prestataire/${mois}`, null, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setMessage("✅ Facture générée !");
+      fetchFactures();
+    } catch (err) {
+      console.error("Erreur lors de la génération de la facture :", err);
+      setMessage("❌ Erreur lors de la génération.");
+    }
+  };
+
   useEffect(() => {
     fetchFactures();
   }, [token]);
@@ -24,6 +40,23 @@ export default function Factures() {
   return (
     <div className="max-w-3xl mx-auto mt-10 px-4">
       <h2 className="text-2xl font-bold mb-4">Mes factures mensuelles</h2>
+
+      {message && <p className="mb-4 text-sm">{message}</p>}
+
+      <div className="flex items-end gap-2 mb-6">
+        <input
+          type="month"
+          value={mois}
+          onChange={(e) => setMois(e.target.value)}
+          className="p-2 border rounded"
+        />
+        <button
+          onClick={genererFacture}
+          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+        >
+          Générer ma facture
+        </button>
+      </div>
 
       {factures.length === 0 ? (
         <p>Aucune facture disponible.</p>

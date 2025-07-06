@@ -65,8 +65,11 @@ export default function Interventions() {
                   Statut final : {intervention.statut_final}
                 </p>
 
-                {/* Évaluation par le client uniquement */}
-                {user.role === "client" && intervention.statut_final === "effectuée" && (
+                {/* Évaluation par le client uniquement après fin de prestation */}
+                {user.role === "client" &&
+                  prestation.statut === "terminée" &&
+                  intervention.note == null &&
+                  intervention.commentaire_client == null && (
                   <div className="mt-4 space-y-2">
                     <textarea
                       rows={2}
