@@ -254,4 +254,22 @@ class PrestationController extends Controller
         return response()->json($prestations);
     }
 
+    public function assigner(Request $request, $id)
+    {
+        $request->validate([
+            'prestataire_id' => 'required|exists:prestataires,id',
+        ]);
+
+        $prestation = Prestation::find($id);
+
+        if (! $prestation) {
+            return response()->json(['message' => 'Prestation introuvable.'], 404);
+        }
+
+        $prestation->prestataire_id = $request->prestataire_id;
+        $prestation->save();
+
+        return response()->json(['message' => 'Prestataire assigné.', 'prestation' => $prestation]);
+    }
+
 }

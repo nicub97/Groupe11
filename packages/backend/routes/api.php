@@ -25,6 +25,7 @@ use App\Http\Controllers\PrestationController;
 use App\Http\Controllers\PlanningPrestataireController;
 use App\Http\Controllers\InterventionController;
 use App\Http\Controllers\FacturePrestataireController;
+use App\Http\Controllers\PrestataireValidationController;
 use App\Http\Controllers\StatAdminController;
 use App\Http\Controllers\Api\EmailVerificationController;
 use Laravel\Fortify\Http\Controllers\EmailVerificationNotificationController;
@@ -73,6 +74,12 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
     Route::get('/clients/{id}', [ClientController::class, 'show']);
     Route::patch('/clients/{id}', [ClientController::class, 'update']);
 
+    // Validation prestataires
+    Route::patch('/prestataires/{id}/valider', [PrestataireValidationController::class, 'valider']);
+
+    // Assignation d'un prestataire à une prestation
+    Route::patch('/prestations/{id}/assigner', [PrestationController::class, 'assigner']);
+
 });
 
 // CLIENT uniquement
@@ -109,6 +116,8 @@ Route::middleware(['auth:sanctum', 'role:admin,prestataire'])->group(function ()
     Route::get('/prestataires/{id}', [PrestataireController::class, 'show']);
     Route::patch('/prestataires/{id}', [PrestataireController::class, 'update']);
     Route::post('/prestations', [PrestationController::class, 'store']);
+    Route::post('/prestataires/{id}/justificatifs', [PrestataireValidationController::class, 'store']);
+    Route::get('/prestataires/{id}/justificatifs', [PrestataireValidationController::class, 'index']);
 });
 
 // Routes accessibles à tout utilisateur connecté
