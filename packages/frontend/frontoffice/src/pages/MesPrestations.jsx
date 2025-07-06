@@ -86,6 +86,15 @@ export default function MesPrestations() {
                   </button>
                 </div>
               )}
+
+              {user.role === "prestataire" && prestation.statut === "acceptée" && (
+                <button
+                  onClick={() => changerStatut(prestation.id, "terminée")}
+                  className="mt-3 px-4 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                >
+                  Terminer la prestation
+                </button>
+              )}
             </li>
           ))}
         </ul>
