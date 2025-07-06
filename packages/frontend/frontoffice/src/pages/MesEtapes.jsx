@@ -8,7 +8,6 @@ export default function MesEtapes() {
   const navigate = useNavigate();
   const [etapes, setEtapes] = useState([]);
   const [toutesEtapes, setToutesEtapes] = useState([]);
-  const [enAttenteDepot, setEnAttenteDepot] = useState(false);
 
   const fetchEtapes = async () => {
     try {
@@ -23,7 +22,6 @@ export default function MesEtapes() {
 
       setToutesEtapes(toutes);
       setEtapes(livreurEtapes);
-      setEnAttenteDepot(livreurEtapes.length === 0);
     } catch (err) {
       console.error("Erreur chargement etapes:", err);
     }

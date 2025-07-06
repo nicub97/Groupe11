@@ -3,7 +3,7 @@ import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
 
 export default function Factures() {
-  const { token, user } = useAuth();
+  const { token } = useAuth();
   const [factures, setFactures] = useState([]);
 
   const fetchFactures = async () => {
