@@ -29,28 +29,21 @@ export default function Navbar() {
     ];
 
     if (user.role === "client") {
+      // Liens dédiés aux clients pour la gestion des prestations
       return [
         ...common,
-        { path: "/annonces", label: "Annonces" },
-        { path: "/mes-annonces", label: "Mes annonces" },
-        // Catalogue des prestations accessible aux clients
-        { path: "/prestations/catalogue", label: "Prestations" },
-        // Mes prestations réservées
+        { path: "/prestations/catalogue", label: "Catalogue" },
         { path: "/prestations", label: "Mes prestations" },
-        { path: "/interventions", label: "Interventions" },
       ];
     }
 
     if (user.role === "prestataire") {
+      // Liens dédiés aux prestataires pour la gestion des prestations
       return [
         ...common,
-        // Prestations assignées au prestataire
         { path: "/prestations", label: "Prestations assignées" },
-        // Gestion des disponibilités
         { path: "/disponibilites", label: "Disponibilités" },
         { path: "/prestations/publier", label: "Publier une prestation" },
-        { path: "/interventions", label: "Interventions" },
-        { path: "/planning", label: "Planning" },
         { path: "/factures", label: "Factures" },
       ];
     }
