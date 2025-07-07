@@ -40,6 +40,18 @@ class PlanningPrestataireController extends Controller
             'heure_fin' => 'required|date_format:H:i|after:heure_debut',
         ]);
 
+        $conflict = PlanningPrestataire::where('prestataire_id', $prestataireId)
+            ->whereDate('date_disponible', $validated['date_disponible'])
+            ->where('heure_debut', '<', $validated['heure_fin'])
+            ->where('heure_fin', '>', $validated['heure_debut'])
+            ->exists();
+
+        if ($conflict) {
+            return response()->json([
+                'message' => 'Créneau en conflit avec un autre créneau existant.'
+            ], 422);
+        }
+
         $planning = PlanningPrestataire::create([
             'prestataire_id' => $prestataireId,
             ...$validated,
