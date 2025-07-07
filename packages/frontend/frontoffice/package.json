@@ -13,7 +13,6 @@
     "@fontsource/inter": "^5.2.5",
     "@headlessui/react": "^2.2.2",
     "@tailwindcss/vite": "^4.1.10",
-    "@tanstack/react-query": "^5.81.5",
     "axios": "^1.9.0",
     "i18next": "^25.0.2",
     "prop-types": "^15.8.1",

@@ -1,69 +1,75 @@
 /* Page de détail d'une prestation avec actions de réservation ou gestion */
 import { useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import api from "../services/api";
 
 export default function PrestationDetail() {
   const { id } = useParams();
   const { token, user } = useAuth();
-  const queryClient = useQueryClient();
   const [note, setNote] = useState(1);
   const [commentaire, setCommentaire] = useState("");
+  const [prestation, setPrestation] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Récupération de la prestation ciblée
-  const {
-    data: prestation,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["prestation", id],
-    queryFn: async () => {
+  const fetchPrestation = async () => {
+    try {
       const res = await api.get(`/prestations/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      return res.data;
-    },
-  });
+      setPrestation(res.data);
+    } catch (err) {
+      setError(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  // Mutation pour réserver la prestation (client)
-  const reserver = useMutation({
-    mutationFn: async () => {
+  useEffect(() => {
+    fetchPrestation();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, token]);
+
+  const reserver = async () => {
+    try {
       await api.patch(`/prestations/${id}/reserver`, null, {
         headers: { Authorization: `Bearer ${token}` },
       });
-    },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["prestation", id] }),
-  });
+      fetchPrestation();
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
-  // Mutation pour changer le statut (prestataire)
-  const changerStatut = useMutation({
-    mutationFn: async (statut) => {
+  const changerStatut = async (statut) => {
+    try {
       await api.patch(
         `/prestations/${id}/statut`,
         { statut },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-    },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["prestation", id] }),
-  });
+      fetchPrestation();
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
-  // Mutation pour valider l'intervention (prestataire)
-  const validerIntervention = useMutation({
-    mutationFn: async () => {
+  const validerIntervention = async () => {
+    try {
       await api.post(
         "/interventions",
         { prestation_id: id, statut_final: "effectuée" },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-    },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["prestation", id] }),
-  });
+      fetchPrestation();
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
-  // Mutation pour laisser une évaluation (client)
-  const noter = useMutation({
-    mutationFn: async () => {
+  const noter = async () => {
+    try {
       await api.post(
         "/evaluations",
         {
@@ -73,11 +79,13 @@ export default function PrestationDetail() {
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-    },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["prestation", id] }),
-  });
+      fetchPrestation();
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
-  if (isLoading) return <p>Chargement...</p>;
+  if (loading) return <p>Chargement...</p>;
   if (error) return <p>Erreur lors du chargement.</p>;
 
   const isClient = user?.role === "client";
@@ -92,7 +100,7 @@ export default function PrestationDetail() {
       {/* Actions pour le client */}
       {isClient && prestation.statut === "disponible" && (
         <button
-          onClick={() => reserver.mutate()}
+          onClick={reserver}
           className="bg-blue-500 text-white px-4 py-2 rounded"
         >
           Réserver
@@ -103,13 +111,13 @@ export default function PrestationDetail() {
       {isPrestataire && prestation.statut === "en_attente" && (
         <div className="space-x-2">
           <button
-            onClick={() => changerStatut.mutate("acceptée")}
+            onClick={() => changerStatut("acceptée")}
             className="bg-green-500 text-white px-3 py-1 rounded"
           >
             Accepter
           </button>
           <button
-            onClick={() => changerStatut.mutate("refusée")}
+            onClick={() => changerStatut("refusée")}
             className="bg-red-500 text-white px-3 py-1 rounded"
           >
             Refuser
@@ -119,7 +127,7 @@ export default function PrestationDetail() {
 
       {isPrestataire && prestation.statut === "acceptée" && (
         <button
-          onClick={() => changerStatut.mutate("terminée")}
+          onClick={() => changerStatut("terminée")}
           className="bg-blue-500 text-white px-4 py-2 rounded mt-2"
         >
           Terminer
@@ -128,7 +136,7 @@ export default function PrestationDetail() {
 
       {isPrestataire && prestation.statut === "terminée" && !prestation.intervention && (
         <button
-          onClick={() => validerIntervention.mutate()}
+          onClick={validerIntervention}
           className="bg-purple-500 text-white px-4 py-2 rounded mt-2"
         >
           Valider l'intervention
@@ -140,7 +148,7 @@ export default function PrestationDetail() {
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            noter.mutate();
+            noter();
           }}
           className="mt-4 space-y-2"
         >

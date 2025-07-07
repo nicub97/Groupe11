@@ -5,7 +5,7 @@
 - [x] Nettoyer les anciens fichiers inutiles (déjà fait par Codex)
 - [x] Créer la structure unifiée des pages (déjà fait par Codex)
 - [x] Mettre en place gestion utilisateur connecté (auth + rôle client/prestataire)
-- [x] Installer React Query (ou Axios) pour gestion des appels API
+- [x] Utiliser Axios pour la gestion des appels API (React Query retiré)
 - [x] Créer un layout de base (header/footer/route guards si besoin)
 
 ---
