@@ -23,6 +23,7 @@ import MesAnnonces from "../pages/MesAnnonces";
 import AnnoncesDisponibles from "../pages/AnnoncesDisponibles";
 import MesLivraisons from "../pages/MesLivraisons";
 import Factures from "../pages/Factures";
+import ProfilPrestataire from "../pages/ProfilPrestataire";
 import PublierPrestation from "../pages/PublierPrestation";
 import Notifications from "../pages/Notifications";
 import Catalogue from "../pages/Catalogue";
@@ -228,6 +229,17 @@ export default function AppRouter() {
               <PrivateRoute>
                 <RoleRoute role={["prestataire"]}>
                   <Factures />
+                </RoleRoute>
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/profil-prestataire"
+            element={
+              <PrivateRoute>
+                <RoleRoute role={["prestataire"]}>
+                  <ProfilPrestataire />
                 </RoleRoute>
               </PrivateRoute>
             }

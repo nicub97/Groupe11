@@ -11,7 +11,7 @@ class PrestataireValide
     public function handle(Request $request, Closure $next)
     {
         $user = Auth::user();
-        if ($user->role !== 'prestataire' || !($user->prestataire->valide ?? false)) {
+        if ($user->role !== 'prestataire' || !($user->prestataire->valide ?? false) || $user->prestataire->statut !== 'valide') {
             return response()->json(['message' => 'Prestataire non valide.'], 403);
         }
 

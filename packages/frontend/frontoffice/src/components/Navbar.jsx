@@ -45,6 +45,7 @@ export default function Navbar() {
         { path: "/disponibilites", label: "Disponibilités" },
         { path: "/prestations/publier", label: "Publier une prestation" },
         { path: "/factures", label: "Factures" },
+        { path: "/profil-prestataire", label: "Mon statut" },
       ];
     }
 

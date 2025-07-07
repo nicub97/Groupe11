@@ -15,6 +15,8 @@ class Prestataire extends Model
         'domaine',
         'description',
         'valide',
+        'statut',
+        'motif_refus',
     ];
 
     public function utilisateur()
