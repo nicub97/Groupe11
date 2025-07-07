@@ -22,13 +22,13 @@ import PaiementCancel from "../pages/PaiementCancel";
 import MesAnnonces from "../pages/MesAnnonces";
 import AnnoncesDisponibles from "../pages/AnnoncesDisponibles";
 import MesLivraisons from "../pages/MesLivraisons";
-import Planning from "../pages/Planning";
-import MesPrestations from "../pages/MesPrestations";
-import Interventions from "../pages/Interventions";
 import Factures from "../pages/Factures";
 import PublierPrestation from "../pages/PublierPrestation";
 import Notifications from "../pages/Notifications";
-import CataloguePrestations from "../pages/CataloguePrestations";
+import Catalogue from "../pages/Catalogue";
+import PrestationDetail from "../pages/PrestationDetail";
+import Prestations from "../pages/Prestations";
+import Disponibilites from "../pages/Disponibilites";
 import MesTrajets from "../pages/MesTrajets";
 import MesEtapes from "../pages/MesEtapes";
 import ValidationCodeBox from "../pages/ValidationCodeBox";
@@ -192,34 +192,32 @@ export default function AppRouter() {
           />
 
           <Route
-            path="/planning"
+            path="/disponibilites"
             element={
               <PrivateRoute>
                 <RoleRoute role={["prestataire"]}>
-                  <Planning />
+                  <Disponibilites />
                 </RoleRoute>
               </PrivateRoute>
             }
           />
 
           <Route
-            path="/mes-prestations"
+            path="/prestations"
             element={
               <PrivateRoute>
                 <RoleRoute role={["client", "prestataire"]}>
-                  <MesPrestations />
+                  <Prestations />
                 </RoleRoute>
               </PrivateRoute>
             }
           />
 
           <Route
-            path="/interventions"
+            path="/prestations/:id"
             element={
               <PrivateRoute>
-                <RoleRoute role={["client", "prestataire"]}>
-                  <Interventions />
-                </RoleRoute>
+                <PrestationDetail />
               </PrivateRoute>
             }
           />
@@ -255,16 +253,7 @@ export default function AppRouter() {
             }
           />
 
-          <Route
-            path="/prestations/catalogue"
-            element={
-              <PrivateRoute>
-                <RoleRoute role="client">
-                  <CataloguePrestations />
-                </RoleRoute>
-              </PrivateRoute>
-            }
-          />
+          <Route path="/prestations/catalogue" element={<Catalogue />} />
 
           <Route
             path="/validation-code/:id"
