@@ -19,6 +19,7 @@ export default function RegisterPrestataire() {
 
   const [errors, setErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState("");
+  const [files, setFiles] = useState([]);
   const navigate = useNavigate();
 
   const validate = () => {
@@ -115,6 +116,10 @@ export default function RegisterPrestataire() {
     });
   };
 
+  const handleFiles = (e) => {
+    setFiles(Array.from(e.target.files));
+  };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -126,8 +131,20 @@ export default function RegisterPrestataire() {
     };
 
     try {
-      await api.post("/register", data);
-      setSuccessMessage("Inscription réussie ! Vérifiez votre email.");
+      const res = await api.post("/register", data);
+      const { token, user } = res.data;
+
+      for (const f of files) {
+        const fd = new FormData();
+        fd.append("fichier", f);
+        await api.post(`/prestataires/${user.id}/justificatifs`, fd, {
+          headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" },
+        });
+      }
+
+      setSuccessMessage(
+        "Inscription réussie. Votre compte doit être validé avant de publier."
+      );
       setTimeout(() => navigate("/login"), 3000);
     } catch (error) {
       const message = error.response?.data?.message || "Erreur serveur.";
@@ -162,6 +179,14 @@ export default function RegisterPrestataire() {
       {errors.domaine && <p className="text-red-500 text-sm">{errors.domaine}</p>}
 
       <textarea name="description" placeholder="Description (optionnelle)" value={formData.description} onChange={handleChange} className="w-full p-2 border rounded" />
+
+      <input
+        type="file"
+        multiple
+        onChange={handleFiles}
+        accept=".pdf,.jpg,.jpeg,.png"
+        className="w-full p-2 border rounded"
+      />
 
       <div className="flex items-center space-x-2">
         <input type="checkbox" id="rgpd_consent" name="rgpd_consent" checked={formData.rgpd_consent} onChange={handleChange} className="w-4 h-4" />

@@ -174,6 +174,7 @@ class AuthController extends Controller
                     'utilisateur_id' => $utilisateur->id,
                     'domaine' => $validated['domaine'],
                     'description' => $validated['description'] ?? null,
+                    'statut' => 'en_attente',
                 ]);
                 break;
         }

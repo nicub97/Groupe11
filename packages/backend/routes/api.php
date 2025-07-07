@@ -76,6 +76,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
 
     // Validation prestataires
     Route::patch('/prestataires/{id}/valider', [PrestataireValidationController::class, 'valider']);
+    Route::patch('/prestataires/{id}/refuser', [PrestataireValidationController::class, 'refuser']);
 
     // Assignation d'un prestataire à une prestation
     Route::patch('/prestations/{id}/assigner', [PrestationController::class, 'assigner']);

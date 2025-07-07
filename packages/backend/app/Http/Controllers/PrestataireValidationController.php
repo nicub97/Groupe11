@@ -60,9 +60,39 @@ class PrestataireValidationController extends Controller
             return response()->json(['message' => 'Prestataire introuvable.'], 404);
         }
 
+        if ($prestataire->justificatifs()->count() === 0) {
+            return response()->json(['message' => 'Aucun justificatif fourni.'], 422);
+        }
+
         $prestataire->valide = true;
+        $prestataire->statut = 'valide';
+        $prestataire->motif_refus = null;
         $prestataire->save();
 
         return response()->json(['message' => 'Prestataire validé.']);
+    }
+
+    public function refuser(Request $request, $id)
+    {
+        $user = Auth::user();
+        if ($user->role !== 'admin') {
+            return response()->json(['message' => 'Accès interdit.'], 403);
+        }
+
+        $prestataire = Prestataire::where('utilisateur_id', $id)->first();
+        if (! $prestataire) {
+            return response()->json(['message' => 'Prestataire introuvable.'], 404);
+        }
+
+        $validated = $request->validate([
+            'motif_refus' => 'nullable|string',
+        ]);
+
+        $prestataire->valide = false;
+        $prestataire->statut = 'refuse';
+        $prestataire->motif_refus = $validated['motif_refus'] ?? null;
+        $prestataire->save();
+
+        return response()->json(['message' => 'Prestataire refusé.']);
     }
 }
