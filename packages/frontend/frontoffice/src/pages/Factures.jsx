@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
+import FactureCard from "../components/FactureCard";
 
 export default function Factures() {
   const { token } = useAuth();
@@ -36,22 +37,8 @@ export default function Factures() {
       ) : (
         <ul className="space-y-4">
           {factures.map((f) => (
-            <li
-              key={f.id}
-              className="flex justify-between items-center border p-4 rounded"
-            >
-              <div>
-                <p className="font-semibold">{f.mois}</p>
-                <p className="text-gray-600">{f.montant_total} €</p>
-              </div>
-              <a
-                href={f.pdf_url || f.chemin_pdf}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-              >
-                Télécharger PDF
-              </a>
+            <li key={f.id}>
+              <FactureCard facture={f} />
             </li>
           ))}
         </ul>
