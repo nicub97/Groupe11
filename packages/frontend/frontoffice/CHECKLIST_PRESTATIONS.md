@@ -4,30 +4,30 @@
 
 - [x] Nettoyer les anciens fichiers inutiles (déjà fait par Codex)
 - [x] Créer la structure unifiée des pages (déjà fait par Codex)
-- [ ] Mettre en place gestion utilisateur connecté (auth + rôle client/prestataire)
-- [ ] Installer React Query (ou Axios) pour gestion des appels API
-- [ ] Créer un layout de base (header/footer/route guards si besoin)
+- [x] Mettre en place gestion utilisateur connecté (auth + rôle client/prestataire)
+- [x] Installer React Query (ou Axios) pour gestion des appels API
+- [x] Créer un layout de base (header/footer/route guards si besoin)
 
 ---
 
 ### 📄 Pages principales
 
 #### `Catalogue.jsx` (prestations publiques)
-- [ ] Récupérer la liste des prestations disponibles via `GET /prestations/catalogue`
-- [ ] Afficher chaque prestation dans une `PrestationCard`
-- [ ] Ajouter un bouton ou lien vers `PrestationDetail.jsx` (par ID)
+- [x] Récupérer la liste des prestations disponibles via `GET /prestations/catalogue`
+- [x] Afficher chaque prestation dans une `PrestationCard`
+- [x] Ajouter un bouton ou lien vers `PrestationDetail.jsx` (par ID)
 
 #### `PrestationDetail.jsx`
-- [ ] Récupérer la prestation via `GET /prestations/:id`
-- [ ] Si client : bouton "Réserver" → `PATCH /prestations/:id/reserver`
-- [ ] Si prestataire : boutons “Accepter / Refuser / Terminer” → `PATCH /prestations/:id/statut`
-- [ ] Si prestation terminée (client) : formulaire `POST /evaluations`
-- [ ] Si prestation terminée (prestataire) : bouton `POST /interventions`
+- [x] Récupérer la prestation via `GET /prestations/:id`
+- [x] Si client : bouton "Réserver" → `PATCH /prestations/:id/reserver`
+- [x] Si prestataire : boutons “Accepter / Refuser / Terminer” → `PATCH /prestations/:id/statut`
+- [x] Si prestation terminée (client) : formulaire `POST /evaluations`
+- [x] Si prestation terminée (prestataire) : bouton `POST /interventions`
 
 #### `Prestations.jsx`
-- [ ] Récupérer les prestations de l’utilisateur connecté via `GET /prestations`
-- [ ] Filtrer selon rôle (client = réservées / prestataire = assignées)
-- [ ] Lien vers `PrestationDetail.jsx`
+- [x] Récupérer les prestations de l’utilisateur connecté via `GET /prestations`
+- [x] Filtrer selon rôle (client = réservées / prestataire = assignées)
+- [x] Lien vers `PrestationDetail.jsx`
 
 ---
 
@@ -60,7 +60,7 @@
 ---
 
 ### ♻️ Composants partagés (à créer dans `/components/`)
-- [ ] `PrestationCard.jsx`
+- [x] `PrestationCard.jsx`
 - [ ] `PrestationStatusBadge.jsx`
 - [ ] `EvaluationForm.jsx`
 - [ ] `PlanningForm.jsx`
