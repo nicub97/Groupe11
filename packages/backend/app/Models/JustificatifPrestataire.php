@@ -9,6 +9,8 @@ class JustificatifPrestataire extends Model
 {
     use HasFactory;
 
+    protected $table = 'justificatifs_prestataires';
+
     protected $fillable = [
         'prestataire_id',
         'chemin',
