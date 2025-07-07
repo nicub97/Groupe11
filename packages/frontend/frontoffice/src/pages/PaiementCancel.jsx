@@ -25,6 +25,15 @@ export default function PaiementCancel() {
       localStorage.removeItem("payerAnnonceId");
       localStorage.removeItem("paymentContext");
       navigate("/mes-annonces?cancel=1", { replace: true });
+    } else if (context === "prestation_reserver") {
+      const prestationId = localStorage.getItem("prestationId");
+      localStorage.removeItem("prestationId");
+      localStorage.removeItem("paymentContext");
+      if (prestationId) {
+        navigate(`/prestations/${prestationId}?cancel=1`, { replace: true });
+      } else {
+        navigate("/prestations", { replace: true });
+      }
     } else {
       navigate("/", { replace: true });
     }

@@ -15,6 +15,7 @@ export default function PaiementSuccess() {
     finalized.current = true;
     const context = searchParams.get("context");
     const annonceId = searchParams.get("annonce_id");
+    const prestationId = searchParams.get("prestation_id");
     const sessionId = searchParams.get("session_id");
     const entrepotId = localStorage.getItem("reservationEntrepot");
     const annonceData = localStorage.getItem("annonceForm");
@@ -35,13 +36,23 @@ export default function PaiementSuccess() {
     const finalize = async () => {
       try {
         if (annonceId && sessionId) {
+            try {
+                await api.get(`/annonces/${annonceId}/paiement-callback`, {
+                    params: { session_id: sessionId },
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+            } catch (err) {
+                console.error("Erreur callback paiement :", err);
+            }
+        }
+        if (context === "prestation_reserver" && prestationId && sessionId) {
           try {
-            await api.get(`/annonces/${annonceId}/paiement-callback`, {
+            await api.get(`/prestations/${prestationId}/paiement-callback`, {
               params: { session_id: sessionId },
               headers: { Authorization: `Bearer ${token}` },
             });
           } catch (err) {
-            console.error("Erreur callback paiement :", err);
+            console.error("Erreur callback paiement prestation:", err);
           }
         }
 
@@ -53,6 +64,14 @@ export default function PaiementSuccess() {
           );
           localStorage.removeItem("reservationEntrepot");
           setMessage("Réservation confirmée !");
+        } else if (context === "prestation_reserver" && prestationId) {
+          await api.patch(
+            `/prestations/${prestationId}/reserver`,
+            null,
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          setMessage("Prestation réservée !");
+          localStorage.removeItem("prestationId");
         } else if (context === "creer" && annonceData) {
           const data = JSON.parse(annonceData);
           const formData = new FormData();
@@ -79,7 +98,9 @@ export default function PaiementSuccess() {
         } else {
           setMessage("Paiement confirmé.");
         }
-        const redirect = context === "payer" ? "/mes-annonces" : "/annonces";
+        let redirect = "/annonces";
+        if (context === "payer") redirect = "/mes-annonces";
+        if (context === "prestation_reserver") redirect = "/prestations";
         setTimeout(() => navigate(redirect), 1500);
       } catch (err) {
         setMessage(err.response?.data?.message || "Erreur après paiement.");
