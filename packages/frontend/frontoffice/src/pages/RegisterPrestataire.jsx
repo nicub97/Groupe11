@@ -125,22 +125,21 @@ export default function RegisterPrestataire() {
     e.preventDefault();
     if (!validate()) return;
 
-    const data = {
-      ...formData,
-      role: "prestataire"
-    };
+    const dataToSend = new FormData();
+    for (const key in formData) {
+      dataToSend.append(key, formData[key]);
+    }
+    dataToSend.append("role", "prestataire");
+    if (files[0]) {
+      dataToSend.append("justificatif", files[0]);
+    }
 
     try {
-      const res = await api.post("/register", data);
-      const { token, user } = res.data;
-
-      for (const f of files) {
-        const fd = new FormData();
-        fd.append("fichier", f);
-        await api.post(`/prestataires/${user.id}/justificatifs`, fd, {
-          headers: { Authorization: `Bearer ${token}`, "Content-Type": "multipart/form-data" },
-        });
-      }
+      await api.post("/register", dataToSend, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
       setSuccessMessage(
         "Inscription réussie. Votre compte doit être validé avant de publier."
@@ -182,7 +181,7 @@ export default function RegisterPrestataire() {
 
       <input
         type="file"
-        multiple
+        name="justificatif"
         onChange={handleFiles}
         accept=".pdf,.jpg,.jpeg,.png"
         className="w-full p-2 border rounded"
