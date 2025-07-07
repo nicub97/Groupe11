@@ -1,19 +1,28 @@
 /* Page publique listant les prestations disponibles */
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import api from "../services/api";
 import PrestationCard from "../components/PrestationCard";
 
 export default function Catalogue() {
-  // Récupération des prestations disponibles via React Query
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["catalogue"],
-    queryFn: async () => {
-      const res = await api.get("/prestations/catalogue");
-      return res.data;
-    },
-  });
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  if (isLoading) return <p>Chargement...</p>;
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await api.get("/prestations/catalogue");
+        setData(res.data);
+      } catch (err) {
+        setError(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  if (loading) return <p>Chargement...</p>;
   if (error) return <p>Erreur lors du chargement.</p>;
 
   return (
