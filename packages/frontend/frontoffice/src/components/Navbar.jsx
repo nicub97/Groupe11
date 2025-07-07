@@ -33,7 +33,10 @@ export default function Navbar() {
         ...common,
         { path: "/annonces", label: "Annonces" },
         { path: "/mes-annonces", label: "Mes annonces" },
+        // Catalogue des prestations accessible aux clients
         { path: "/prestations/catalogue", label: "Prestations" },
+        // Mes prestations réservées
+        { path: "/prestations", label: "Mes prestations" },
         { path: "/interventions", label: "Interventions" },
       ];
     }
@@ -41,7 +44,10 @@ export default function Navbar() {
     if (user.role === "prestataire") {
       return [
         ...common,
-        { path: "/mes-prestations", label: "Mes prestations" },
+        // Prestations assignées au prestataire
+        { path: "/prestations", label: "Prestations assignées" },
+        // Gestion des disponibilités
+        { path: "/disponibilites", label: "Disponibilités" },
         { path: "/prestations/publier", label: "Publier une prestation" },
         { path: "/interventions", label: "Interventions" },
         { path: "/planning", label: "Planning" },
@@ -91,8 +97,31 @@ export default function Navbar() {
 
           {!user ? (
             <>
-              <li><Link to="/login" className="hover:text-lime-300 transition">Connexion</Link></li>
-              <li><Link to="/register" className="hover:text-lime-300 transition">Inscription</Link></li>
+              {/* Liens prestations accessibles sans connexion */}
+              <li>
+                <Link
+                  to="/prestations/catalogue"
+                  className="hover:text-lime-300 transition"
+                >
+                  Prestations
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/login"
+                  className="hover:text-lime-300 transition"
+                >
+                  Connexion
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/register"
+                  className="hover:text-lime-300 transition"
+                >
+                  Inscription
+                </Link>
+              </li>
             </>
           ) : (
             <>
@@ -145,8 +174,25 @@ export default function Navbar() {
             <li><Link to="/" className="block hover:text-lime-300">Accueil</Link></li>
             {!user ? (
               <>
-                <li><Link to="/login" className="block hover:text-lime-300">Connexion</Link></li>
-                <li><Link to="/register" className="block hover:text-lime-300">Inscription</Link></li>
+                {/* Liens prestations accessibles sans connexion */}
+                <li>
+                  <Link
+                    to="/prestations/catalogue"
+                    className="block hover:text-lime-300"
+                  >
+                    Prestations
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/login" className="block hover:text-lime-300">
+                    Connexion
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/register" className="block hover:text-lime-300">
+                    Inscription
+                  </Link>
+                </li>
               </>
             ) : (
               <>
