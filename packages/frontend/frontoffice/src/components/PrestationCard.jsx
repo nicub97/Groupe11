@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
+import PrestationStatusBadge from "./PrestationStatusBadge";
 
 export default function PrestationCard({ prestation }) {
   return (
@@ -11,6 +12,8 @@ export default function PrestationCard({ prestation }) {
         {" "}
         {prestation.tarif} €
       </p>
+      {/* Badge de statut */}
+      <PrestationStatusBadge status={prestation.statut} />
       {/* Lien vers la page de détail */}
       <Link to={`/prestations/${prestation.id}`} className="text-blue-600 underline">
         Voir détail

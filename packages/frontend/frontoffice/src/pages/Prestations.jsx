@@ -5,7 +5,7 @@ import api from "../services/api";
 import PrestationCard from "../components/PrestationCard";
 
 export default function Prestations() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -29,11 +29,17 @@ export default function Prestations() {
   if (loading) return <p>Chargement...</p>;
   if (error) return <p>Erreur lors du chargement.</p>;
 
+  // Filtre les prestations selon le rôle utilisateur
+  const isClient = user?.role === "client";
+  const filteredData = isClient
+    ? data.filter((p) => p.client_id === user.id)
+    : data.filter((p) => p.prestataire_id === user.id);
+
   return (
     <div>
       <h2 className="text-xl font-bold mb-4">Mes prestations</h2>
-      {data && data.length > 0 ? (
-        data.map((p) => <PrestationCard key={p.id} prestation={p} />)
+      {filteredData && filteredData.length > 0 ? (
+        filteredData.map((p) => <PrestationCard key={p.id} prestation={p} />)
       ) : (
         <p>Aucune prestation enregistrée.</p>
       )}

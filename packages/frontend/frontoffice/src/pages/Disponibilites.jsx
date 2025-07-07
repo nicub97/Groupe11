@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
+import PlanningForm from "../components/PlanningForm";
 
 export default function Disponibilites() {
   const { token } = useAuth();
@@ -10,12 +11,6 @@ export default function Disponibilites() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const [form, setForm] = useState({
-    date_disponible: "",
-    heure_debut: "",
-    heure_fin: "",
-  });
-  const [submitLoading, setSubmitLoading] = useState(false);
   const [message, setMessage] = useState("");
 
   const fetchSlots = async () => {
@@ -38,35 +33,31 @@ export default function Disponibilites() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  };
+  const handleAddSlot = async ({ date, heure_debut, heure_fin }) => {
+    // vérifie localement les chevauchements de créneau
+    const conflict = slots.some(
+      (s) =>
+        s.date_disponible === date &&
+        !(heure_fin <= s.heure_debut || heure_debut >= s.heure_fin)
+    );
+    if (conflict) {
+      setMessage("Ce créneau chevauche un créneau existant.");
+      return;
+    }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setSubmitLoading(true);
     setMessage("");
     try {
       await api.post(
         "/plannings",
-        {
-          date_disponible: form.date_disponible,
-          heure_debut: form.heure_debut,
-          heure_fin: form.heure_fin,
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { date_disponible: date, heure_debut, heure_fin },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-      setForm({ date_disponible: "", heure_debut: "", heure_fin: "" });
       setMessage("Créneau ajouté avec succès.");
       fetchSlots();
     } catch (err) {
       const msg = err.response?.data?.message || "Erreur lors de l'ajout.";
       setMessage(msg);
     } finally {
-      setSubmitLoading(false);
     }
   };
 
@@ -119,41 +110,7 @@ export default function Disponibilites() {
           {message && (
             <p className="mb-2 text-center text-sm text-red-600">{message}</p>
           )}
-          <form onSubmit={handleSubmit} className="space-y-2">
-            <input
-              type="date"
-              name="date_disponible"
-              value={form.date_disponible}
-              onChange={handleChange}
-              required
-              className="w-full p-2 border rounded"
-            />
-            <div className="flex gap-2">
-              <input
-                type="time"
-                name="heure_debut"
-                value={form.heure_debut}
-                onChange={handleChange}
-                required
-                className="flex-1 p-2 border rounded"
-              />
-              <input
-                type="time"
-                name="heure_fin"
-                value={form.heure_fin}
-                onChange={handleChange}
-                required
-                className="flex-1 p-2 border rounded"
-              />
-            </div>
-            <button
-              type="submit"
-              disabled={submitLoading}
-              className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-50"
-            >
-              {submitLoading ? "Ajout..." : "Ajouter"}
-            </button>
-          </form>
+          <PlanningForm onSubmit={handleAddSlot} />
         </>
       )}
     </div>
