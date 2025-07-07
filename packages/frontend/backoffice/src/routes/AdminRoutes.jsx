@@ -9,6 +9,8 @@ import UserDetails from "../pages/admin/UserDetails";
 import AnnoncesList from "../pages/admin/AnnoncesList";
 import EntrepotsList from "../pages/admin/EntrepotsList";
 import PrestationList from "../pages/admin/PrestationList";
+import AdminPrestataires from "../pages/admin/AdminPrestataires";
+import AdminFactures from "../pages/admin/AdminFactures";
 
 export default function AdminRoutes() {
   return (
@@ -23,6 +25,8 @@ export default function AdminRoutes() {
         <Route path="annonces" element={<AnnoncesList />} />
         <Route path="entrepots" element={<EntrepotsList />} />
         <Route path="prestations" element={<PrestationList />} />
+        <Route path="prestataires" element={<AdminPrestataires />} />
+        <Route path="factures-prestataires" element={<AdminFactures />} />
       </Route>
     </Routes>
   );
