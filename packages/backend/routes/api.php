@@ -80,6 +80,10 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
     // Assignation d'un prestataire à une prestation
     Route::patch('/prestations/{id}/assigner', [PrestationController::class, 'assigner']);
 
+    // Factures prestataires
+    Route::get('/admin/factures-prestataire', [FacturePrestataireController::class, 'index']);
+    Route::get('/admin/factures-prestataire/{id}', [FacturePrestataireController::class, 'show']);
+
 });
 
 // CLIENT uniquement
@@ -115,7 +119,7 @@ Route::middleware(['auth:sanctum', 'role:admin,commercant'])->group(function () 
 Route::middleware(['auth:sanctum', 'role:admin,prestataire'])->group(function () {
     Route::get('/prestataires/{id}', [PrestataireController::class, 'show']);
     Route::patch('/prestataires/{id}', [PrestataireController::class, 'update']);
-    Route::post('/prestations', [PrestationController::class, 'store']);
+    Route::post('/prestations', [PrestationController::class, 'store'])->middleware('prestataire.valide');
     Route::post('/prestataires/{id}/justificatifs', [PrestataireValidationController::class, 'store']);
     Route::get('/prestataires/{id}/justificatifs', [PrestataireValidationController::class, 'index']);
 });
@@ -219,13 +223,12 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // PlanningPrestataire
     Route::get('/plannings', [PlanningPrestataireController::class, 'index']);
-    Route::post('/plannings', [PlanningPrestataireController::class, 'store']);
+    Route::post('/plannings', [PlanningPrestataireController::class, 'store'])->middleware('prestataire.valide');
     Route::delete('/plannings/{id}', [PlanningPrestataireController::class, 'destroy']);
 
     // InterventionPrestataire
     Route::get('/interventions', [InterventionController::class, 'index']);
     Route::post('/interventions', [InterventionController::class, 'store']);
-    Route::put('/interventions/{id}', [InterventionController::class, 'update']);
 
     // FacturePrestataire
     Route::get('/factures-prestataire', [FacturePrestataireController::class, 'mesFactures']);
