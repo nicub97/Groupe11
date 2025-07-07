@@ -266,7 +266,22 @@ class PrestationController extends Controller
             return response()->json(['message' => 'Prestation introuvable.'], 404);
         }
 
-        $prestation->prestataire_id = $request->prestataire_id;
+        $prestataire = \App\Models\Prestataire::find($request->prestataire_id);
+        if (! $prestataire->valide) {
+            return response()->json(['message' => 'Prestataire non valide.'], 403);
+        }
+
+        $disponible = PlanningPrestataire::where('prestataire_id', $prestataire->id)
+            ->whereDate('date_disponible', $prestation->date_heure)
+            ->whereTime('heure_debut', '<=', $prestation->date_heure)
+            ->whereTime('heure_fin', '>=', Carbon::parse($prestation->date_heure)->addMinutes($prestation->duree_estimee))
+            ->exists();
+
+        if (! $disponible) {
+            return response()->json(['message' => "Le prestataire n'est pas disponible."], 422);
+        }
+
+        $prestation->prestataire_id = $prestataire->id;
         $prestation->save();
 
         return response()->json(['message' => 'Prestataire assigné.', 'prestation' => $prestation]);

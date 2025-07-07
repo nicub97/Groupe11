@@ -78,30 +78,6 @@ class InterventionController extends Controller
 
     public function update(Request $request, $id)
     {
-        $intervention = Intervention::with('prestation')->find($id);
-        $user = Auth::user();
-
-        if (! $intervention) {
-            return response()->json(['message' => 'Intervention introuvable.'], 404);
-        }
-
-        // Vérifier que l'utilisateur est bien le client lié à la prestation
-        if ($user->role !== 'client' || $intervention->prestation->client_id !== ($user->client->id ?? null)) {
-            return response()->json(['message' => 'Accès interdit.'], 403);
-        }
-
-        // Bloquer la mise à jour si une évaluation existe déjà
-        if ($intervention->note !== null || $intervention->commentaire_client !== null) {
-            return response()->json(['message' => 'Cette intervention a déjà été évaluée.'], 422);
-        }
-
-        $validated = $request->validate([
-            'note' => 'nullable|integer|min:1|max:5',
-            'commentaire_client' => 'nullable|string|max:1000',
-        ]);
-
-        $intervention->update($validated);
-
-        return response()->json(['message' => 'Intervention mise à jour.', 'intervention' => $intervention]);
+        return response()->json(['message' => 'Utilisez /evaluations pour évaluer une intervention.'], 410);
     }
 }

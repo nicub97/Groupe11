@@ -76,4 +76,22 @@ class FacturePrestataireController extends Controller
             FacturePrestataire::where('prestataire_id', $prestataireId)->latest()->get()
         );
     }
+
+    public function index()
+    {
+        return response()->json(
+            FacturePrestataire::with('prestataire.utilisateur')->latest()->paginate(15)
+        );
+    }
+
+    public function show($id)
+    {
+        $facture = FacturePrestataire::with('prestataire.utilisateur')->find($id);
+
+        if (! $facture) {
+            return response()->json(['message' => 'Facture introuvable.'], 404);
+        }
+
+        return response()->json($facture);
+    }
 }
