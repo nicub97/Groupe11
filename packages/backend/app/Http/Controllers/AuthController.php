@@ -10,6 +10,7 @@ use App\Models\Commercant;
 use App\Models\Client;
 use App\Models\Livreur;
 use App\Models\Prestataire;
+use App\Models\JustificatifPrestataire;
 
 class AuthController extends Controller
 {
@@ -114,6 +115,10 @@ class AuthController extends Controller
             'rgpd_consent' => 'accepted',
         ];
 
+        if ($request->role === 'prestataire') {
+            $baseRules['justificatif'] = 'required|file|mimes:pdf,jpg,jpeg,png|max:2048';
+        }
+
         // Admin utilise identifiant
         if ($request->role === 'admin') {
             $baseRules['identifiant'] = 'required|string|unique:utilisateurs,identifiant';
@@ -170,16 +175,26 @@ class AuthController extends Controller
                 break;
 
             case 'prestataire':
-                Prestataire::create([
+                $prestataire = Prestataire::create([
                     'utilisateur_id' => $utilisateur->id,
                     'domaine' => $validated['domaine'],
                     'description' => $validated['description'] ?? null,
                     'statut' => 'en_attente',
                 ]);
+
+                if ($request->hasFile('justificatif')) {
+                    $path = $request->file('justificatif')->store('justificatifs', 'public');
+                    JustificatifPrestataire::create([
+                        'prestataire_id' => $prestataire->id,
+                        'chemin' => $path,
+                        'type' => $request->file('justificatif')->getClientOriginalExtension(),
+                    ]);
+                }
                 break;
         }
 
         return response()->json([
+            'message' => 'Inscription réussie',
             'token' => $utilisateur->createToken('auth_token')->plainTextToken,
             'user' => [
                 'id' => $utilisateur->id,
