@@ -42,6 +42,14 @@ export default function Navbar() {
               Prestations
             </Link>
 
+            <Link to="/admin/prestataires" className="hover:text-gray-300 transition">
+              Prestataires
+            </Link>
+
+            <Link to="/admin/factures-prestataires" className="hover:text-gray-300 transition">
+              Factures Prestataires
+            </Link>
+
             <Link to="/admin/entrepots" className="hover:text-gray-300 transition">
               Entrep\xF4ts
             </Link>
