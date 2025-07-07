@@ -34,28 +34,28 @@
 ### 📆 Disponibilités
 
 #### `Disponibilites.jsx` (prestataire uniquement)
-- [ ] Récupérer les créneaux via `GET /plannings`
-- [ ] Ajouter un créneau via `POST /plannings`
-- [ ] Supprimer un créneau via `DELETE /plannings/:id`
-- [ ] Afficher message d’erreur si chevauchement (géré côté backend)
+- [x] Récupérer les créneaux via `GET /plannings`
+- [x] Ajouter un créneau via `POST /plannings`
+- [x] Supprimer un créneau via `DELETE /plannings/:id`
+- [x] Afficher message d’erreur si chevauchement (géré côté backend)
 
 ---
 
 ### 📝 Publication
 
 #### `PublierPrestation.jsx`
-- [ ] Créer formulaire de publication
-- [ ] Soumettre via `POST /prestations`
-- [ ] Message de succès ou redirection
+- [x] Créer formulaire de publication
+- [x] Soumettre via `POST /prestations`
+- [x] Message de succès ou redirection
 
 ---
 
 ### 📄 Factures
 
 #### `Factures.jsx`
-- [ ] Récupérer la liste des factures via `GET /factures-prestataire`
-- [ ] Afficher mois + montant
-- [ ] Bouton "Télécharger PDF"
+- [x] Récupérer la liste des factures via `GET /factures-prestataire`
+- [x] Afficher mois + montant
+- [x] Bouton "Télécharger PDF"
 
 ---
 
