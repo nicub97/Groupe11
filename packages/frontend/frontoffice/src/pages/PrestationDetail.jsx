@@ -34,10 +34,12 @@ export default function PrestationDetail() {
 
   const reserver = async () => {
     try {
-      await api.patch(`/prestations/${id}/reserver`, null, {
+      localStorage.setItem("paymentContext", "prestation_reserver");
+      localStorage.setItem("prestationId", id);
+      const res = await api.post(`/prestations/${id}/payer`, null, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      fetchPrestation();
+      window.location.href = res.data.checkout_url;
     } catch (err) {
       console.error(err);
     }
@@ -73,7 +75,7 @@ export default function PrestationDetail() {
       </div>
 
       {/* Actions pour le client */}
-      {isClient && prestation.statut === "disponible" && (
+      {isClient && prestation.statut === "disponible" && !prestation.is_paid && (
         <button
           onClick={reserver}
           className="bg-blue-500 text-white px-4 py-2 rounded"

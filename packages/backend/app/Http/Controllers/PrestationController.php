@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Notification;
 use App\Models\PlanningPrestataire;
 use Carbon\Carbon;
+use Stripe\StripeClient;
 
 class PrestationController extends Controller
 {
@@ -285,6 +286,59 @@ class PrestationController extends Controller
         $prestation->save();
 
         return response()->json(['message' => 'Prestataire assigné.', 'prestation' => $prestation]);
+    }
+
+    public function payer(Request $request, Prestation $prestation)
+    {
+        $this->authorize('pay', $prestation);
+
+        $stripe = new StripeClient(config('services.stripe.secret'));
+
+        $session = $stripe->checkout->sessions->create([
+            'payment_method_types' => ['card'],
+            'mode' => 'payment',
+            'line_items' => [[
+                'price_data' => [
+                    'currency' => 'eur',
+                    'product_data' => ['name' => 'Paiement prestation'],
+                    'unit_amount' => (int) ($prestation->tarif * 100),
+                ],
+                'quantity' => 1,
+            ]],
+            'success_url' => sprintf(
+                '%s/paiement/success?session_id={CHECKOUT_SESSION_ID}&context=prestation_reserver&prestation_id=%s',
+                rtrim(env('FRONTEND_URL', ''), '/'),
+                $prestation->id
+            ),
+            'cancel_url' => rtrim(env('FRONTEND_URL', ''), '/') . '/paiement/cancel',
+        ]);
+
+        return response()->json(['checkout_url' => $session->url]);
+    }
+
+    public function paiementCallback(Request $request, Prestation $prestation)
+    {
+        $sessionId = $request->query('session_id');
+
+        if (! $sessionId) {
+            return response()->json(['message' => 'Session manquante.'], 400);
+        }
+
+        $stripe = new StripeClient(config('services.stripe.secret'));
+        $session = $stripe->checkout->sessions->retrieve($sessionId);
+
+        if ($session && $session->payment_status === 'paid') {
+            if ($prestation->is_paid) {
+                return response()->json(['message' => 'Paiement déjà confirmé.']);
+            }
+
+            $prestation->is_paid = true;
+            $prestation->save();
+
+            // TODO: envoyer une notification ou email si nécessaire
+        }
+
+        return response()->json(['message' => 'ok']);
     }
 
 }
