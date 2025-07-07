@@ -212,6 +212,14 @@ class PrestationController extends Controller
             return response()->json(['message' => 'Prestation introuvable.'], 404);
         }
 
+        // Autorisation via policy
+        $this->authorize('reserver', $prestation);
+
+        // Vérifier que la prestation a été payée
+        if (! $prestation->is_paid) {
+            return response()->json(['error' => 'Paiement requis avant réservation.'], 403);
+        }
+
         if ($prestation->client_id !== null) {
             return response()->json(['message' => 'Cette prestation est déjà réservée.'], 400);
         }
