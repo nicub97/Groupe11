@@ -29,10 +29,10 @@ export default function PublierPrestation() {
           headers: { Authorization: `Bearer ${token}` },
         });
         const formatted = res.data.map((s) => {
-          const start = new Date(`${s.date_disponible}T${s.heure_debut}`);
+          const value = `${s.date_disponible}T${s.heure_debut.slice(0, 5)}`;
           return {
             id: s.id,
-            value: start.toISOString().slice(0, 16),
+            value,
             label: `${new Date(s.date_disponible).toLocaleDateString()} \u2013 ${s.heure_debut} \u2192 ${s.heure_fin}`,
           };
         });
