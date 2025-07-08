@@ -54,6 +54,21 @@ class PrestationController extends Controller
             'tarif' => 'required|numeric|min:0',
         ]);
 
+        $fin = Carbon::parse($validated['date_heure'])
+            ->addMinutes($validated['duree_estimee'] ?? 0);
+
+        $disponible = PlanningPrestataire::where('prestataire_id', $user->prestataire->id)
+            ->whereDate('date_disponible', $validated['date_heure'])
+            ->whereTime('heure_debut', '<=', $validated['date_heure'])
+            ->whereTime('heure_fin', '>=', $fin)
+            ->exists();
+
+        if (! $disponible) {
+            return response()->json([
+                'message' => "Le créneau choisi n'est pas dans vos disponibilités.",
+            ], 422);
+        }
+
         $prestation = new Prestation($validated);
         $prestation->prestataire_id = $user->prestataire->id;
         $prestation->statut = 'disponible'; // visible par les clients

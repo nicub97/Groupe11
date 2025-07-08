@@ -1,5 +1,5 @@
 /* Formulaire de publication d'une prestation (prestataire uniquement) */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 import { useNavigate } from "react-router-dom";
@@ -19,6 +19,32 @@ export default function PublierPrestation() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [success, setSuccess] = useState(false);
+  const [slotsDisponibles, setSlotsDisponibles] = useState([]);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchSlots = async () => {
+      try {
+        const res = await api.get("/plannings", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const formatted = res.data.map((s) => {
+          const start = new Date(`${s.date_disponible}T${s.heure_debut}`);
+          return {
+            id: s.id,
+            value: start.toISOString().slice(0, 16),
+            label: `${new Date(s.date_disponible).toLocaleDateString()} \u2013 ${s.heure_debut} \u2192 ${s.heure_fin}`,
+          };
+        });
+        setSlotsDisponibles(formatted);
+      } catch (err) {
+        console.error(err);
+        setSlotsDisponibles([]);
+      }
+    };
+
+    fetchSlots();
+  }, [token]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -30,6 +56,15 @@ export default function PublierPrestation() {
     setLoading(true);
     setMessage("");
     setSuccess(false);
+    setError("");
+
+    if (!slotsDisponibles.some((s) => s.value === form.date_heure)) {
+      setError(
+        "Veuillez choisir un créneau valide défini dans vos disponibilités."
+      );
+      setLoading(false);
+      return;
+    }
     try {
       await api.post(
         "/prestations",
@@ -77,14 +112,25 @@ export default function PublierPrestation() {
           className="w-full p-2 border rounded"
           required
         />
-        <input
-          type="datetime-local"
-          name="date_heure"
-          value={form.date_heure}
-          onChange={handleChange}
-          required
-          className="w-full p-2 border rounded"
-        />
+        {slotsDisponibles.length === 0 ? (
+          <p>Aucune disponibilité trouvée</p>
+        ) : (
+          <select
+            name="date_heure"
+            value={form.date_heure}
+            onChange={handleChange}
+            className="w-full p-2 border rounded"
+            required
+          >
+            <option value="">-- Choisir un créneau --</option>
+            {slotsDisponibles.map((slot) => (
+              <option key={slot.id} value={slot.value}>
+                {slot.label}
+              </option>
+            ))}
+          </select>
+        )}
+        {error && <p className="text-red-600 text-sm">{error}</p>}
         <input
           type="number"
           name="duree_estimee"
