@@ -229,6 +229,9 @@ class PrestationController extends Controller
             'is_paid' => $prestation->is_paid,
         ]);
 
+        // Autorisation via policy
+        $this->authorize('reserver', $prestation);
+
         // Vérifications manuelles
         if ($user->role !== 'client') {
             Log::warning('Reservation refusée : utilisateur non client', [
