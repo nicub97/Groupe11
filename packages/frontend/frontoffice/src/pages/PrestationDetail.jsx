@@ -1,5 +1,5 @@
 /* Page de détail d'une prestation avec actions de réservation ou gestion */
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useEffect, useState } from "react";
 import api from "../services/api";
@@ -9,19 +9,29 @@ import ActionButtons from "../components/ActionButtons";
 
 export default function PrestationDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { token, user } = useAuth();
   const [prestation, setPrestation] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState("");
 
   const fetchPrestation = async () => {
+    setLoading(true);
+    setError("");
     try {
+      const storedToken = localStorage.getItem("token");
       const res = await api.get(`/prestations/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${storedToken}` },
       });
       setPrestation(res.data);
     } catch (err) {
-      setError(err);
+      if (err.response?.status === 401) {
+        navigate("/login");
+      } else if (err.response?.status === 403) {
+        setError("Accès refusé");
+      } else {
+        setError("Erreur lors du chargement.");
+      }
     } finally {
       setLoading(false);
     }
@@ -30,7 +40,7 @@ export default function PrestationDetail() {
   useEffect(() => {
     fetchPrestation();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, token]);
+  }, [id]);
 
   const reserver = async () => {
     try {
@@ -61,7 +71,7 @@ export default function PrestationDetail() {
 
 
   if (loading) return <p>Chargement...</p>;
-  if (error) return <p>Erreur lors du chargement.</p>;
+  if (error) return <p>{error}</p>;
 
   const isClient = user?.role === "client";
   const isPrestataire = user?.role === "prestataire";
