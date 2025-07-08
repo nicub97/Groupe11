@@ -5,6 +5,8 @@ export default function AdminPrestataires() {
   const [prestataires, setPrestataires] = useState([]);
   const [loading, setLoading] = useState(true);
   const [justifs, setJustifs] = useState({});
+  const [evaluations, setEvaluations] = useState({});
+  const [showEval, setShowEval] = useState({});
 
   useEffect(() => {
     fetchPrestataires();
@@ -25,6 +27,18 @@ export default function AdminPrestataires() {
     try {
       const res = await api.get(`/prestataires/${id}/justificatifs`);
       setJustifs((prev) => ({ ...prev, [id]: res.data }));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const voirEvaluations = async (utilisateurId) => {
+    try {
+      if (!evaluations[utilisateurId]) {
+        const res = await api.get(`/evaluations/cible/${utilisateurId}`);
+        setEvaluations((prev) => ({ ...prev, [utilisateurId]: res.data }));
+      }
+      setShowEval((prev) => ({ ...prev, [utilisateurId]: !prev[utilisateurId] }));
     } catch (err) {
       console.error(err);
     }
@@ -78,6 +92,9 @@ export default function AdminPrestataires() {
                   <button onClick={() => voirJustifs(p.utilisateur_id)} className="text-blue-600 hover:underline">
                     Voir justificatifs
                   </button>
+                  <button onClick={() => voirEvaluations(p.utilisateur_id)} className="text-indigo-600 hover:underline">
+                    Voir évaluations
+                  </button>
                   <button onClick={() => valider(p.utilisateur_id)} className="text-green-600 hover:underline">
                     Valider
                   </button>
@@ -103,6 +120,24 @@ export default function AdminPrestataires() {
             ))}
           </ul>
         </div>
+      ))}
+
+      {Object.entries(showEval).map(([id, visible]) => (
+        visible && evaluations[id] && (
+          <div key={`eval-${id}`} className="mt-4">
+            <h2 className="font-semibold">Évaluations utilisateur {id}</h2>
+            <ul className="list-disc ml-6">
+              {evaluations[id].map((e) => (
+                <li key={e.id} className="mb-2">
+                  <span className="font-medium">{e.prestation.type_prestation}</span>
+                  {" - "}
+                  {new Date(e.prestation.date_heure).toLocaleDateString()} - {e.note}/5 ⭐
+                  {e.commentaire_client && <p>{e.commentaire_client}</p>}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )
       ))}
     </div>
   );

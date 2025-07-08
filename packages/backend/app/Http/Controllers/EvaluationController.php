@@ -6,6 +6,7 @@ use App\Models\Intervention;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use App\Notifications\NouvelleEvaluationNotification;
 
 class EvaluationController extends Controller
 {
@@ -74,6 +75,12 @@ class EvaluationController extends Controller
             'note' => $validated['note'],
             'commentaire_client' => $validated['commentaire_client'] ?? null,
         ]);
+
+        $prestataireUser = $intervention->prestation->prestataire->utilisateur ?? null;
+        if ($prestataireUser) {
+            $prestataireUser->notify(new NouvelleEvaluationNotification($intervention));
+            Log::info('Notification nouvelle évaluation envoyée', ['prestataire_id' => $prestataireUser->id]);
+        }
 
         Log::info('Évaluation enregistrée', [
             'intervention_id' => $intervention->id,
