@@ -9,6 +9,8 @@ class FacturePrestataire extends Model
 {
     use HasFactory;
 
+    protected $table = 'factures_prestataires';
+
     protected $fillable = [
         'prestataire_id',
         'mois',
