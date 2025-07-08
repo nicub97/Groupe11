@@ -27,12 +27,21 @@ class PrestationPolicy
      */
     public function reserver(Utilisateur $user, Prestation $prestation): bool
     {
+        Log::info('PrestationPolicy.reserver start', [
+            'user_id' => $user->id,
+            'role' => $user->role,
+            'has_client' => (bool) $user->client,
+            'prestation_id' => $prestation->id,
+            'prestation_client_id' => $prestation->client_id,
+        ]);
+
         // The requester must be a client and the relation must exist
         if ($user->role !== 'client' || ! $user->client) {
             Log::debug('PrestationPolicy.reserver: user not client or missing relation', [
                 'user_id' => $user->id,
                 'role' => $user->role,
             ]);
+            Log::info('PrestationPolicy.reserver result', ['allowed' => false]);
             return false;
         }
 
@@ -49,12 +58,16 @@ class PrestationPolicy
                     'prestation_id' => $prestation->id,
                     'client_id' => $prestation->client_id,
                 ]);
+                Log::info('PrestationPolicy.reserver result', ['allowed' => false]);
                 return false;
             }
 
-            return $prestation->client->utilisateur_id === $user->id;
+            $allowed = $prestation->client->utilisateur_id === $user->id;
+            Log::info('PrestationPolicy.reserver result', ['allowed' => $allowed]);
+            return $allowed;
         }
 
+        Log::info('PrestationPolicy.reserver result', ['allowed' => true]);
         return true;
     }
 }
