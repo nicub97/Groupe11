@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Intervention;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class EvaluationController extends Controller
 {
@@ -63,9 +64,20 @@ class EvaluationController extends Controller
             return response()->json(['message' => 'Évaluation déjà enregistrée.'], 422);
         }
 
+        if ($intervention->prestation->statut !== 'terminée' || ! $intervention->prestation->is_paid) {
+            return response()->json([
+                'message' => 'La prestation doit être terminée et payée pour être évaluée.'
+            ], 422);
+        }
+
         $intervention->update([
             'note' => $validated['note'],
             'commentaire_client' => $validated['commentaire_client'] ?? null,
+        ]);
+
+        Log::info('Évaluation enregistrée', [
+            'intervention_id' => $intervention->id,
+            'client_id' => $user->client->id ?? null,
         ]);
 
         return response()->json(['message' => 'Évaluation enregistrée.', 'evaluation' => $intervention]);

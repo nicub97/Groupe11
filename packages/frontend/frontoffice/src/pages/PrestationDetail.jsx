@@ -117,7 +117,7 @@ export default function PrestationDetail() {
         prestation.statut === "terminée" &&
         prestation.intervention &&
         prestation.intervention.note === null && (
-          <EvaluationForm prestationId={id} onSubmit={fetchPrestation} />
+          <EvaluationForm interventionId={prestation.intervention.id} onSubmit={fetchPrestation} />
         )}
     </div>
   );

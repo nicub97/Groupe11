@@ -6,6 +6,7 @@ use App\Models\Intervention;
 use App\Models\Prestation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class InterventionController extends Controller
@@ -67,6 +68,11 @@ class InterventionController extends Controller
         $intervention = Intervention::create([
             'prestation_id' => $prestation->id,
             'statut_final' => $validated['statut_final'],
+        ]);
+
+        Log::info('Intervention enregistrée', [
+            'intervention_id' => $intervention->id,
+            'prestataire_id' => $user->prestataire->id ?? null,
         ]);
 
         // Mettre à jour le statut de la prestation
