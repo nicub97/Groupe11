@@ -9,6 +9,8 @@ class PlanningPrestataire extends Model
 {
     use HasFactory;
 
+    protected $table = 'plannings_prestataires';
+
     protected $fillable = [
         'prestataire_id',
         'date_disponible',
