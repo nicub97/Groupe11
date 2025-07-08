@@ -14,7 +14,7 @@ export default function PrestationCard({ prestation }) {
       </p>
       {/* Badge de statut */}
       <PrestationStatusBadge status={prestation.statut} />
-      {prestation.intervention?.note !== null && (
+      {prestation.intervention && prestation.intervention.note !== null && (
         <span className="ml-2 px-2 py-1 rounded bg-green-200 text-green-800 text-sm">
           Évaluée
         </span>
