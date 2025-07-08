@@ -95,12 +95,16 @@ export default function AdminPrestataires() {
                   <button onClick={() => voirEvaluations(p.utilisateur_id)} className="text-indigo-600 hover:underline">
                     Voir évaluations
                   </button>
-                  <button onClick={() => valider(p.utilisateur_id)} className="text-green-600 hover:underline">
-                    Valider
-                  </button>
-                  <button onClick={() => refuser(p.utilisateur_id)} className="text-red-600 hover:underline">
-                    Refuser
-                  </button>
+                  {p.statut === "en_attente" && (
+                    <>
+                      <button onClick={() => valider(p.utilisateur_id)} className="text-green-600 hover:underline">
+                        Valider
+                      </button>
+                      <button onClick={() => refuser(p.utilisateur_id)} className="text-red-600 hover:underline">
+                        Refuser
+                      </button>
+                    </>
+                  )}
                 </td>
               </tr>
             ))}
