@@ -54,18 +54,22 @@ class PrestationController extends Controller
             'tarif' => 'required|numeric|min:0',
         ]);
 
-        $fin = Carbon::parse($validated['date_heure'])
-            ->addMinutes($validated['duree_estimee'] ?? 0);
+        $debut = Carbon::parse($validated['date_heure']);
+        $fin = (clone $debut)->addMinutes($validated['duree_estimee'] ?? 0);
+
+        $date = $debut->toDateString();
+        $heureDebut = $debut->format('H:i:s');
+        $heureFin = $fin->format('H:i:s');
 
         $disponible = PlanningPrestataire::where('prestataire_id', $user->prestataire->id)
-            ->whereDate('date_disponible', $validated['date_heure'])
-            ->whereTime('heure_debut', '<=', $validated['date_heure'])
-            ->whereTime('heure_fin', '>=', $fin)
+            ->whereDate('date_disponible', $date)
+            ->whereTime('heure_debut', '<=', $heureDebut)
+            ->whereTime('heure_fin', '>=', $heureFin)
             ->exists();
 
         if (! $disponible) {
             return response()->json([
-                'message' => "Le créneau choisi n'est pas dans vos disponibilités.",
+                'message' => 'Vous n’avez pas défini ce créneau dans vos disponibilités.'
             ], 422);
         }
 
