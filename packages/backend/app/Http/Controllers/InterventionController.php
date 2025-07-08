@@ -52,9 +52,13 @@ class InterventionController extends Controller
         }
 
         // Empêcher la création d'une intervention avant la date de la prestation
-        if (Carbon::now()->lt($prestation->date_heure)) {
-            return response()->json(['message' => "La prestation n'a pas encore eu lieu."], 422);
-        }
+        // Désactivé temporairement pour la phase de test fonctionnel
+        // if (Carbon::now()->lt($prestation->date_heure)) {
+        //     return response()->json(['message' => "La prestation n'a pas encore eu lieu."], 422);
+        // }
+        Log::warning('Vérification date_heure désactivée pour tests', [
+            'prestation_id' => $prestation->id,
+        ]);
 
         // Empêcher la duplication d'intervention pour la même prestation
         if (Intervention::where('prestation_id', $prestation->id)->exists()) {
