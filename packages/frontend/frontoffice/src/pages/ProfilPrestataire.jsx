@@ -22,7 +22,11 @@ export default function ProfilPrestataire() {
       .get("/prestations", { headers: { Authorization: `Bearer ${token}` } })
       .then((res) => {
         const evals = res.data.filter(
-          (p) => p.prestataire_id === prestataire?.id && p.statut === "terminée" && p.intervention?.note !== null
+          (p) =>
+            p.prestataire_id === prestataire?.id &&
+            p.statut === "terminée" &&
+            p.intervention &&
+            p.intervention.note !== null
         );
         setEvaluations(evals);
       })
@@ -58,10 +62,10 @@ export default function ProfilPrestataire() {
               <li key={p.id} className="border p-2 rounded">
                 <p className="font-medium">{p.type_prestation}</p>
                 <p>
-                  {new Date(p.date_heure).toLocaleDateString()} - {p.intervention.note}
+                  {new Date(p.date_heure).toLocaleDateString()} – {p.intervention?.note ?? "Non évaluée"}
                   /5 ⭐
                 </p>
-                {p.intervention.commentaire_client && (
+                {p.intervention?.commentaire_client && (
                   <p>{p.intervention.commentaire_client}</p>
                 )}
               </li>

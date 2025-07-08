@@ -17,7 +17,11 @@ class PrestationController extends Controller
     {
         $user = Auth::user();
 
-        $prestations = Prestation::with(['client.utilisateur', 'prestataire.utilisateur'])
+        $prestations = Prestation::with([
+            'client.utilisateur',
+            'prestataire.utilisateur',
+            'intervention',
+        ])
             ->when($user->role === 'client', function ($query) use ($user) {
                 $query->whereHas('client', function ($q) use ($user) {
                     $q->where('utilisateur_id', $user->id);
