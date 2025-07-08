@@ -42,10 +42,19 @@ class PrestationPolicy
 
         // The requester must be a client and the relation must exist
         if ($user->role !== 'client' || ! $user->client) {
-            Log::debug('PrestationPolicy.reserver: user not client or missing relation', [
-                'user_id' => $user->id,
-                'role' => $user->role,
-            ]);
+            if (! $user->client) {
+                $freshUser = Utilisateur::with('client')->find($user->id);
+                Log::debug('PrestationPolicy.reserver: client relation missing', [
+                    'user_id' => $user->id,
+                    'role' => $user->role,
+                    'fresh_user' => $freshUser,
+                ]);
+            } else {
+                Log::debug('PrestationPolicy.reserver: user role not client', [
+                    'user_id' => $user->id,
+                    'role' => $user->role,
+                ]);
+            }
             Log::info('PrestationPolicy.reserver result', ['allowed' => false]);
             return false;
         }
