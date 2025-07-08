@@ -11,6 +11,7 @@ use App\Models\Client;
 use App\Models\Livreur;
 use App\Models\Prestataire;
 use App\Models\JustificatifPrestataire;
+use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
@@ -142,10 +143,14 @@ class AuthController extends Controller
 
         switch ($utilisateur->role) {
             case 'client':
-                Client::create([
+                $client = Client::create([
                     'utilisateur_id' => $utilisateur->id,
                     'adresse' => $utilisateur->adresse_postale,
                     'telephone' => $utilisateur->telephone,
+                ]);
+                Log::info('Client relation created', [
+                    'user_id' => $utilisateur->id,
+                    'client_id' => $client->id,
                 ]);
                 break;
 
