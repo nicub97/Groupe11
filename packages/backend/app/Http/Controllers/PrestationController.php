@@ -207,6 +207,11 @@ class PrestationController extends Controller
     {
         $user = auth()->user();
 
+        // Ensure the user model includes its client relation for authorization
+        if (! $user->relationLoaded('client')) {
+            $user->load('client');
+        }
+
         if ($user->role !== 'client') {
             return response()->json(['message' => 'Seuls les clients peuvent réserver une prestation.'], 403);
         }

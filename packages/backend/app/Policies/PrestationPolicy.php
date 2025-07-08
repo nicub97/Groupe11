@@ -27,6 +27,11 @@ class PrestationPolicy
      */
     public function reserver(Utilisateur $user, Prestation $prestation): bool
     {
+        // Ensure the client relation is loaded for the authenticated user
+        if (! $user->relationLoaded('client')) {
+            $user->load('client');
+        }
+
         Log::info('PrestationPolicy.reserver start', [
             'user_id' => $user->id,
             'role' => $user->role,
