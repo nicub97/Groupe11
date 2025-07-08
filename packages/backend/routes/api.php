@@ -219,7 +219,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/prestations/{id}', [PrestationController::class, 'update']);
     Route::delete('/prestations/{id}', [PrestationController::class, 'destroy']);
     Route::patch('/prestations/{id}/statut', [PrestationController::class, 'changerStatut']);
-    Route::patch('/prestations/{id}/reserver', [PrestationController::class, 'reserver']);
     Route::post('/prestations/{prestation}/payer', [PrestationController::class, 'payer'])->middleware('can:pay,prestation');
     Route::get('/prestations/{prestation}/paiement-callback', [PrestationController::class, 'paiementCallback']);
 
