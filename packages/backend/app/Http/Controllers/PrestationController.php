@@ -70,11 +70,21 @@ class PrestationController extends Controller
         }
 
         $user = Auth::user();
-        $clientId = $user->role === 'client' ? $user->client?->id : null;
+        $clientId      = $user->role === 'client' ? $user->client?->id : null;
         $prestataireId = $user->role === 'prestataire' ? $user->prestataire?->id : null;
 
-        if (($user->role === 'client' && $prestation->client_id !== $clientId) ||
-            ($user->role === 'prestataire' && $prestation->prestataire_id !== $prestataireId)) {
+        $authorized = false;
+
+        if ($user->role === 'client') {
+            $authorized = (
+                ($prestation->client_id === null && $prestation->statut === 'disponible') ||
+                $prestation->client_id === $clientId
+            );
+        } elseif ($user->role === 'prestataire') {
+            $authorized = $prestation->prestataire_id === $prestataireId;
+        }
+
+        if (! $authorized) {
             return response()->json(['message' => 'Accès non autorisé.'], 403);
         }
 
