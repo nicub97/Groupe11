@@ -7,6 +7,7 @@ use App\Models\Intervention;
 use App\Models\Prestataire;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class FacturePrestataireService
 {
@@ -21,7 +22,8 @@ class FacturePrestataireService
                 $query->where('prestataire_id', $prestataire->id)
                     ->whereMonth('date_heure', substr($mois, 5, 2))
                     ->whereYear('date_heure', substr($mois, 0, 4))
-                    ->where('statut', 'terminée');
+                    ->where('statut', 'terminée')
+                    ->where('is_paid', true);
             })
             ->get();
 
@@ -41,11 +43,18 @@ class FacturePrestataireService
         $chemin = "factures/prestataire_{$prestataire->id}_{$mois}.pdf";
         Storage::disk('public')->put($chemin, $pdf->output());
 
-        return FacturePrestataire::create([
+        $facture = FacturePrestataire::create([
             'prestataire_id' => $prestataire->id,
             'mois' => $mois,
             'montant_total' => $total,
             'chemin_pdf' => $chemin,
         ]);
+
+        Log::info('Facture générée', [
+            'facture_id' => $facture->id,
+            'prestataire_id' => $prestataire->id,
+        ]);
+
+        return $facture;
     }
 }

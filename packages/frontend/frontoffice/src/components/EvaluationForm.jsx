@@ -4,7 +4,7 @@ import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
 
 // Formulaire d\'évaluation d\'une prestation terminée
-export default function EvaluationForm({ prestationId, onSubmit }) {
+export default function EvaluationForm({ interventionId, onSubmit }) {
   const { token } = useAuth();
   const [note, setNote] = useState(1);
   const [commentaire, setCommentaire] = useState("");
@@ -19,7 +19,7 @@ export default function EvaluationForm({ prestationId, onSubmit }) {
       await api.post(
         "/evaluations",
         {
-          prestation_id: prestationId,
+          intervention_id: interventionId,
           note,
           commentaire_client: commentaire,
         },
@@ -70,6 +70,6 @@ export default function EvaluationForm({ prestationId, onSubmit }) {
 }
 
 EvaluationForm.propTypes = {
-  prestationId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
+  interventionId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
   onSubmit: PropTypes.func,
 };
