@@ -42,7 +42,7 @@ export default function PrestationDetail() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  const reserver = async () => {
+  const payer = async () => {
     try {
       localStorage.setItem("paymentContext", "prestation_reserver");
       localStorage.setItem("prestationId", id);
@@ -87,10 +87,10 @@ export default function PrestationDetail() {
       {/* Actions pour le client */}
       {isClient && prestation.statut === "disponible" && !prestation.is_paid && (
         <button
-          onClick={reserver}
+          onClick={payer}
           className="bg-blue-500 text-white px-4 py-2 rounded"
         >
-          Réserver
+          Payer
         </button>
       )}
 

@@ -13,8 +13,22 @@ class PrestationPolicy
      */
     public function pay(Utilisateur $user, Prestation $prestation): bool
     {
-        if (! $prestation->client_id) {
+        if (! $user->relationLoaded('client')) {
+            $user->load('client');
+        }
+
+        if ($user->role !== 'client' || ! $user->client) {
             return false;
+        }
+
+        // If no client is attached yet, allow payment only when the prestation
+        // is available so it can be reserved afterwards
+        if ($prestation->client_id === null) {
+            return $prestation->statut === 'disponible';
+        }
+
+        if (! $prestation->relationLoaded('client')) {
+            $prestation->load('client');
         }
 
         return $prestation->client->utilisateur_id === $user->id;

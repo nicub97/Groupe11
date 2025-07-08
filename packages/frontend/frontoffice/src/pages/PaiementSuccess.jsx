@@ -65,11 +65,6 @@ export default function PaiementSuccess() {
           localStorage.removeItem("reservationEntrepot");
           setMessage("Réservation confirmée !");
         } else if (context === "prestation_reserver" && prestationId) {
-          await api.patch(
-            `/prestations/${prestationId}/reserver`,
-            null,
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
           setMessage("Prestation réservée !");
           localStorage.removeItem("prestationId");
         } else if (context === "creer" && annonceData) {
