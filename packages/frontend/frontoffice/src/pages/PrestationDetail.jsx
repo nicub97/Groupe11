@@ -24,6 +24,7 @@ export default function PrestationDetail() {
         headers: { Authorization: `Bearer ${storedToken}` },
       });
       setPrestation(res.data);
+      console.log(res.data); // suivi de la prestation reçue
     } catch (err) {
       if (err.response?.status === 401) {
         navigate("/login");

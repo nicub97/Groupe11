@@ -64,7 +64,7 @@ class PrestationController extends Controller
 
     public function show($id)
     {
-        $prestation = Prestation::with(['client', 'prestataire'])->find($id);
+        $prestation = Prestation::with(['client', 'prestataire', 'intervention'])->find($id);
 
         if (! $prestation) {
             return response()->json(['message' => 'Prestation introuvable.'], 404);
