@@ -9,6 +9,7 @@ use App\Models\Notification;
 use App\Models\PlanningPrestataire;
 use Carbon\Carbon;
 use Stripe\StripeClient;
+use Illuminate\Support\Facades\Log;
 
 class PrestationController extends Controller
 {
@@ -221,6 +222,15 @@ class PrestationController extends Controller
         if (! $prestation) {
             return response()->json(['message' => 'Prestation introuvable.'], 404);
         }
+
+        Log::info('PrestationController.reserver', [
+            'user_id' => $user->id,
+            'client_id' => $client->id,
+            'prestation_id' => $prestation->id,
+            'prestation_client_id' => $prestation->client_id,
+            'prestation_statut' => $prestation->statut,
+            'is_paid' => $prestation->is_paid,
+        ]);
 
         // Autorisation via policy
         $this->authorize('reserver', $prestation);
