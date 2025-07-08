@@ -5,10 +5,13 @@ import api from "../services/api";
 import PrestationCard from "../components/PrestationCard";
 
 export default function Prestations() {
-  const { token, user } = useAuth();
+  const { token, user, updateUser } = useAuth();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  // id prestataire provenant de l'API /me
+  const [prestataireId, setPrestataireId] = useState(null);
+  const [loadingUser, setLoadingUser] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -26,14 +29,37 @@ export default function Prestations() {
     fetchData();
   }, [token]);
 
-  if (loading) return <p>Chargement...</p>;
+  // Récupération des infos détaillées de l'utilisateur
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await api.get("/me", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        // Mise à jour du contexte utilisateur pour disposer de client/prestataire
+        updateUser(res.data);
+        if (res.data.prestataire) {
+          setPrestataireId(res.data.prestataire.id);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoadingUser(false);
+      }
+    };
+    if (token) fetchUser();
+  }, [token, updateUser]);
+
+  if (loading || loadingUser) return <p>Chargement...</p>;
   if (error) return <p>Erreur lors du chargement.</p>;
 
   // Filtre les prestations selon le rôle utilisateur
   const isClient = user?.role === "client";
   const filteredData = isClient
-    ? data.filter((p) => p.client_id === user.id)
-    : data.filter((p) => p.prestataire_id === user.id);
+    // match sur l'id client récupéré via /me
+    ? data.filter((p) => p.client_id === user.client?.id)
+    // match sur l'id prestataire récupéré via /me
+    : data.filter((p) => p.prestataire_id === prestataireId);
 
   return (
     <div>
