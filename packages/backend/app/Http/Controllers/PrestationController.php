@@ -212,15 +212,7 @@ class PrestationController extends Controller
             $user->load('client');
         }
 
-        if ($user->role !== 'client') {
-            return response()->json(['message' => 'Seuls les clients peuvent réserver une prestation.'], 403);
-        }
-
         $client = \App\Models\Client::where('utilisateur_id', $user->id)->first();
-
-        if (! $client) {
-            return response()->json(['message' => 'Client introuvable.'], 404);
-        }
 
         $prestation = \App\Models\Prestation::find($id);
 
@@ -230,23 +222,51 @@ class PrestationController extends Controller
 
         Log::info('PrestationController.reserver', [
             'user_id' => $user->id,
-            'client_id' => $client->id,
+            'client_id' => $client->id ?? null,
             'prestation_id' => $prestation->id,
             'prestation_client_id' => $prestation->client_id,
             'prestation_statut' => $prestation->statut,
             'is_paid' => $prestation->is_paid,
         ]);
 
-        // Autorisation via policy
-        $this->authorize('reserver', $prestation);
+        // Vérifications manuelles
+        if ($user->role !== 'client') {
+            Log::warning('Reservation refusée : utilisateur non client', [
+                'user_id' => $user->id,
+                'prestation_id' => $prestation->id,
+            ]);
+            return response()->json(['message' => 'Seuls les clients peuvent réserver une prestation.'], 403);
+        }
 
-        // Vérifier que la prestation a été payée
-        if (! $prestation->is_paid) {
-            return response()->json(['error' => 'Paiement requis avant réservation.'], 403);
+        if (! $user->client) {
+            Log::warning('Reservation refusée : relation client manquante', [
+                'user_id' => $user->id,
+                'prestation_id' => $prestation->id,
+            ]);
+            return response()->json(['message' => 'Client introuvable.'], 404);
+        }
+
+        if ($prestation->statut !== 'disponible') {
+            Log::warning('Reservation refusée : prestation non disponible', [
+                'prestation_id' => $prestation->id,
+                'statut' => $prestation->statut,
+            ]);
+            return response()->json(['message' => 'Cette prestation n\'est pas disponible.'], 422);
         }
 
         if ($prestation->client_id !== null) {
-            return response()->json(['message' => 'Cette prestation est déjà réservée.'], 400);
+            Log::warning('Reservation refusée : prestation déjà réservée', [
+                'prestation_id' => $prestation->id,
+                'client_id' => $prestation->client_id,
+            ]);
+            return response()->json(['message' => 'Cette prestation est déjà réservée.'], 422);
+        }
+
+        if (! $prestation->is_paid) {
+            Log::warning('Reservation refusée : prestation non payée', [
+                'prestation_id' => $prestation->id,
+            ]);
+            return response()->json(['message' => 'Paiement requis avant réservation.'], 403);
         }
 
         $disponible = PlanningPrestataire::where('prestataire_id', $prestation->prestataire_id)
@@ -273,7 +293,10 @@ class PrestationController extends Controller
             'cible_id' => $prestation->id,
         ]);
 
-        return response()->json(['message' => 'Réservation confirmée.']);
+        return response()->json([
+            'message' => 'Réservation confirmée.',
+            'prestation' => $prestation,
+        ]);
     }
 
     public function catalogue()
