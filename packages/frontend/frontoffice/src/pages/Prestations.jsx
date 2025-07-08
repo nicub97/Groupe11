@@ -9,7 +9,7 @@ export default function Prestations() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  // id prestataire provenant de l'API /me
+  // id prestataire récupéré depuis l'API dédiée
   const [prestataireId, setPrestataireId] = useState(null);
   const [loadingUser, setLoadingUser] = useState(true);
 
@@ -33,13 +33,24 @@ export default function Prestations() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await api.get("/me", {
+        let endpoint = "";
+        if (user?.role === "client") {
+          endpoint = `/clients/${user.id}`;
+        } else if (user?.role === "prestataire") {
+          endpoint = `/prestataires/${user.id}`;
+        }
+
+        if (!endpoint) return;
+
+        const res = await api.get(endpoint, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        // Mise à jour du contexte utilisateur pour disposer de client/prestataire
-        updateUser(res.data);
-        if (res.data.prestataire) {
-          setPrestataireId(res.data.prestataire.id);
+
+        if (user.role === "client") {
+          updateUser({ client: res.data });
+        } else if (user.role === "prestataire") {
+          updateUser({ prestataire: res.data });
+          setPrestataireId(res.data.id);
         }
       } catch (err) {
         console.error(err);
@@ -47,8 +58,9 @@ export default function Prestations() {
         setLoadingUser(false);
       }
     };
-    if (token) fetchUser();
-  }, [token, updateUser]);
+
+    if (token && user) fetchUser();
+  }, [token, user, updateUser]);
 
   if (loading || loadingUser) return <p>Chargement...</p>;
   if (error) return <p>Erreur lors du chargement.</p>;
@@ -56,9 +68,9 @@ export default function Prestations() {
   // Filtre les prestations selon le rôle utilisateur
   const isClient = user?.role === "client";
   const filteredData = isClient
-    // match sur l'id client récupéré via /me
+    // match sur l'id client récupéré via l'API
     ? data.filter((p) => p.client_id === user.client?.id)
-    // match sur l'id prestataire récupéré via /me
+    // match sur l'id prestataire récupéré via l'API
     : data.filter((p) => p.prestataire_id === prestataireId);
 
   return (
