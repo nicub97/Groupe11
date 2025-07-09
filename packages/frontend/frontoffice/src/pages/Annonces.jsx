@@ -165,14 +165,12 @@ export default function Annonces() {
                 Publié le : {new Date(annonce.created_at).toLocaleDateString()}
               </p>
 
-              {user?.role === "client" && !annonce.id_client && (
-                <button
-                  onClick={() => navigate(`/annonces/${annonce.id}/reserver`)}
-                  className="mt-3 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                >
-                  Réserver
-                </button>
-              )}
+              <button
+                onClick={() => navigate(`/annonces/${annonce.id}`)}
+                className="mt-3 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                Voir l'annonce
+              </button>
             </li>
           ))}
         </ul>
