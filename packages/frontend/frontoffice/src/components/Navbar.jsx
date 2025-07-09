@@ -34,6 +34,7 @@ export default function Navbar() {
         ...common,
         { path: "/prestations/catalogue", label: "Catalogue" },
         { path: "/prestations", label: "Mes prestations" },
+        { path: "/mes-paiements", label: "Mes paiements" },
       ];
     }
 
