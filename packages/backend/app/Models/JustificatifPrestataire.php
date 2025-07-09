@@ -15,6 +15,7 @@ class JustificatifPrestataire extends Model
         'prestataire_id',
         'chemin',
         'type',
+        'statut',
     ];
 
     public function prestataire()

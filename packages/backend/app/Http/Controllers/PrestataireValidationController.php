@@ -37,7 +37,10 @@ class PrestataireValidationController extends Controller
         ]);
 
         $prestataire = $user->prestataire;
-        $path = $request->file('fichier')->store('justificatifs', 'public');
+        $path = $request->file('fichier')->store(
+            "justificatifs/prestataires/{$prestataire->id}",
+            'public'
+        );
 
         $justificatif = JustificatifPrestataire::create([
             'prestataire_id' => $prestataire->id,
