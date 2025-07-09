@@ -207,6 +207,11 @@ class PrestationController extends Controller
 
         if (! isset($transitionsValides[$statutActuel]) ||
             ! in_array($nouveauStatut, $transitionsValides[$statutActuel])) {
+            Log::warning('Transition de statut refusée', [
+                'prestation_id' => $prestation->id,
+                'from' => $statutActuel,
+                'to' => $nouveauStatut,
+            ]);
             return response()->json([
                 'message' => 'Transition de statut non autorisée.'
             ], 422);
@@ -267,6 +272,10 @@ class PrestationController extends Controller
             ->exists();
 
         if (! $disponible) {
+            Log::warning('Prestataire indisponible', [
+                'prestataire_id' => $prestataire->id,
+                'prestation_id' => $prestation->id,
+            ]);
             return response()->json(['message' => "Le prestataire n'est pas disponible."], 422);
         }
 

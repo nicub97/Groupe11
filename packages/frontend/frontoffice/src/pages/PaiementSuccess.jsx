@@ -43,6 +43,7 @@ export default function PaiementSuccess() {
                 });
             } catch (err) {
                 console.error("Erreur callback paiement :", err);
+                setMessage("Erreur lors de la confirmation du paiement.");
             }
         }
         if (context === "prestation_reserver" && prestationId && sessionId) {
@@ -53,6 +54,7 @@ export default function PaiementSuccess() {
             });
           } catch (err) {
             console.error("Erreur callback paiement prestation:", err);
+            setMessage("Erreur lors de la réservation de la prestation.");
           }
         }
 

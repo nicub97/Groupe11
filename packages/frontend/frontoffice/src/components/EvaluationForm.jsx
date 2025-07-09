@@ -30,6 +30,7 @@ export default function EvaluationForm({ interventionId, onSubmit }) {
       if (onSubmit) onSubmit();
     } catch (err) {
       setError("Erreur lors de l'envoi de l'évaluation.");
+      alert("Erreur lors de l'envoi de l'évaluation.");
     } finally {
       setLoading(false);
     }

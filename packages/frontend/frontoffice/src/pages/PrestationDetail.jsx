@@ -67,6 +67,7 @@ export default function PrestationDetail() {
       fetchPrestation();
     } catch (err) {
       console.error(err);
+      alert("Erreur lors de la validation de l'intervention.");
     }
   };
 

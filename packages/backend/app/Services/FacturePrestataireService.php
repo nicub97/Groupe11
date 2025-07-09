@@ -14,6 +14,10 @@ class FacturePrestataireService
     public static function genererPourPrestataire(Prestataire $prestataire, string $mois): ?FacturePrestataire
     {
         if (FacturePrestataire::where('prestataire_id', $prestataire->id)->where('mois', $mois)->exists()) {
+            Log::warning('Facture déjà existante', [
+                'prestataire_id' => $prestataire->id,
+                'mois' => $mois,
+            ]);
             return null;
         }
 
@@ -28,6 +32,10 @@ class FacturePrestataireService
             ->get();
 
         if ($interventions->isEmpty()) {
+            Log::info('Aucune intervention pour facturation', [
+                'prestataire_id' => $prestataire->id,
+                'mois' => $mois,
+            ]);
             return null;
         }
 
