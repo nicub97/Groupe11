@@ -19,6 +19,7 @@ export default function Factures() {
         setFactures(res.data);
       } catch (err) {
         setError("Erreur lors du chargement des factures.");
+        alert("Impossible de charger vos factures pour le moment.");
       } finally {
         setLoading(false);
       }

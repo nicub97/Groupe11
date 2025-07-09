@@ -187,7 +187,6 @@ Middleware: `auth:sanctum`
 | PUT | `/prestations/{id}` | `PrestationController@update` | Update service (client). |
 | DELETE | `/prestations/{id}` | `PrestationController@destroy` | Delete service. |
 | PATCH | `/prestations/{id}/statut` | `PrestationController@changerStatut` | Provider changes service status. |
-| PATCH | `/prestations/{id}/reserver` | `PrestationController@reserver` | Client reserves a provider service. |
 | GET | `/plannings` | `PlanningPrestataireController@index` | List provider availabilities. |
 | POST | `/plannings` | `PlanningPrestataireController@store` | Add availability slot. |
 | DELETE | `/plannings/{id}` | `PlanningPrestataireController@destroy` | Remove availability. |

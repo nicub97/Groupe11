@@ -62,10 +62,16 @@ class EvaluationController extends Controller
         }
 
         if ($intervention->note !== null) {
+            Log::warning('Evaluation en double', [
+                'intervention_id' => $intervention->id,
+            ]);
             return response()->json(['message' => 'Évaluation déjà enregistrée.'], 422);
         }
 
         if ($intervention->prestation->statut !== 'terminée' || ! $intervention->prestation->is_paid) {
+            Log::warning('Evaluation non autorisee', [
+                'intervention_id' => $intervention->id,
+            ]);
             return response()->json([
                 'message' => 'La prestation doit être terminée et payée pour être évaluée.'
             ], 422);
