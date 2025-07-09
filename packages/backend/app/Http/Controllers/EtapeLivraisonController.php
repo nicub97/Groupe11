@@ -133,10 +133,13 @@ class EtapeLivraisonController extends Controller
             }
         }
 
-        if ($request->type === 'retrait' && $user->id !== $etape->livreur_id) {
-            return response()->json([
-                'message' => 'Accès interdit pour valider ce code.'
-            ], 403);
+        if ($request->type === 'retrait') {
+            if ($etape->est_client && $user->id !== $annonce->id_client) {
+                return response()->json(['message' => 'Accès interdit pour valider ce code.'], 403);
+            }
+            if (! $etape->est_client && $user->id !== $etape->livreur_id) {
+                return response()->json(['message' => 'Accès interdit pour valider ce code.'], 403);
+            }
         }
 
         if ($user->role === 'commercant' && $annonce->id_commercant !== $user->id) {
