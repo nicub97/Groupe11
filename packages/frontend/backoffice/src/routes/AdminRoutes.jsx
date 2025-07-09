@@ -10,6 +10,7 @@ import AnnoncesList from "../pages/admin/AnnoncesList";
 import EntrepotsList from "../pages/admin/EntrepotsList";
 import PrestationList from "../pages/admin/PrestationList";
 import AdminPrestataires from "../pages/admin/AdminPrestataires";
+import AdminLivreur from "../pages/admin/AdminLivreur";
 import AdminFactures from "../pages/admin/AdminFactures";
 import PaiementsList from "../pages/admin/PaiementsList";
 
@@ -27,6 +28,7 @@ export default function AdminRoutes() {
         <Route path="entrepots" element={<EntrepotsList />} />
         <Route path="prestations" element={<PrestationList />} />
         <Route path="prestataires" element={<AdminPrestataires />} />
+        <Route path="livreurs" element={<AdminLivreur />} />
         <Route path="factures-prestataires" element={<AdminFactures />} />
         <Route path="paiements" element={<PaiementsList />} />
       </Route>
