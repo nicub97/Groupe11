@@ -142,7 +142,7 @@ export default function MesAnnonces() {
                 Suivre l'annonce
               </Link>
 
-              {!a.is_paid && (
+              {!a.is_paid && a.id_livreur_reservant !== null && (
                 <button
                   onClick={() => handlePay(a)}
                   disabled={payLoadingId === a.id}

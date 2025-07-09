@@ -81,11 +81,23 @@ class PaiementController extends Controller
 
         $context = $validated['context'] ?? 'reserver';
 
+        $annonce = null;
+        if (isset($validated['annonce_id'])) {
+            $annonce = Annonce::find($validated['annonce_id']);
+        }
+
+        if ($validated['type'] === 'livraison_client') {
+            if (! $annonce || $annonce->id_livreur_reservant === null) {
+                return response()->json([
+                    'message' => "Aucun livreur n\xE2\x80\x99a encore accept\xC3\xA9 cette annonce",
+                ], 403);
+            }
+        }
+
         if (isset($validated['montant'])) {
             $amount = (int) ($validated['montant'] * 100);
-        } elseif (isset($validated['annonce_id'])) {
-            $annonce = Annonce::find($validated['annonce_id']);
-            $amount = $annonce ? (int) ($annonce->prix_propose * 100) : 0;
+        } elseif ($annonce) {
+            $amount = (int) ($annonce->prix_propose * 100);
         } else {
             $amount = 0;
         }
