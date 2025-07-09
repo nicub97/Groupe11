@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use App\Services\LivraisonService;
+use App\Models\Paiement;
 
 class AnnonceController extends Controller
 {
@@ -440,7 +441,22 @@ class AnnonceController extends Controller
         $session = $stripe->checkout->sessions->retrieve($sessionId);
 
         if ($session && $session->payment_status === 'paid') {
-            DB::transaction(function () use ($annonce) {
+            DB::transaction(function () use ($annonce, $sessionId) {
+                // Enregistrer le paiement s'il n'existe pas déjà
+                Paiement::firstOrCreate(
+                    [
+                        'annonce_id' => $annonce->id,
+                        'utilisateur_id' => $annonce->id_client,
+                    ],
+                    [
+                        'montant' => $annonce->prix_propose,
+                        'sens' => 'debit',
+                        'type' => 'stripe',
+                        'reference' => $sessionId,
+                        'statut' => 'valide',
+                    ]
+                );
+
                 $annonce->is_paid = true;
                 $annonce->save();
 
