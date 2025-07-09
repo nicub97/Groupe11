@@ -71,6 +71,24 @@ export default function MesAnnonces() {
     }
   };
 
+  const estCloturee = (annonce) => {
+    const steps = annonce.etapes_livraison || [];
+    const last = steps[steps.length - 1];
+    return (
+      last &&
+      last.est_client === true &&
+      last.est_mini_etape === true &&
+      last.statut === "terminee"
+    );
+  };
+
+  const annoncesTriees = [...annonces].sort((a, b) => {
+    const finiA = estCloturee(a);
+    const finiB = estCloturee(b);
+    if (finiA === finiB) return 0;
+    return finiA ? 1 : -1;
+  });
+
   return (
     <div className="max-w-4xl mx-auto mt-10 p-6 bg-white shadow rounded">
       <h2 className="text-2xl font-bold mb-6">Mes annonces</h2>
@@ -79,31 +97,37 @@ export default function MesAnnonces() {
         <p>Aucune annonce trouvée.</p>
       ) : (
         <ul className="space-y-6">
-          {annonces.map((a) => (
+          {annoncesTriees.map((a) => (
             <li key={a.id} className="border p-4 rounded shadow-sm">
               <h3 className="text-xl font-semibold flex items-center gap-2">
                 {a.titre}
 
-                {a.type === "produit_livre" && (
-                  a.id_client ? (
-                    <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
-                      Réservée par un client
-                    </span>
-                  ) : (
-                    <span className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded-full">
-                      Non réservée
-                    </span>
-                  )
-                )}
-
-                {a.is_paid ? (
-                  <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
-                    Annonce payée
-                  </span>
+                {estCloturee(a) ? (
+                  <span className="badge badge-success">Annonce clôturée</span>
                 ) : (
-                  <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded-full">
-                    Paiement en attente
-                  </span>
+                  <>
+                    {a.type === "produit_livre" && (
+                      a.id_client ? (
+                        <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
+                          Réservée par un client
+                        </span>
+                      ) : (
+                        <span className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded-full">
+                          Non réservée
+                        </span>
+                      )
+                    )}
+
+                    {a.is_paid ? (
+                      <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                        Annonce payée
+                      </span>
+                    ) : (
+                      <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded-full">
+                        Paiement en attente
+                      </span>
+                    )}
+                  </>
                 )}
               </h3>
               <p className="text-gray-600 mb-2">{a.description}</p>
@@ -115,9 +139,11 @@ export default function MesAnnonces() {
                 </p>
               )}
 
-              <p className="mt-2 text-blue-700 font-medium">
-                Statut global : {afficherStatut(a.statut)}
-              </p>
+              {!estCloturee(a) && (
+                <p className="mt-2 text-blue-700 font-medium">
+                  Statut global : {afficherStatut(a.statut)}
+                </p>
+              )}
 
               {a.etapes_livraison?.length > 0 ? (
                 <div className="mt-4">
