@@ -27,6 +27,7 @@ use App\Http\Controllers\InterventionController;
 use App\Http\Controllers\FacturePrestataireController;
 use App\Http\Controllers\PrestataireValidationController;
 use App\Http\Controllers\LivreurValidationController;
+use App\Http\Controllers\JustificatifController;
 use App\Http\Controllers\StatAdminController;
 use App\Http\Controllers\Api\EmailVerificationController;
 use Laravel\Fortify\Http\Controllers\EmailVerificationNotificationController;
@@ -129,6 +130,10 @@ Route::middleware(['auth:sanctum', 'role:admin,prestataire'])->group(function ()
     Route::post('/prestations', [PrestationController::class, 'store'])->middleware('prestataire.valide');
     Route::post('/prestataires/{id}/justificatifs', [PrestataireValidationController::class, 'store']);
     Route::get('/prestataires/{id}/justificatifs', [PrestataireValidationController::class, 'index']);
+
+    Route::get('/prestataires/justificatifs', [JustificatifController::class, 'index']);
+    Route::post('/prestataires/justificatifs', [JustificatifController::class, 'store']);
+    Route::delete('/prestataires/justificatifs/{id}', [JustificatifController::class, 'destroy']);
 });
 
 // Routes accessibles à tout utilisateur connecté
