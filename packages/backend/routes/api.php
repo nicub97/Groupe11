@@ -26,6 +26,7 @@ use App\Http\Controllers\PlanningPrestataireController;
 use App\Http\Controllers\InterventionController;
 use App\Http\Controllers\FacturePrestataireController;
 use App\Http\Controllers\PrestataireValidationController;
+use App\Http\Controllers\LivreurValidationController;
 use App\Http\Controllers\StatAdminController;
 use App\Http\Controllers\Api\EmailVerificationController;
 use Laravel\Fortify\Http\Controllers\EmailVerificationNotificationController;
@@ -77,6 +78,11 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
     // Validation prestataires
     Route::patch('/prestataires/{id}/valider', [PrestataireValidationController::class, 'valider']);
     Route::patch('/prestataires/{id}/refuser', [PrestataireValidationController::class, 'refuser']);
+
+    // Validation livreurs
+    Route::get('/admin/livreurs', [LivreurValidationController::class, 'index']);
+    Route::post('/admin/livreurs/{id}/valider', [LivreurValidationController::class, 'valider']);
+    Route::post('/admin/livreurs/{id}/refuser', [LivreurValidationController::class, 'refuser']);
 
     // Assignation d'un prestataire à une prestation
     Route::patch('/prestations/{id}/assigner', [PrestationController::class, 'assigner']);
