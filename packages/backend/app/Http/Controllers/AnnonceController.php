@@ -513,7 +513,7 @@ class AnnonceController extends Controller
             });
         }
 
-        return redirect(rtrim(env('FRONTEND_URL', ''), '/') . '/paiement/success');
+        return response()->json(['message' => 'Paiement enregistré avec succès.']);
     }
 
 }

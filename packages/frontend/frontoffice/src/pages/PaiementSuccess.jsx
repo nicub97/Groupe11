@@ -35,16 +35,18 @@ export default function PaiementSuccess() {
 
     const finalize = async () => {
       try {
+        let paiementOk = true;
         if (annonceId && sessionId) {
-            try {
-                await api.get(`/annonces/${annonceId}/paiement-callback`, {
-                    params: { session_id: sessionId },
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-            } catch (err) {
-                console.error("Erreur callback paiement :", err);
-                setMessage("Erreur lors de la confirmation du paiement.");
-            }
+          try {
+            await api.get(`/annonces/${annonceId}/paiement-callback`, {
+              params: { session_id: sessionId },
+              headers: { Authorization: `Bearer ${token}` },
+            });
+          } catch (err) {
+            console.error("Erreur callback paiement :", err);
+            setMessage("\u274C Une erreur est survenue. Paiement non valid\u00e9.");
+            paiementOk = false;
+          }
         }
         if (context === "prestation_reserver" && prestationId && sessionId) {
           try {
@@ -57,6 +59,8 @@ export default function PaiementSuccess() {
             setMessage("Erreur lors de la réservation de la prestation.");
           }
         }
+
+        if (!paiementOk) return;
 
         if (context === "reserver" && annonceId && entrepotId) {
           await api.post(
@@ -91,7 +95,9 @@ export default function PaiementSuccess() {
         } else if (context === "payer" && annonceId) {
           localStorage.removeItem("payerAnnonceId");
           localStorage.removeItem("paymentContext");
-          setMessage("Annonce payée !");
+          if (paiementOk) {
+            setMessage("Annonce payée !");
+          }
         } else {
           setMessage("Paiement confirmé.");
         }
