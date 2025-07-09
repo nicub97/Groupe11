@@ -35,6 +35,7 @@ import MesEtapes from "../pages/MesEtapes";
 import ValidationCodeBox from "../pages/ValidationCodeBox";
 import SuiviAnnonce from "../pages/SuiviAnnonce";
 import ReserverAnnonce from "../pages/ReserverAnnonce";
+import MesPaiements from "../pages/client/MesPaiements";
 
 export default function AppRouter() {
   return (
@@ -188,6 +189,17 @@ export default function AppRouter() {
             element={
               <PrivateRoute>
                 <MesLivraisons />
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/mes-paiements"
+            element={
+              <PrivateRoute>
+                <RoleRoute role="client">
+                  <MesPaiements />
+                </RoleRoute>
               </PrivateRoute>
             }
           />

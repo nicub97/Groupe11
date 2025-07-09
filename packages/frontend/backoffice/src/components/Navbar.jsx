@@ -50,6 +50,10 @@ export default function Navbar() {
               Factures Prestataires
             </Link>
 
+            <Link to="/admin/paiements" className="hover:text-gray-300 transition">
+              Paiements
+            </Link>
+
             <Link to="/admin/entrepots" className="hover:text-gray-300 transition">
               Entrep\xF4ts
             </Link>
