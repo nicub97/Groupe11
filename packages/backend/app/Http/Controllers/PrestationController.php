@@ -10,6 +10,7 @@ use App\Models\PlanningPrestataire;
 use Carbon\Carbon;
 use Stripe\StripeClient;
 use Illuminate\Support\Facades\Log;
+use App\Models\Paiement;
 
 class PrestationController extends Controller
 {
@@ -332,6 +333,21 @@ class PrestationController extends Controller
             $user = Auth::user();
             if (! $user->relationLoaded('client')) {
                 $user->load('client');
+            }
+
+            $clientId = $prestation->client_id ?: $user->client?->id;
+
+            if ($clientId && ! Paiement::where('utilisateur_id', $clientId)->where('reference', $sessionId)->exists()) {
+                Paiement::create([
+                    'utilisateur_id' => $clientId,
+                    'annonce_id' => null,
+                    'commande_id' => null,
+                    'montant' => $prestation->tarif,
+                    'sens' => 'debit',
+                    'type' => 'stripe',
+                    'reference' => $sessionId,
+                    'statut' => 'valide',
+                ]);
             }
 
             $prestation->is_paid = true;
