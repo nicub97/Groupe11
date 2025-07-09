@@ -35,12 +35,14 @@ class LivreurValidationController extends Controller
         }
 
         $livreur->valide = true;
+        $livreur->statut = 'valide';
+        $livreur->motif_refus = null;
         $livreur->save();
 
         return response()->json(['message' => 'Livreur validé.']);
     }
 
-    public function refuser($id)
+    public function refuser(Request $request, $id)
     {
         $user = Auth::user();
         if ($user->role !== 'admin') {
@@ -52,7 +54,13 @@ class LivreurValidationController extends Controller
             return response()->json(['message' => 'Livreur introuvable.'], 404);
         }
 
+        $validated = $request->validate([
+            'motif_refus' => 'nullable|string',
+        ]);
+
         $livreur->valide = false;
+        $livreur->statut = 'refuse';
+        $livreur->motif_refus = $validated['motif_refus'] ?? null;
         $livreur->save();
 
         return response()->json(['message' => 'Livreur refusé.']);
