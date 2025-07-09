@@ -4,8 +4,9 @@ import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 export default function AnnoncesDisponibles() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [annoncesDisponibles, setAnnoncesDisponibles] = useState([]);
+  const [livreur, setLivreur] = useState(null);
   const [error, setError] = useState("");
   const [searchText, setSearchText] = useState("");
   const [minPrice, setMinPrice] = useState("");
@@ -15,20 +16,30 @@ export default function AnnoncesDisponibles() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchAnnonces = async () => {
-      try {
-        const res = await api.get("/annonces-disponibles", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setAnnoncesDisponibles(res.data.annonces_disponibles);
-      } catch (err) {
-        console.error("Erreur API :", err);
-        setError("Erreur lors du chargement des annonces.");
-      }
-    };
+    if (!user) return;
+    api
+      .get(`/livreurs/${user.id}`, { headers: { Authorization: `Bearer ${token}` } })
+      .then((res) => {
+        setLivreur(res.data);
+        if (res.data.statut === "valide") {
+          fetchAnnonces();
+        }
+      })
+      .catch(() => setLivreur(null));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, token]);
 
-    fetchAnnonces();
-  }, [token]);
+  const fetchAnnonces = async () => {
+    try {
+      const res = await api.get("/annonces-disponibles", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setAnnoncesDisponibles(res.data.annonces_disponibles);
+    } catch (err) {
+      console.error("Erreur API :", err);
+      setError("Erreur lors du chargement des annonces.");
+    }
+  };
 
   const handleAccepter = async (annonceId) => {
     if (!window.confirm("Accepter cette annonce ?")) return;
@@ -41,7 +52,11 @@ export default function AnnoncesDisponibles() {
       navigate("/mes-etapes");
     } catch (err) {
       console.error("Erreur acceptation :", err);
-      alert("Erreur lors de l'acceptation.");
+      if (err.response && err.response.status === 403) {
+        alert("⛔ Vous ne pouvez pas accéder à cette fonctionnalité tant que votre profil n’est pas validé.");
+      } else {
+        alert("Erreur lors de l'acceptation.");
+      }
     }
   };
 
@@ -81,6 +96,13 @@ export default function AnnoncesDisponibles() {
   });
 
   if (error) return <p className="text-red-600 text-center mt-10">{error}</p>;
+  if (livreur && livreur.statut !== "valide") {
+    return (
+      <p className="p-4 text-red-600">
+        ⛔ Vous ne pouvez pas accéder à cette fonctionnalité tant que votre profil n’est pas validé.
+      </p>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto mt-10 p-6 bg-white shadow rounded">

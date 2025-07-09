@@ -24,6 +24,7 @@ import AnnoncesDisponibles from "../pages/AnnoncesDisponibles";
 import MesLivraisons from "../pages/MesLivraisons";
 import Factures from "../pages/Factures";
 import ProfilPrestataire from "../pages/ProfilPrestataire";
+import ProfilLivreur from "../pages/ProfilLivreur";
 import PublierPrestation from "../pages/PublierPrestation";
 import Notifications from "../pages/Notifications";
 import Catalogue from "../pages/Catalogue";
@@ -252,6 +253,17 @@ export default function AppRouter() {
               <PrivateRoute>
                 <RoleRoute role={["prestataire"]}>
                   <ProfilPrestataire />
+                </RoleRoute>
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/profil-livreur"
+            element={
+              <PrivateRoute>
+                <RoleRoute role={["livreur"]}>
+                  <ProfilLivreur />
                 </RoleRoute>
               </PrivateRoute>
             }

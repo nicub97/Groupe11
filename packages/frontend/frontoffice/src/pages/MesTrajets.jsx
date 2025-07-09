@@ -3,8 +3,9 @@ import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
 
 export default function MesTrajets() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [trajets, setTrajets] = useState([]);
+  const [livreur, setLivreur] = useState(null);
   const [entrepots, setEntrepots] = useState([]);
   const [form, setForm] = useState({
     entrepot_depart_id: "",
@@ -15,7 +16,17 @@ export default function MesTrajets() {
 
   useEffect(() => {
     fetchEntrepots();
-    fetchTrajets();
+    if (user) {
+      api
+        .get(`/livreurs/${user.id}`, { headers: { Authorization: `Bearer ${token}` } })
+        .then((res) => {
+          setLivreur(res.data);
+          if (res.data.statut === "valide") {
+            fetchTrajets();
+          }
+        })
+        .catch(() => setLivreur(null));
+    }
   }, []);
 
   const fetchEntrepots = async () => {
@@ -80,6 +91,14 @@ export default function MesTrajets() {
       console.error("Erreur suppression:", err);
     }
   };
+
+  if (livreur && livreur.statut !== "valide") {
+    return (
+      <p className="p-4 text-red-600">
+        ⛔ Vous ne pouvez pas accéder à cette fonctionnalité tant que votre profil n’est pas validé.
+      </p>
+    );
+  }
 
   return (
     <div className="max-w-3xl mx-auto mt-10 p-6 bg-white shadow rounded">

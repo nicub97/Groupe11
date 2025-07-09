@@ -28,6 +28,7 @@ use App\Http\Controllers\FacturePrestataireController;
 use App\Http\Controllers\PrestataireValidationController;
 use App\Http\Controllers\LivreurValidationController;
 use App\Http\Controllers\JustificatifController;
+use App\Http\Controllers\JustificatifLivreurController;
 use App\Http\Controllers\StatAdminController;
 use App\Http\Controllers\Api\EmailVerificationController;
 use Laravel\Fortify\Http\Controllers\EmailVerificationNotificationController;
@@ -110,11 +111,15 @@ Route::middleware(['auth:sanctum', 'role:admin,livreur'])->group(function () {
     Route::patch('/colis/{id}/box', [ColisController::class, 'affecterBox']);
     Route::get('/livreurs/{id}', [LivreurController::class, 'show']);
     Route::patch('/livreurs/{id}', [LivreurController::class, 'update']);
-    Route::get('/annonces-disponibles', [AnnonceController::class, 'annoncesDisponibles']);
-    Route::post('/annonces/{id}/accepter', [AnnonceController::class, 'accepterAnnonce']);
-    Route::get('/mes-trajets', [TrajetLivreurController::class, 'index']);
-    Route::post('/mes-trajets', [TrajetLivreurController::class, 'store']);
-    Route::delete('/mes-trajets/{id}', [TrajetLivreurController::class, 'destroy']);
+    Route::post('/livreurs/justificatifs', [JustificatifLivreurController::class, 'store']);
+
+    Route::middleware('livreur.valide')->group(function () {
+        Route::get('/annonces-disponibles', [AnnonceController::class, 'annoncesDisponibles']);
+        Route::post('/annonces/{id}/accepter', [AnnonceController::class, 'accepterAnnonce']);
+        Route::get('/mes-trajets', [TrajetLivreurController::class, 'index']);
+        Route::post('/mes-trajets', [TrajetLivreurController::class, 'store']);
+        Route::delete('/mes-trajets/{id}', [TrajetLivreurController::class, 'destroy']);
+    });
 });
 
 // COMMERCANT uniquement
