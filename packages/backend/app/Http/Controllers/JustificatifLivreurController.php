@@ -2,12 +2,45 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Livreur;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class JustificatifLivreurController extends Controller
 {
+    public function index($id)
+    {
+        $user = Auth::user();
+        if ($user->role !== 'admin' && $user->id !== (int) $id) {
+            return response()->json(['message' => 'Accès interdit.'], 403);
+        }
+
+        $livreur = Livreur::where('utilisateur_id', $id)->first();
+        if (! $livreur) {
+            return response()->json(['message' => 'Livreur introuvable.'], 404);
+        }
+
+        $justificatifs = [];
+        if ($livreur->piece_identite_document) {
+            $justificatifs[] = [
+                'type_document' => 'piece_identite',
+                'chemin_fichier' => Storage::disk('public')->url($livreur->piece_identite_document),
+                'created_at' => $livreur->updated_at,
+            ];
+        }
+
+        if ($livreur->permis_conduire_document) {
+            $justificatifs[] = [
+                'type_document' => 'permis_conduire',
+                'chemin_fichier' => Storage::disk('public')->url($livreur->permis_conduire_document),
+                'created_at' => $livreur->updated_at,
+            ];
+        }
+
+        return response()->json($justificatifs);
+    }
+
     public function store(Request $request)
     {
         $user = Auth::user();
