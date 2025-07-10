@@ -123,14 +123,25 @@ export default function Navbar() {
             <>
               {(user.role === "prestataire" || user.role === "client") && (
                 <li>
-                  <details>
-                    <summary>Prestations</summary>
-                    <ul>
+                  <details className="relative group">
+                    <summary className="flex items-center gap-1 px-3 py-2 rounded cursor-pointer text-green-700 hover:bg-green-50 transition">
+                      Prestations
+                      <svg
+                        className="w-4 h-4 ml-1 transition-transform duration-200 group-open:rotate-180"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path d="M5 7l5 5 5-5H5z" />
+                      </svg>
+                    </summary>
+                    <ul className="absolute z-10 mt-2 w-48 bg-white border border-green-200 rounded shadow-lg py-1 text-sm">
                       {menuItems
                         .filter((i) => i.group === "prestations")
                         .map((item) => (
                           <li key={item.path}>
-                            <Link to={item.path}>{item.label}</Link>
+                            <Link to={item.path} className="block px-4 py-2 hover:bg-green-50 text-green-800">
+                              {item.label}
+                            </Link>
                           </li>
                         ))}
                     </ul>
@@ -138,28 +149,50 @@ export default function Navbar() {
                 </li>
               )}
               <li>
-                <details>
-                  <summary>Annonces / Livraisons</summary>
-                  <ul>
+                <details className="relative group">
+                  <summary className="flex items-center gap-1 px-3 py-2 rounded cursor-pointer text-green-700 hover:bg-green-50 transition">
+                    Annonces / Livraisons
+                    <svg
+                      className="w-4 h-4 ml-1 transition-transform duration-200 group-open:rotate-180"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path d="M5 7l5 5 5-5H5z" />
+                    </svg>
+                  </summary>
+                  <ul className="absolute z-10 mt-2 w-48 bg-white border border-green-200 rounded shadow-lg py-1 text-sm">
                     {menuItems
                       .filter((i) => i.group === "annonces")
                       .map((item) => (
                         <li key={item.path}>
-                          <Link to={item.path}>{item.label}</Link>
+                          <Link to={item.path} className="block px-4 py-2 hover:bg-green-50 text-green-800">
+                            {item.label}
+                          </Link>
                         </li>
                       ))}
                   </ul>
                 </details>
               </li>
               <li>
-                <details>
-                  <summary>Paiement / Profil</summary>
-                  <ul>
+                <details className="relative group">
+                  <summary className="flex items-center gap-1 px-3 py-2 rounded cursor-pointer text-green-700 hover:bg-green-50 transition">
+                    Paiement / Profil
+                    <svg
+                      className="w-4 h-4 ml-1 transition-transform duration-200 group-open:rotate-180"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path d="M5 7l5 5 5-5H5z" />
+                    </svg>
+                  </summary>
+                  <ul className="absolute z-10 mt-2 w-48 bg-white border border-green-200 rounded shadow-lg py-1 text-sm">
                     {menuItems
                       .filter((i) => i.group === "profil")
                       .map((item) => (
                         <li key={item.path}>
-                          <Link to={item.path}>{item.label}</Link>
+                          <Link to={item.path} className="block px-4 py-2 hover:bg-green-50 text-green-800">
+                            {item.label}
+                          </Link>
                         </li>
                       ))}
                   </ul>
@@ -240,14 +273,25 @@ export default function Navbar() {
               <>
                 {(user.role === "prestataire" || user.role === "client") && (
                   <li>
-                    <details>
-                      <summary>Prestations</summary>
-                      <ul>
+                    <details className="relative group">
+                      <summary className="flex items-center gap-1 px-3 py-2 rounded cursor-pointer text-green-700 hover:bg-green-50 transition">
+                        Prestations
+                        <svg
+                          className="w-4 h-4 ml-1 transition-transform duration-200 group-open:rotate-180"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path d="M5 7l5 5 5-5H5z" />
+                        </svg>
+                      </summary>
+                      <ul className="absolute z-10 mt-2 w-48 bg-white border border-green-200 rounded shadow-lg py-1 text-sm">
                         {menuItems
                           .filter((i) => i.group === "prestations")
                           .map((item) => (
                             <li key={item.path}>
-                              <Link to={item.path}>{item.label}</Link>
+                              <Link to={item.path} className="block px-4 py-2 hover:bg-green-50 text-green-800">
+                                {item.label}
+                              </Link>
                             </li>
                           ))}
                       </ul>
@@ -255,28 +299,50 @@ export default function Navbar() {
                   </li>
                 )}
                 <li>
-                  <details>
-                    <summary>Annonces / Livraisons</summary>
-                    <ul>
+                  <details className="relative group">
+                    <summary className="flex items-center gap-1 px-3 py-2 rounded cursor-pointer text-green-700 hover:bg-green-50 transition">
+                      Annonces / Livraisons
+                      <svg
+                        className="w-4 h-4 ml-1 transition-transform duration-200 group-open:rotate-180"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path d="M5 7l5 5 5-5H5z" />
+                      </svg>
+                    </summary>
+                    <ul className="absolute z-10 mt-2 w-48 bg-white border border-green-200 rounded shadow-lg py-1 text-sm">
                       {menuItems
                         .filter((i) => i.group === "annonces")
                         .map((item) => (
                           <li key={item.path}>
-                            <Link to={item.path}>{item.label}</Link>
+                            <Link to={item.path} className="block px-4 py-2 hover:bg-green-50 text-green-800">
+                              {item.label}
+                            </Link>
                           </li>
                         ))}
                     </ul>
                   </details>
                 </li>
                 <li>
-                  <details>
-                    <summary>Paiement / Profil</summary>
-                    <ul>
+                  <details className="relative group">
+                    <summary className="flex items-center gap-1 px-3 py-2 rounded cursor-pointer text-green-700 hover:bg-green-50 transition">
+                      Paiement / Profil
+                      <svg
+                        className="w-4 h-4 ml-1 transition-transform duration-200 group-open:rotate-180"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path d="M5 7l5 5 5-5H5z" />
+                      </svg>
+                    </summary>
+                    <ul className="absolute z-10 mt-2 w-48 bg-white border border-green-200 rounded shadow-lg py-1 text-sm">
                       {menuItems
                         .filter((i) => i.group === "profil")
                         .map((item) => (
                           <li key={item.path}>
-                            <Link to={item.path}>{item.label}</Link>
+                            <Link to={item.path} className="block px-4 py-2 hover:bg-green-50 text-green-800">
+                              {item.label}
+                            </Link>
                           </li>
                         ))}
                     </ul>

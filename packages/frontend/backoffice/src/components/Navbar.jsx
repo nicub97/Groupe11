@@ -30,38 +30,72 @@ export default function Navbar() {
               Dashboard
             </Link>
 
-            <details>
-              <summary>Utilisateurs</summary>
-              <ul>
+            <details className="relative group">
+              <summary className="flex items-center gap-1 px-3 py-2 rounded cursor-pointer text-green-700 hover:bg-green-50 transition">
+                Utilisateurs
+                <svg
+                  className="w-4 h-4 ml-1 transition-transform duration-200 group-open:rotate-180"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path d="M5 7l5 5 5-5H5z" />
+                </svg>
+              </summary>
+              <ul className="absolute z-10 mt-2 w-48 bg-white border border-green-200 rounded shadow-lg py-1 text-sm">
                 <li>
-                  <Link to="/admin/utilisateurs">Liste utilisateurs</Link>
+                  <Link to="/admin/utilisateurs" className="block px-4 py-2 hover:bg-green-50 text-green-800">
+                    Liste utilisateurs
+                  </Link>
                 </li>
                 <li>
-                  <Link to="/admin/livreurs">Livreurs</Link>
+                  <Link to="/admin/livreurs" className="block px-4 py-2 hover:bg-green-50 text-green-800">
+                    Livreurs
+                  </Link>
                 </li>
                 <li>
-                  <Link to="/admin/prestataires">Prestataires</Link>
+                  <Link to="/admin/prestataires" className="block px-4 py-2 hover:bg-green-50 text-green-800">
+                    Prestataires
+                  </Link>
                 </li>
               </ul>
             </details>
 
-            <details>
-              <summary>Activité</summary>
-              <ul>
+            <details className="relative group">
+              <summary className="flex items-center gap-1 px-3 py-2 rounded cursor-pointer text-green-700 hover:bg-green-50 transition">
+                Activité
+                <svg
+                  className="w-4 h-4 ml-1 transition-transform duration-200 group-open:rotate-180"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path d="M5 7l5 5 5-5H5z" />
+                </svg>
+              </summary>
+              <ul className="absolute z-10 mt-2 w-48 bg-white border border-green-200 rounded shadow-lg py-1 text-sm">
                 <li>
-                  <Link to="/admin/annonces">Annonces</Link>
+                  <Link to="/admin/annonces" className="block px-4 py-2 hover:bg-green-50 text-green-800">
+                    Annonces
+                  </Link>
                 </li>
                 <li>
-                  <Link to="/admin/prestations">Prestations</Link>
+                  <Link to="/admin/prestations" className="block px-4 py-2 hover:bg-green-50 text-green-800">
+                    Prestations
+                  </Link>
                 </li>
                 <li>
-                  <Link to="/admin/entrepots">Entrep\u00F4ts</Link>
+                  <Link to="/admin/entrepots" className="block px-4 py-2 hover:bg-green-50 text-green-800">
+                    Entrepots
+                  </Link>
                 </li>
                 <li>
-                  <Link to="/admin/factures-prestataires">Factures Prestataires</Link>
+                  <Link to="/admin/factures-prestataires" className="block px-4 py-2 hover:bg-green-50 text-green-800">
+                    Factures Prestataires
+                  </Link>
                 </li>
                 <li>
-                  <Link to="/admin/paiements">Paiements</Link>
+                  <Link to="/admin/paiements" className="block px-4 py-2 hover:bg-green-50 text-green-800">
+                    Paiements
+                  </Link>
                 </li>
               </ul>
             </details>
