@@ -24,17 +24,18 @@ export default function Navbar() {
     if (!user) return [];
 
     const common = [
-      { path: "/monprofil", label: "Mon Profil" },
+      { path: "/monprofil", label: "Mon Profil", group: "profil" },
       { path: "/notifications", label: "Notifications" },
+      { path: "/profil/motdepasse", label: "Modifier mot de passe", group: "profil" },
     ];
 
     if (user.role === "client") {
       // Liens dédiés aux clients pour la gestion des prestations
       return [
         ...common,
-        { path: "/prestations/catalogue", label: "Catalogue" },
-        { path: "/prestations", label: "Mes prestations" },
-        { path: "/mes-paiements", label: "Mes paiements" },
+        { path: "/prestations/catalogue", label: "Catalogue", group: "prestations" },
+        { path: "/prestations", label: "Mes prestations", group: "prestations" },
+        { path: "/mes-paiements", label: "Mes paiements", group: "profil" },
       ];
     }
 
@@ -42,27 +43,28 @@ export default function Navbar() {
       // Liens dédiés aux prestataires pour la gestion des prestations
       return [
         ...common,
-        { path: "/prestations", label: "Prestations assignées" },
-        { path: "/disponibilites", label: "Disponibilités" },
-        { path: "/prestations/publier", label: "Publier une prestation" },
-        { path: "/factures", label: "Factures" },
+        { path: "/prestations", label: "Prestations assignées", group: "prestations" },
+        { path: "/disponibilites", label: "Disponibilités", group: "prestations" },
+        { path: "/prestations/publier", label: "Publier une prestation", group: "prestations" },
+        { path: "/factures", label: "Factures", group: "profil" },
       ];
     }
 
     if (user.role === "commercant") {
       return [
         ...common,
-        { path: "/annonces/creer", label: "Créer une annonce" },
-        { path: "/mes-annonces", label: "Mes annonces" },
+        { path: "/annonces/creer", label: "Créer une annonce", group: "annonces" },
+        { path: "/mes-annonces", label: "Mes annonces", group: "annonces" },
       ];
     }
 
     if (user.role === "livreur") {
       return [
         ...common,
-        { path: "/mes-trajets", label: "Mes trajets" },
-        { path: "/annonces-disponibles", label: "Annonces disponibles" },
-        { path: "/mes-etapes", label: "Mes étapes" },
+        { path: "/mes-trajets", label: "Mes trajets", group: "annonces" },
+        { path: "/annonces-disponibles", label: "Annonces disponibles", group: "annonces" },
+        { path: "/mes-etapes", label: "Mes étapes", group: "annonces" },
+        { path: "/mes-livraisons", label: "Mes livraisons", group: "annonces" },
       ];
     }
 
@@ -119,11 +121,55 @@ export default function Navbar() {
             </>
           ) : (
             <>
-              {menuItems.map((item) => (
-                <li key={item.path}>
-                  <Link to={item.path} className="hover:text-lime-300 transition">{item.label}</Link>
-                </li>
-              ))}
+              <li>
+                <details>
+                  <summary>Prestations</summary>
+                  <ul>
+                    {menuItems
+                      .filter((i) => i.group === "prestations")
+                      .map((item) => (
+                        <li key={item.path}>
+                          <Link to={item.path}>{item.label}</Link>
+                        </li>
+                      ))}
+                  </ul>
+                </details>
+              </li>
+              <li>
+                <details>
+                  <summary>Annonces / Livraisons</summary>
+                  <ul>
+                    {menuItems
+                      .filter((i) => i.group === "annonces")
+                      .map((item) => (
+                        <li key={item.path}>
+                          <Link to={item.path}>{item.label}</Link>
+                        </li>
+                      ))}
+                  </ul>
+                </details>
+              </li>
+              <li>
+                <details>
+                  <summary>Paiement / Profil</summary>
+                  <ul>
+                    {menuItems
+                      .filter((i) => i.group === "profil")
+                      .map((item) => (
+                        <li key={item.path}>
+                          <Link to={item.path}>{item.label}</Link>
+                        </li>
+                      ))}
+                  </ul>
+                </details>
+              </li>
+              {menuItems
+                .filter((i) => !i.group)
+                .map((item) => (
+                  <li key={item.path}>
+                    <Link to={item.path}>{item.label}</Link>
+                  </li>
+                ))}
               <li>
                 <button onClick={handleLogout} className="hover:text-red-300 transition">
                   Se déconnecter
@@ -190,9 +236,55 @@ export default function Navbar() {
               </>
             ) : (
               <>
-                {menuItems.map((item) => (
-                  <li key={item.path}><Link to={item.path} className="block hover:text-lime-300">{item.label}</Link></li>
-                ))}
+                <li>
+                  <details>
+                    <summary>Prestations</summary>
+                    <ul>
+                      {menuItems
+                        .filter((i) => i.group === "prestations")
+                        .map((item) => (
+                          <li key={item.path}>
+                            <Link to={item.path}>{item.label}</Link>
+                          </li>
+                        ))}
+                    </ul>
+                  </details>
+                </li>
+                <li>
+                  <details>
+                    <summary>Annonces / Livraisons</summary>
+                    <ul>
+                      {menuItems
+                        .filter((i) => i.group === "annonces")
+                        .map((item) => (
+                          <li key={item.path}>
+                            <Link to={item.path}>{item.label}</Link>
+                          </li>
+                        ))}
+                    </ul>
+                  </details>
+                </li>
+                <li>
+                  <details>
+                    <summary>Paiement / Profil</summary>
+                    <ul>
+                      {menuItems
+                        .filter((i) => i.group === "profil")
+                        .map((item) => (
+                          <li key={item.path}>
+                            <Link to={item.path}>{item.label}</Link>
+                          </li>
+                        ))}
+                    </ul>
+                  </details>
+                </li>
+                {menuItems
+                  .filter((i) => !i.group)
+                  .map((item) => (
+                    <li key={item.path}>
+                      <Link to={item.path}>{item.label}</Link>
+                    </li>
+                  ))}
                 <li>
                   <button onClick={handleLogout} className="block hover:text-red-300">Se déconnecter</button>
                 </li>
