@@ -15,9 +15,7 @@ class LivreurValidationController extends Controller
             return response()->json(['message' => 'Accès interdit.'], 403);
         }
 
-        $livreurs = Livreur::with('utilisateur')
-            ->where('valide', false)
-            ->get();
+        $livreurs = Livreur::with('utilisateur')->get();
 
         return response()->json($livreurs);
     }
