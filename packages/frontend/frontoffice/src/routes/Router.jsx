@@ -21,7 +21,6 @@ import PaiementSuccess from "../pages/PaiementSuccess";
 import PaiementCancel from "../pages/PaiementCancel";
 import MesAnnonces from "../pages/MesAnnonces";
 import AnnoncesDisponibles from "../pages/AnnoncesDisponibles";
-import MesLivraisons from "../pages/MesLivraisons";
 import Factures from "../pages/Factures";
 import ProfilPrestataire from "../pages/ProfilPrestataire";
 import ProfilLivreur from "../pages/ProfilLivreur";
@@ -181,15 +180,6 @@ export default function AppRouter() {
             element={
               <PrivateRoute>
                 <AnnoncesDisponibles />
-              </PrivateRoute>
-            }
-          />
-
-          <Route
-            path="/mes-livraisons"
-            element={
-              <PrivateRoute>
-                <MesLivraisons />
               </PrivateRoute>
             }
           />
