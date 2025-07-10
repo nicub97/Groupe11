@@ -92,7 +92,7 @@ export default function AdminLivreur() {
                 </td>
                 <td className="p-3 text-sm">{l.motif_refus || ""}</td>
                 <td className="p-3 space-x-2">
-                  {!l.valide && (
+                  {l.statut === "en_attente" && (
                     <>
                       <button
                         onClick={() => valider(l.utilisateur_id)}

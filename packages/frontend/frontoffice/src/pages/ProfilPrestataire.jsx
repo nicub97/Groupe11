@@ -154,7 +154,7 @@ export default function ProfilPrestataire() {
               >
                 {j.chemin.split("/").pop()}
               </a>
-              {prestataire.statut === "refuse" && (
+              {j.statut === "refuse" && (
                 <button
                   onClick={() => handleDelete(j.id)}
                   className="text-sm text-red-600 hover:underline"
@@ -165,7 +165,8 @@ export default function ProfilPrestataire() {
             </li>
           ))}
         </ul>
-        {prestataire.statut === "refuse" && justificatifs.length > 0 && (
+        {prestataire.statut === "refuse" &&
+          justificatifs.some((j) => j.statut === "refuse") && (
           <p className="text-sm text-gray-600">
             📂 Vous devez supprimer les justificatifs refusés avant d’en ajouter
             un nouveau.
