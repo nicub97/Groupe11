@@ -121,20 +121,22 @@ export default function Navbar() {
             </>
           ) : (
             <>
-              <li>
-                <details>
-                  <summary>Prestations</summary>
-                  <ul>
-                    {menuItems
-                      .filter((i) => i.group === "prestations")
-                      .map((item) => (
-                        <li key={item.path}>
-                          <Link to={item.path}>{item.label}</Link>
-                        </li>
-                      ))}
-                  </ul>
-                </details>
-              </li>
+              {(user.role === "prestataire" || user.role === "client") && (
+                <li>
+                  <details>
+                    <summary>Prestations</summary>
+                    <ul>
+                      {menuItems
+                        .filter((i) => i.group === "prestations")
+                        .map((item) => (
+                          <li key={item.path}>
+                            <Link to={item.path}>{item.label}</Link>
+                          </li>
+                        ))}
+                    </ul>
+                  </details>
+                </li>
+              )}
               <li>
                 <details>
                   <summary>Annonces / Livraisons</summary>
@@ -236,20 +238,22 @@ export default function Navbar() {
               </>
             ) : (
               <>
-                <li>
-                  <details>
-                    <summary>Prestations</summary>
-                    <ul>
-                      {menuItems
-                        .filter((i) => i.group === "prestations")
-                        .map((item) => (
-                          <li key={item.path}>
-                            <Link to={item.path}>{item.label}</Link>
-                          </li>
-                        ))}
-                    </ul>
-                  </details>
-                </li>
+                {(user.role === "prestataire" || user.role === "client") && (
+                  <li>
+                    <details>
+                      <summary>Prestations</summary>
+                      <ul>
+                        {menuItems
+                          .filter((i) => i.group === "prestations")
+                          .map((item) => (
+                            <li key={item.path}>
+                              <Link to={item.path}>{item.label}</Link>
+                            </li>
+                          ))}
+                      </ul>
+                    </details>
+                  </li>
+                )}
                 <li>
                   <details>
                     <summary>Annonces / Livraisons</summary>
