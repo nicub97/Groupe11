@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import api from "../../services/api";
 
+const STORAGE_BASE_URL = api.defaults.baseURL.replace("/api", "");
+
 export default function AdminPrestataires() {
   const [prestataires, setPrestataires] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -119,7 +121,12 @@ export default function AdminPrestataires() {
           <ul className="list-disc ml-6">
             {files.map((f) => (
               <li key={f.id}>
-                <a href={`/storage/${f.chemin}`} target="_blank" rel="noreferrer" className="text-blue-600 underline">
+                <a
+                  href={`${STORAGE_BASE_URL}/storage/${f.chemin}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-blue-600 underline"
+                >
                   {f.chemin}
                 </a>
               </li>
