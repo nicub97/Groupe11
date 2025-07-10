@@ -158,18 +158,22 @@ export default function ProfilPrestataire() {
             </li>
           ))}
         </ul>
-        <input
-          type="file"
-          onChange={(e) => setNewFile(e.target.files[0])}
-          className="mb-2"
-        />
-        <button
-          onClick={handleUpload}
-          disabled={uploading}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
-        >
-          {uploading ? "Envoi..." : "Ajouter"}
-        </button>
+        {prestataire.statut === "refuse" && (
+          <>
+            <input
+              type="file"
+              onChange={(e) => setNewFile(e.target.files[0])}
+              className="mb-2"
+            />
+            <button
+              onClick={handleUpload}
+              disabled={uploading}
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+            >
+              {uploading ? "Envoi..." : "Ajouter"}
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

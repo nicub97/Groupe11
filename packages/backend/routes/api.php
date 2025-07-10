@@ -129,11 +129,11 @@ Route::middleware(['auth:sanctum', 'role:admin,commercant'])->group(function () 
 
 // PRESTATAIRE uniquement
 Route::middleware(['auth:sanctum', 'role:admin,prestataire'])->group(function () {
-    Route::get('/prestataires/{id}', [PrestataireController::class, 'show']);
-    Route::patch('/prestataires/{id}', [PrestataireController::class, 'update']);
+    Route::get('/prestataires/{id}', [PrestataireController::class, 'show'])->whereNumber('id');
+    Route::patch('/prestataires/{id}', [PrestataireController::class, 'update'])->whereNumber('id');
     Route::post('/prestations', [PrestationController::class, 'store'])->middleware('prestataire.valide');
-    Route::post('/prestataires/{id}/justificatifs', [PrestataireValidationController::class, 'store']);
-    Route::get('/prestataires/{id}/justificatifs', [PrestataireValidationController::class, 'index']);
+    Route::post('/prestataires/{id}/justificatifs', [PrestataireValidationController::class, 'store'])->whereNumber('id');
+    Route::get('/prestataires/{id}/justificatifs', [PrestataireValidationController::class, 'index'])->whereNumber('id');
 
     Route::get('/prestataires/justificatifs', [JustificatifController::class, 'index']);
     Route::post('/prestataires/justificatifs', [JustificatifController::class, 'store']);
