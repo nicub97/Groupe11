@@ -30,37 +30,41 @@ export default function Navbar() {
               Dashboard
             </Link>
 
-            <Link to="/admin/utilisateurs" className="hover:text-gray-300 transition">
-              Utilisateurs
-            </Link>
+            <details>
+              <summary>Utilisateurs</summary>
+              <ul>
+                <li>
+                  <Link to="/admin/utilisateurs">Liste utilisateurs</Link>
+                </li>
+                <li>
+                  <Link to="/admin/livreurs">Livreurs</Link>
+                </li>
+                <li>
+                  <Link to="/admin/prestataires">Prestataires</Link>
+                </li>
+              </ul>
+            </details>
 
-            <Link to="/admin/annonces" className="hover:text-gray-300 transition">
-              Annonces
-            </Link>
-
-            <Link to="/admin/prestations" className="hover:text-gray-300 transition">
-              Prestations
-            </Link>
-
-            <Link to="/admin/prestataires" className="hover:text-gray-300 transition">
-              Prestataires
-            </Link>
-
-            <Link to="/admin/livreurs" className="hover:text-gray-300 transition">
-              Livreurs
-            </Link>
-
-            <Link to="/admin/factures-prestataires" className="hover:text-gray-300 transition">
-              Factures Prestataires
-            </Link>
-
-            <Link to="/admin/paiements" className="hover:text-gray-300 transition">
-              Paiements
-            </Link>
-
-            <Link to="/admin/entrepots" className="hover:text-gray-300 transition">
-              Entrep\xF4ts
-            </Link>
+            <details>
+              <summary>Activité</summary>
+              <ul>
+                <li>
+                  <Link to="/admin/annonces">Annonces</Link>
+                </li>
+                <li>
+                  <Link to="/admin/prestations">Prestations</Link>
+                </li>
+                <li>
+                  <Link to="/admin/entrepots">Entrep\u00F4ts</Link>
+                </li>
+                <li>
+                  <Link to="/admin/factures-prestataires">Factures Prestataires</Link>
+                </li>
+                <li>
+                  <Link to="/admin/paiements">Paiements</Link>
+                </li>
+              </ul>
+            </details>
 
             <button
               onClick={handleLogout}
