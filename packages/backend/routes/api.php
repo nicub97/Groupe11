@@ -55,8 +55,6 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
     Route::post('/utilisateurs', [UtilisateurController::class, 'store']);
     Route::patch('/utilisateurs/{id}', [UtilisateurController::class, 'update']);
 
-    // Notifications
-    Route::post('/notifications', [NotificationController::class, 'store']);
 
     // Entrepôts
     Route::post('/entrepots', [EntrepotController::class, 'store']);
