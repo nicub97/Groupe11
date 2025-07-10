@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 
+const STORAGE_BASE_URL = api.defaults.baseURL.replace("/api", "");
+
 export default function ProfilPrestataire() {
   const { user, token } = useAuth();
   const [prestataire, setPrestataire] = useState(null);
@@ -144,10 +146,15 @@ export default function ProfilPrestataire() {
               key={j.id}
               className="border p-2 rounded flex justify-between items-center"
             >
-              <span>
-                {j.chemin.split("/").pop()} - {j.statut || "en attente"}
-              </span>
-              {j.statut === "en_attente" && (
+              <a
+                href={`${STORAGE_BASE_URL}/storage/${j.chemin}`}
+                target="_blank"
+                rel="noreferrer"
+                className="text-blue-600 underline"
+              >
+                {j.chemin.split("/").pop()}
+              </a>
+              {prestataire.statut === "refuse" && (
                 <button
                   onClick={() => handleDelete(j.id)}
                   className="text-sm text-red-600 hover:underline"
@@ -158,7 +165,13 @@ export default function ProfilPrestataire() {
             </li>
           ))}
         </ul>
-        {prestataire.statut === "refuse" && (
+        {prestataire.statut === "refuse" && justificatifs.length > 0 && (
+          <p className="text-sm text-gray-600">
+            📂 Vous devez supprimer les justificatifs refusés avant d’en ajouter
+            un nouveau.
+          </p>
+        )}
+        {prestataire.statut === "refuse" && justificatifs.length === 0 && (
           <>
             <input
               type="file"
