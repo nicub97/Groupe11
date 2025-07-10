@@ -5,13 +5,15 @@ import api from "../services/api";
 import PlanningForm from "../components/PlanningForm";
 
 export default function Disponibilites() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
 
   const [slots, setSlots] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   const [message, setMessage] = useState("");
+  const [prestataire, setPrestataire] = useState(null);
+  const [loadingPrestataire, setLoadingPrestataire] = useState(true);
 
   const fetchSlots = async () => {
     setLoading(true);
@@ -27,6 +29,17 @@ export default function Disponibilites() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!user) return;
+    api
+      .get(`/prestataires/${user.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((res) => setPrestataire(res.data))
+      .catch(() => setPrestataire(null))
+      .finally(() => setLoadingPrestataire(false));
+  }, [user, token]);
 
   useEffect(() => {
     fetchSlots();
@@ -72,6 +85,15 @@ export default function Disponibilites() {
       alert("Erreur lors de la suppression.");
     }
   };
+
+  if (loadingPrestataire) return <p className="p-4">Chargement...</p>;
+  if (prestataire && prestataire.statut !== "valide") {
+    return (
+      <p className="p-4 text-red-600">
+        Vous ne pouvez pas gérer vos disponibilités tant que votre profil n'est pas validé
+      </p>
+    );
+  }
 
   return (
     <div className="max-w-xl mx-auto mt-10 p-6 bg-white shadow rounded">

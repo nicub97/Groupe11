@@ -96,10 +96,16 @@ export default function ProfilPrestataire() {
       <p>
         <strong>Statut :</strong> {statutLabel}
       </p>
-      {prestataire.statut === "refuse" && prestataire.motif_refus && (
+      {prestataire.statut === "refuse" && (
         <p className="text-red-600">
-          Motif : {prestataire.motif_refus}
+          {prestataire.motif_refus && (
+            <span>Motif : {prestataire.motif_refus}</span>
+          )}
+          {!prestataire.motif_refus && <span>Votre profil a été refusé.</span>}
         </p>
+      )}
+      {prestataire.statut === "en_attente" && (
+        <p className="text-orange-600">Votre profil est en attente de validation.</p>
       )}
       {evaluations.length > 0 && (
         <div className="mt-6">

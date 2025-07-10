@@ -31,9 +31,10 @@ export default function AdminLivreur() {
   };
 
   const refuser = async (id) => {
-    if (!window.confirm("Refuser ce livreur ?")) return;
+    const motif = prompt("Motif du refus ?", "");
+    if (motif === null) return;
     try {
-      await api.post(`/admin/livreurs/${id}/refuser`);
+      await api.post(`/admin/livreurs/${id}/refuser`, { motif_refus: motif });
       fetchLivreurs();
     } catch (err) {
       alert(err.response?.data?.message || "Erreur de refus");
@@ -53,6 +54,7 @@ export default function AdminLivreur() {
               <th className="p-3">Email</th>
               <th className="p-3">Valide</th>
               <th className="p-3">Documents</th>
+              <th className="p-3">Motif de refus</th>
               <th className="p-3">Actions</th>
             </tr>
           </thead>
@@ -84,6 +86,7 @@ export default function AdminLivreur() {
                     </a>
                   )}
                 </td>
+                <td className="p-3 text-sm">{l.motif_refus || ""}</td>
                 <td className="p-3 space-x-2">
                   {!l.valide && (
                     <>

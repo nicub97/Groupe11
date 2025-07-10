@@ -5,7 +5,7 @@ import api from "../services/api";
 import { useNavigate } from "react-router-dom";
 
 export default function PublierPrestation() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
@@ -21,6 +21,19 @@ export default function PublierPrestation() {
   const [success, setSuccess] = useState(false);
   const [slotsDisponibles, setSlotsDisponibles] = useState([]);
   const [error, setError] = useState("");
+  const [prestataire, setPrestataire] = useState(null);
+  const [loadingPrestataire, setLoadingPrestataire] = useState(true);
+
+  useEffect(() => {
+    if (!user) return;
+    api
+      .get(`/prestataires/${user.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((res) => setPrestataire(res.data))
+      .catch(() => setPrestataire(null))
+      .finally(() => setLoadingPrestataire(false));
+  }, [user, token]);
 
   useEffect(() => {
     const fetchSlots = async () => {
@@ -87,6 +100,15 @@ export default function PublierPrestation() {
       setLoading(false);
     }
   };
+
+  if (loadingPrestataire) return <p className="p-4">Chargement...</p>;
+  if (prestataire && prestataire.statut !== "valide") {
+    return (
+      <p className="p-4 text-red-600">
+        Vous ne pouvez pas publier tant que votre profil n'est pas validé
+      </p>
+    );
+  }
 
   return (
     <div className="max-w-xl mx-auto mt-10 p-6 bg-white shadow rounded">
