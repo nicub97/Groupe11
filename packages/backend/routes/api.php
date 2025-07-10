@@ -109,6 +109,7 @@ Route::middleware(['auth:sanctum', 'role:admin,livreur'])->group(function () {
     Route::patch('/colis/{id}/box', [ColisController::class, 'affecterBox']);
     Route::get('/livreurs/{id}', [LivreurController::class, 'show']);
     Route::patch('/livreurs/{id}', [LivreurController::class, 'update']);
+    Route::get('/livreurs/{id}/justificatifs', [JustificatifLivreurController::class, 'index']);
     Route::post('/livreurs/justificatifs', [JustificatifLivreurController::class, 'store']);
 
     Route::middleware('livreur.valide')->group(function () {

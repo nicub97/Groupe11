@@ -38,6 +38,9 @@ export default function ProfilLivreur() {
         },
       });
       setLivreur(res.data.livreur);
+      alert(
+        "\u2705 Vos documents ont bien été reçus. Votre profil repasse en validation."
+      );
       setFiles({ identite: null, permis: null });
     } catch {
       setError("Erreur lors de l'envoi du fichier");
