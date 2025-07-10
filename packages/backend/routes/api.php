@@ -107,9 +107,9 @@ Route::middleware(['auth:sanctum', 'role:admin,client'])->group(function () {
 Route::middleware(['auth:sanctum', 'role:admin,livreur'])->group(function () {
     Route::post('/colis', [ColisController::class, 'store']);
     Route::patch('/colis/{id}/box', [ColisController::class, 'affecterBox']);
-    Route::get('/livreurs/{id}', [LivreurController::class, 'show']);
-    Route::patch('/livreurs/{id}', [LivreurController::class, 'update']);
-    Route::get('/livreurs/{id}/justificatifs', [JustificatifLivreurController::class, 'index']);
+    Route::get('/livreurs/{id}', [LivreurController::class, 'show'])->whereNumber('id');
+    Route::patch('/livreurs/{id}', [LivreurController::class, 'update'])->whereNumber('id');
+    Route::get('/livreurs/{id}/justificatifs', [JustificatifLivreurController::class, 'index'])->whereNumber('id');
     Route::post('/livreurs/justificatifs', [JustificatifLivreurController::class, 'store']);
 
     Route::middleware('livreur.valide')->group(function () {
