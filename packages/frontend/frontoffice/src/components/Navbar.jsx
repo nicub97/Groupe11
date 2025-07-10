@@ -30,9 +30,11 @@ export default function Navbar() {
     ];
 
     if (user.role === "client") {
-      // Liens dédiés aux clients pour la gestion des prestations
       return [
         ...common,
+        { path: "/annonces", label: "Annonces", group: "annonces" },
+        { path: "/mes-annonces", label: "Mes annonces", group: "annonces" },
+
         { path: "/prestations/catalogue", label: "Catalogue", group: "prestations" },
         { path: "/prestations", label: "Mes prestations", group: "prestations" },
         { path: "/mes-paiements", label: "Mes paiements", group: "profil" },
@@ -40,7 +42,6 @@ export default function Navbar() {
     }
 
     if (user.role === "prestataire") {
-      // Liens dédiés aux prestataires pour la gestion des prestations
       return [
         ...common,
         { path: "/prestations", label: "Prestations assignées", group: "prestations" },
@@ -64,7 +65,6 @@ export default function Navbar() {
         { path: "/mes-trajets", label: "Mes trajets", group: "annonces" },
         { path: "/annonces-disponibles", label: "Annonces disponibles", group: "annonces" },
         { path: "/mes-etapes", label: "Mes étapes", group: "annonces" },
-        { path: "/mes-livraisons", label: "Mes livraisons", group: "annonces" },
       ];
     }
 
