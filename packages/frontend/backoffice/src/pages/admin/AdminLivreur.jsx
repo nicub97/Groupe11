@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import api from "../../services/api";
 
+const STORAGE_BASE_URL = api.defaults.baseURL.replace("/api", "");
+
 export default function AdminLivreur() {
   const [livreurs, setLivreurs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -69,7 +71,7 @@ export default function AdminLivreur() {
                 <td className="p-3 space-y-1">
                   {l.piece_identite_document && (
                     <a
-                      href={`/storage/${l.piece_identite_document}`}
+                      href={`${STORAGE_BASE_URL}/storage/${l.piece_identite_document}`}
                       target="_blank"
                       rel="noreferrer"
                       className="text-blue-600 underline block"
@@ -79,7 +81,7 @@ export default function AdminLivreur() {
                   )}
                   {l.permis_conduire_document && (
                     <a
-                      href={`/storage/${l.permis_conduire_document}`}
+                      href={`${STORAGE_BASE_URL}/storage/${l.permis_conduire_document}`}
                       target="_blank"
                       rel="noreferrer"
                       className="text-blue-600 underline block"
