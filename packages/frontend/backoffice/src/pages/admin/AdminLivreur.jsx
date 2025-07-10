@@ -53,6 +53,7 @@ export default function AdminLivreur() {
               <th className="p-3">Nom</th>
               <th className="p-3">Email</th>
               <th className="p-3">Valide</th>
+              <th className="p-3">Statut</th>
               <th className="p-3">Documents</th>
               <th className="p-3">Motif de refus</th>
               <th className="p-3">Actions</th>
@@ -64,6 +65,7 @@ export default function AdminLivreur() {
                 <td className="p-3">{l.utilisateur?.prenom} {l.utilisateur?.nom}</td>
                 <td className="p-3">{l.utilisateur?.email}</td>
                 <td className="p-3">{l.valide ? "Oui" : "Non"}</td>
+                <td className="p-3 capitalize">{l.statut}</td>
                 <td className="p-3 space-y-1">
                   {l.piece_identite_document && (
                     <a

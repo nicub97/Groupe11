@@ -60,8 +60,16 @@ export default function ProfilPrestataire() {
         },
       });
       setJustificatifs((prev) => [...prev, res.data]);
+
+      const profil = await api.get(`/prestataires/${user.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setPrestataire(profil.data);
+      alert(
+        "\u2705 Vos documents ont bien été reçus. Votre profil repasse en cours de validation."
+      );
       setNewFile(null);
-  } catch {
+    } catch {
       setUploadError("Erreur lors de l'envoi du fichier");
     } finally {
       setUploading(false);

@@ -4,7 +4,8 @@ import { useAuth } from "../context/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 
 export default function MesEtapes() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
+  const livreur = user?.livreur;
   const navigate = useNavigate();
   const [etapes, setEtapes] = useState([]);
   const [toutesEtapes, setToutesEtapes] = useState([]);
@@ -30,6 +31,14 @@ export default function MesEtapes() {
   useEffect(() => {
     fetchEtapes();
   }, [token]);
+
+  if (livreur && livreur.statut !== "valide") {
+    return (
+      <p className="p-4 text-red-600">
+        ⛔️ Vous ne pouvez pas accéder à cette fonctionnalité tant que votre profil n’est pas validé.
+      </p>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto mt-10 p-6 bg-white shadow rounded">

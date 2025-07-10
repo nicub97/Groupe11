@@ -204,14 +204,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/communications/{id}/lire', [CommunicationController::class, 'markAsRead']);
 
     // Étapes de livraison
-    Route::get('/mes-etapes', [EtapeLivraisonController::class, 'mesEtapes']);
+    Route::middleware('livreur.valide')->group(function () {
+        Route::get('/mes-etapes', [EtapeLivraisonController::class, 'mesEtapes']);
+        Route::post('/valider-code-box', [EtapeLivraisonController::class, 'validerCode']);
+    });
     Route::get('/etapes/{id}', [EtapeLivraisonController::class, 'show']);
     Route::patch('/etapes/{id}/statut', [EtapeLivraisonController::class, 'changerStatut']);
     Route::patch('/etapes/{id}/cloturer', [EtapeLivraisonController::class, 'cloturerEtape']);
     Route::get('/etapes/{id}/suivante', [EtapeLivraisonController::class, 'etapeSuivante']);
 
     // Codes validation box
-    Route::post('/valider-code-box', [EtapeLivraisonController::class, 'validerCode']);
     Route::get('/etapes/{id}/codes', [EtapeLivraisonController::class, 'codes']);
 
     // Livreur
@@ -243,8 +245,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/plannings/{id}', [PlanningPrestataireController::class, 'destroy']);
 
     // InterventionPrestataire
-    Route::get('/interventions', [InterventionController::class, 'index']);
-    Route::post('/interventions', [InterventionController::class, 'store']);
+    Route::middleware('prestataire.valide')->group(function () {
+        Route::get('/interventions', [InterventionController::class, 'index']);
+        Route::post('/interventions', [InterventionController::class, 'store']);
+    });
 
     // FacturePrestataire
     Route::get('/factures-prestataire', [FacturePrestataireController::class, 'mesFactures']);
