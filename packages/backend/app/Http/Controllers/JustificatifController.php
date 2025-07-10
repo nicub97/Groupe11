@@ -47,6 +47,12 @@ class JustificatifController extends Controller
             'statut' => 'en_attente',
         ]);
 
+        if ($prestataire->statut === 'refuse') {
+            $prestataire->statut = 'en_attente';
+            $prestataire->motif_refus = null;
+            $prestataire->save();
+        }
+
         return response()->json($justificatif, 201);
     }
 

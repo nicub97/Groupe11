@@ -55,13 +55,13 @@ export default function ProfilLivreur() {
       <p>
         <strong>Statut :</strong> {statutLabel}
       </p>
-      {livreur.statut === "refuse" && livreur.motif_refus && (
-        <p className="text-red-600">Motif : {livreur.motif_refus}</p>
-      )}
-      {livreur.statut !== "valide" && (
+      {livreur.statut === "refuse" && (
         <p className="text-red-600 font-semibold">
-          Votre profil a été refusé. Vous ne pouvez pas livrer tant que votre profil n'est pas validé.
+          {livreur.motif_refus ? `Motif : ${livreur.motif_refus}` : "Votre profil a été refusé."}
         </p>
+      )}
+      {livreur.statut === "en_attente" && (
+        <p className="text-orange-600 font-semibold">Votre profil est en attente de validation.</p>
       )}
       <div className="mt-6 space-y-2">
         <h3 className="text-lg font-semibold">Mes justificatifs</h3>

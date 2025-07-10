@@ -77,6 +77,7 @@ export default function AdminPrestataires() {
               <th className="p-3">Nom</th>
               <th className="p-3">Email</th>
               <th className="p-3">Statut</th>
+              <th className="p-3">Motif de refus</th>
               <th className="p-3">Inscription</th>
               <th className="p-3">Actions</th>
             </tr>
@@ -87,6 +88,7 @@ export default function AdminPrestataires() {
                 <td className="p-3">{p.utilisateur?.prenom} {p.utilisateur?.nom}</td>
                 <td className="p-3">{p.utilisateur?.email}</td>
                 <td className="p-3 capitalize">{p.statut}</td>
+                <td className="p-3 text-sm">{p.motif_refus || ""}</td>
                 <td className="p-3">{new Date(p.created_at).toLocaleDateString()}</td>
                 <td className="p-3 space-x-2">
                   <button onClick={() => voirJustifs(p.utilisateur_id)} className="text-blue-600 hover:underline">
