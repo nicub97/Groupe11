@@ -9,6 +9,7 @@ export default function AdminPrestataires() {
   const [justifs, setJustifs] = useState({});
   const [evaluations, setEvaluations] = useState({});
   const [showEval, setShowEval] = useState({});
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     fetchPrestataires();
@@ -72,6 +73,13 @@ export default function AdminPrestataires() {
   return (
     <div className="p-6 space-y-6">
       <h1 className="text-2xl font-bold">Prestataires</h1>
+      <input
+        type="text"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Rechercher..."
+        className="border p-2 mb-4 w-full max-w-xs"
+      />
       <div className="overflow-x-auto">
         <table className="min-w-full bg-white rounded shadow">
           <thead>
@@ -85,7 +93,13 @@ export default function AdminPrestataires() {
             </tr>
           </thead>
           <tbody>
-            {prestataires.map((p) => (
+            {prestataires
+              .filter(
+                (p) =>
+                  p.utilisateur?.nom.toLowerCase().includes(search.toLowerCase()) ||
+                  p.utilisateur?.prenom.toLowerCase().includes(search.toLowerCase())
+              )
+              .map((p) => (
               <tr key={p.id} className="border-b hover:bg-gray-50 align-top">
                 <td className="p-3">{p.utilisateur?.prenom} {p.utilisateur?.nom}</td>
                 <td className="p-3">{p.utilisateur?.email}</td>
