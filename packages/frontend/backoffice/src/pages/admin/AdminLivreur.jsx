@@ -6,6 +6,7 @@ const STORAGE_BASE_URL = api.defaults.baseURL.replace("/api", "");
 export default function AdminLivreur() {
   const [livreurs, setLivreurs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     fetchLivreurs();
@@ -48,6 +49,13 @@ export default function AdminLivreur() {
   return (
     <div className="p-6 space-y-6">
       <h1 className="text-2xl font-bold">Livreurs</h1>
+      <input
+        type="text"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Rechercher..."
+        className="border p-2 mb-4 w-full max-w-xs"
+      />
       <div className="overflow-x-auto">
         <table className="min-w-full bg-white rounded shadow">
           <thead>
@@ -62,7 +70,13 @@ export default function AdminLivreur() {
             </tr>
           </thead>
           <tbody>
-            {livreurs.map((l) => (
+            {livreurs
+              .filter(
+                (l) =>
+                  l.utilisateur?.nom.toLowerCase().includes(search.toLowerCase()) ||
+                  l.utilisateur?.prenom.toLowerCase().includes(search.toLowerCase())
+              )
+              .map((l) => (
               <tr key={l.id} className="border-b hover:bg-gray-50 align-top">
                 <td className="p-3">{l.utilisateur?.prenom} {l.utilisateur?.nom}</td>
                 <td className="p-3">{l.utilisateur?.email}</td>
