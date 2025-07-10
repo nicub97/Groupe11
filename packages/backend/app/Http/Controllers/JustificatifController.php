@@ -66,7 +66,7 @@ class JustificatifController extends Controller
             return response()->json(['message' => 'Accès interdit.'], 403);
         }
 
-        if ($justificatif->statut !== 'en_attente') {
+        if (! in_array($justificatif->statut, ['en_attente', 'refuse'])) {
             return response()->json(['message' => 'Impossible de supprimer ce document.'], 422);
         }
 

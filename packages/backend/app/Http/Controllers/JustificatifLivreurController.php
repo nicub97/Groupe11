@@ -80,4 +80,32 @@ class JustificatifLivreurController extends Controller
 
         return response()->json(['message' => 'Documents enregistrés.', 'livreur' => $livreur]);
     }
+
+    public function destroy($type)
+    {
+        $user = Auth::user();
+        if ($user->role !== 'livreur') {
+            return response()->json(['message' => 'Accès interdit.'], 403);
+        }
+
+        $livreur = $user->livreur;
+
+        if ($livreur->statut === 'valide') {
+            return response()->json(['message' => 'Impossible de supprimer ce document.'], 422);
+        }
+
+        if ($type === 'piece_identite' && $livreur->piece_identite_document) {
+            Storage::disk('public')->delete($livreur->piece_identite_document);
+            $livreur->piece_identite_document = null;
+        } elseif ($type === 'permis_conduire' && $livreur->permis_conduire_document) {
+            Storage::disk('public')->delete($livreur->permis_conduire_document);
+            $livreur->permis_conduire_document = null;
+        } else {
+            return response()->json(['message' => 'Document introuvable.'], 404);
+        }
+
+        $livreur->save();
+
+        return response()->json(['message' => 'Document supprimé.']);
+    }
 }

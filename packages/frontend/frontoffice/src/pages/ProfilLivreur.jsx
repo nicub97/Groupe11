@@ -51,6 +51,21 @@ export default function ProfilLivreur() {
     }
   };
 
+  const handleDelete = async (type) => {
+    if (!window.confirm("Supprimer ce document ?")) return;
+    try {
+      await api.delete(`/livreurs/justificatifs/${type}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setLivreur((prev) => ({
+        ...prev,
+        [`${type}_document`]: null,
+      }));
+    } catch {
+      alert("Suppression impossible");
+    }
+  };
+
   if (error) return <p className="text-red-600 p-4">{error}</p>;
   if (!livreur) return <p className="p-4">Chargement...</p>;
 
@@ -81,6 +96,14 @@ export default function ProfilLivreur() {
               >
                 Pièce d'identité
               </a>
+              {livreur.statut === "refuse" && (
+                <button
+                  onClick={() => handleDelete("piece_identite")}
+                  className="text-sm text-red-600 hover:underline"
+                >
+                  Supprimer
+                </button>
+              )}
             </li>
           )}
           {livreur.permis_conduire_document && (
@@ -93,6 +116,14 @@ export default function ProfilLivreur() {
               >
                 Permis de conduire
               </a>
+              {livreur.statut === "refuse" && (
+                <button
+                  onClick={() => handleDelete("permis_conduire")}
+                  className="text-sm text-red-600 hover:underline"
+                >
+                  Supprimer
+                </button>
+              )}
             </li>
           )}
         </ul>
