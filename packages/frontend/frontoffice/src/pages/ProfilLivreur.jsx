@@ -74,15 +74,31 @@ export default function ProfilLivreur() {
         <p>
           Permis de conduire : {livreur.permis_conduire_document ? livreur.permis_conduire_document.split("/").pop() : "Aucun"}
         </p>
-        <input type="file" onChange={(e) => setFiles(f => ({ ...f, identite: e.target.files[0] }))} className="block" />
-        <input type="file" onChange={(e) => setFiles(f => ({ ...f, permis: e.target.files[0] }))} className="block mt-2" />
-        <button
-          onClick={handleUpload}
-          disabled={uploading}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50 mt-2"
-        >
-          {uploading ? "Envoi..." : "Envoyer"}
-        </button>
+        {livreur.statut === "refuse" && (
+          <>
+            <input
+              type="file"
+              onChange={(e) =>
+                setFiles((f) => ({ ...f, identite: e.target.files[0] }))
+              }
+              className="block"
+            />
+            <input
+              type="file"
+              onChange={(e) =>
+                setFiles((f) => ({ ...f, permis: e.target.files[0] }))
+              }
+              className="block mt-2"
+            />
+            <button
+              onClick={handleUpload}
+              disabled={uploading}
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50 mt-2"
+            >
+              {uploading ? "Envoi..." : "Envoyer"}
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
