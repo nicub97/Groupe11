@@ -174,10 +174,11 @@ export default function ProfilPrestataire() {
         )}
         {prestataire.statut === "refuse" && justificatifs.length === 0 && (
           <>
+            <label className="block font-medium">Justificatif (RIB, RC Pro, etc.)</label>
             <input
               type="file"
               onChange={(e) => setNewFile(e.target.files[0])}
-              className="mb-2"
+              className="mb-2 block"
             />
             <button
               onClick={handleUpload}

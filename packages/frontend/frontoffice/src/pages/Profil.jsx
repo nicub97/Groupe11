@@ -39,6 +39,22 @@ export default function Profil() {
         </Link>
       </div>
 
+      {user.role === "livreur" && (
+        <div className="text-center">
+          <Link to="/profil-livreur" className="text-blue-600 underline">
+            Statut et gestion des justificatifs
+          </Link>
+        </div>
+      )}
+
+      {user.role === "prestataire" && (
+        <div className="text-center">
+          <Link to="/profil-prestataire" className="text-blue-600 underline">
+            Statut et gestion des justificatifs
+          </Link>
+        </div>
+      )}
+
       <hr className="my-6" />
 
       <button onClick={handleDelete} className="w-full bg-red-600 text-white py-2 rounded">

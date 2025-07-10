@@ -136,19 +136,22 @@ export default function ProfilLivreur() {
               </p>
             ) : (
               <>
+                <label className="block font-medium">Pièce d'identité</label>
                 <input
                   type="file"
                   onChange={(e) =>
                     setFiles((f) => ({ ...f, identite: e.target.files[0] }))
                   }
-                  className="block"
+                  className="mb-2 block"
                 />
+
+                <label className="block font-medium">Permis de conduire</label>
                 <input
                   type="file"
                   onChange={(e) =>
                     setFiles((f) => ({ ...f, permis: e.target.files[0] }))
                   }
-                  className="block mt-2"
+                  className="mb-2 block"
                 />
                 <button
                   onClick={handleUpload}
