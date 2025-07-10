@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 
+const STORAGE_BASE_URL = api.defaults.baseURL.replace("/api", "");
+
 export default function ProfilLivreur() {
   const { user, token } = useAuth();
   const [livreur, setLivreur] = useState(null);
@@ -68,35 +70,64 @@ export default function ProfilLivreur() {
       )}
       <div className="mt-6 space-y-2">
         <h3 className="text-lg font-semibold">Mes justificatifs</h3>
-        <p>
-          Pièce d'identité : {livreur.piece_identite_document ? livreur.piece_identite_document.split("/").pop() : "Aucun"}
-        </p>
-        <p>
-          Permis de conduire : {livreur.permis_conduire_document ? livreur.permis_conduire_document.split("/").pop() : "Aucun"}
-        </p>
+        <ul className="space-y-2 mb-4">
+          {livreur.piece_identite_document && (
+            <li className="border p-2 rounded flex justify-between items-center">
+              <a
+                href={`${STORAGE_BASE_URL}/storage/${livreur.piece_identite_document}`}
+                target="_blank"
+                rel="noreferrer"
+                className="text-blue-600 underline"
+              >
+                Pièce d'identité
+              </a>
+            </li>
+          )}
+          {livreur.permis_conduire_document && (
+            <li className="border p-2 rounded flex justify-between items-center">
+              <a
+                href={`${STORAGE_BASE_URL}/storage/${livreur.permis_conduire_document}`}
+                target="_blank"
+                rel="noreferrer"
+                className="text-blue-600 underline"
+              >
+                Permis de conduire
+              </a>
+            </li>
+          )}
+        </ul>
         {livreur.statut === "refuse" && (
           <>
-            <input
-              type="file"
-              onChange={(e) =>
-                setFiles((f) => ({ ...f, identite: e.target.files[0] }))
-              }
-              className="block"
-            />
-            <input
-              type="file"
-              onChange={(e) =>
-                setFiles((f) => ({ ...f, permis: e.target.files[0] }))
-              }
-              className="block mt-2"
-            />
-            <button
-              onClick={handleUpload}
-              disabled={uploading}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50 mt-2"
-            >
-              {uploading ? "Envoi..." : "Envoyer"}
-            </button>
+            {livreur.piece_identite_document || livreur.permis_conduire_document ? (
+              <p className="text-sm text-gray-600">
+                📂 Vous devez supprimer les justificatifs refusés avant d’en
+                ajouter un nouveau.
+              </p>
+            ) : (
+              <>
+                <input
+                  type="file"
+                  onChange={(e) =>
+                    setFiles((f) => ({ ...f, identite: e.target.files[0] }))
+                  }
+                  className="block"
+                />
+                <input
+                  type="file"
+                  onChange={(e) =>
+                    setFiles((f) => ({ ...f, permis: e.target.files[0] }))
+                  }
+                  className="block mt-2"
+                />
+                <button
+                  onClick={handleUpload}
+                  disabled={uploading}
+                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50 mt-2"
+                >
+                  {uploading ? "Envoi..." : "Envoyer"}
+                </button>
+              </>
+            )}
           </>
         )}
       </div>
