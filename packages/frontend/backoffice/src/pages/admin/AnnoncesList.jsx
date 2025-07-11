@@ -103,43 +103,39 @@ export default function AnnoncesList() {
         </p>
       )}
 
-      <form onSubmit={handleSubmit} className="bg-white shadow p-4 rounded space-y-4">
-        <h2 className="text-xl font-semibold">
-          {editingId ? "Modifier l'annonce" : "Sélectionner une annonce"}
-        </h2>
-        <div>
-          <label className="block font-semibold">Titre</label>
-          <input
-            type="text"
-            name="titre"
-            value={form.titre}
-            onChange={handleChange}
-            className="w-full border p-2 rounded"
-          />
-          {errors.titre && <p className="text-red-600 text-sm">{errors.titre[0]}</p>}
-        </div>
-        <div>
-          <label className="block font-semibold">Description</label>
-          <textarea
-            name="description"
-            value={form.description}
-            onChange={handleChange}
-            className="w-full border p-2 rounded"
-          />
-          {errors.description && (
-            <p className="text-red-600 text-sm">{errors.description[0]}</p>
-          )}
-        </div>
-        <div className="flex gap-4">
-          {editingId && (
+      {editingId && (
+        <form onSubmit={handleSubmit} className="bg-white shadow p-4 rounded space-y-4">
+          <h2 className="text-xl font-semibold">Modifier l'annonce</h2>
+          <div>
+            <label className="block font-semibold">Titre</label>
+            <input
+              type="text"
+              name="titre"
+              value={form.titre}
+              onChange={handleChange}
+              className="w-full border p-2 rounded"
+            />
+            {errors.titre && <p className="text-red-600 text-sm">{errors.titre[0]}</p>}
+          </div>
+          <div>
+            <label className="block font-semibold">Description</label>
+            <textarea
+              name="description"
+              value={form.description}
+              onChange={handleChange}
+              className="w-full border p-2 rounded"
+            />
+            {errors.description && (
+              <p className="text-red-600 text-sm">{errors.description[0]}</p>
+            )}
+          </div>
+          <div className="flex gap-4">
             <button
               type="submit"
               className="admin-btn-primary"
             >
               Mettre à jour
             </button>
-          )}
-          {editingId && (
             <button
               type="button"
               onClick={resetForm}
@@ -147,9 +143,9 @@ export default function AnnoncesList() {
             >
               Annuler
             </button>
-          )}
-        </div>
-      </form>
+          </div>
+        </form>
+      )}
 
       <div className="overflow-x-auto">
         <table className="min-w-full bg-white rounded shadow">
