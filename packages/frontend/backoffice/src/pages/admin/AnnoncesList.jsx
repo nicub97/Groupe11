@@ -8,6 +8,9 @@ export default function AnnoncesList() {
   const [editingId, setEditingId] = useState(null);
   const [errors, setErrors] = useState({});
   const [apiError, setApiError] = useState("");
+  const [searchText, setSearchText] = useState("");
+  const [typeFilter, setTypeFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
 
   useEffect(() => {
     fetchAnnonces();
@@ -92,6 +95,16 @@ export default function AnnoncesList() {
     }
   };
 
+  const filteredAnnonces = annonces.filter((a) => {
+    const term = searchText.toLowerCase();
+    const matchesText =
+      a.titre.toLowerCase().includes(term) ||
+      (a.description || "").toLowerCase().includes(term);
+    const matchesType = typeFilter ? a.type === typeFilter : true;
+    const matchesStatus = statusFilter ? a.statut === statusFilter : true;
+    return matchesText && matchesType && matchesStatus;
+  });
+
   if (loading) return <div className="p-4">Chargement...</div>;
 
   return (
@@ -147,6 +160,40 @@ export default function AnnoncesList() {
         </form>
       )}
 
+      <div className="flex flex-wrap items-end gap-4">
+        <input
+          type="text"
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          placeholder="Rechercher..."
+          className="border p-2 rounded"
+        />
+        <select
+          value={typeFilter}
+          onChange={(e) => setTypeFilter(e.target.value)}
+          className="border p-2 rounded"
+        >
+          <option value="">Tous les types</option>
+          <option value="livraison_client">Livraison client</option>
+          <option value="produit_livre">Produit livré</option>
+        </select>
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="border p-2 rounded"
+        >
+          <option value="">Tous les statuts</option>
+          <option value="en_attente">En attente</option>
+          <option value="acceptee">Acceptée</option>
+          <option value="en_cours">En cours</option>
+          <option value="livree">Livrée</option>
+          <option value="terminee">Terminée</option>
+        </select>
+        <button onClick={() => {setSearchText('');setTypeFilter('');setStatusFilter('');}} className="admin-btn-secondary">
+          Réinitialiser les filtres
+        </button>
+      </div>
+
       <div className="overflow-x-auto">
         <table className="min-w-full bg-white rounded shadow">
           <thead>
@@ -157,7 +204,7 @@ export default function AnnoncesList() {
             </tr>
           </thead>
           <tbody>
-            {annonces.map((a) => (
+            {filteredAnnonces.map((a) => (
               <tr key={a.id} className="border-b hover:bg-gray-50">
                 <td className="p-3">{a.titre}</td>
                 <td className="p-3">{a.description}</td>
