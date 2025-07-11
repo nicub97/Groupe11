@@ -11,6 +11,8 @@ export default function PrestationList() {
   const [editingId, setEditingId] = useState(null);
   const [errors, setErrors] = useState({});
   const [apiError, setApiError] = useState("");
+  const [searchText, setSearchText] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
 
   useEffect(() => {
     fetchPrestations();
@@ -85,6 +87,15 @@ export default function PrestationList() {
     setEditingId(null);
   };
 
+  const filteredPrestations = prestations.filter((p) => {
+    const term = searchText.toLowerCase();
+    const matchesText =
+      p.type_prestation.toLowerCase().includes(term) ||
+      (p.description || "").toLowerCase().includes(term);
+    const matchesStatus = statusFilter ? p.statut === statusFilter : true;
+    return matchesText && matchesStatus;
+  });
+
   if (loading) return <div className="p-4">Chargement...</div>;
 
   return (
@@ -139,6 +150,30 @@ export default function PrestationList() {
         </form>
       )}
 
+      <div className="flex flex-wrap items-end gap-4">
+        <input
+          type="text"
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          placeholder="Rechercher..."
+          className="border p-2 rounded"
+        />
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="border p-2 rounded"
+        >
+          <option value="">Tous les statuts</option>
+          <option value="en_attente">En attente</option>
+          <option value="acceptee">Acceptée</option>
+          <option value="refusee">Refusée</option>
+          <option value="terminee">Terminée</option>
+        </select>
+        <button onClick={() => {setSearchText('');setStatusFilter('');}} className="admin-btn-secondary">
+          Réinitialiser les filtres
+        </button>
+      </div>
+
       <div className="overflow-x-auto">
         <table className="min-w-full bg-white rounded shadow">
           <thead>
@@ -156,7 +191,7 @@ export default function PrestationList() {
             </tr>
           </thead>
           <tbody>
-            {prestations.map((p) => (
+            {filteredPrestations.map((p) => (
               <tr key={p.id} className="border-b hover:bg-gray-50">
                 <td className="p-3">{p.id}</td>
                 <td className="p-3">{p.type_prestation}</td>
