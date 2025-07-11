@@ -4,7 +4,7 @@ import api from "../../services/api";
 export default function AnnoncesList() {
   const [annonces, setAnnonces] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [form, setForm] = useState({ titre: "", description: "", prix_propose: "" });
+  const [form, setForm] = useState({ titre: "", description: "" });
   const [editingId, setEditingId] = useState(null);
   const [errors, setErrors] = useState({});
   const [apiError, setApiError] = useState("");
@@ -25,6 +25,13 @@ export default function AnnoncesList() {
     }
   };
 
+  const isEngagee = (a) => {
+    return (
+      (a.type === "livraison_client" && a.id_livreur_reservant) ||
+      (a.type === "produit_livre" && a.id_client)
+    );
+  };
+
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
@@ -35,22 +42,6 @@ export default function AnnoncesList() {
 
     if (editingId) {
       await updateAnnonce();
-    } else {
-      await createAnnonce();
-    }
-  };
-
-  const createAnnonce = async () => {
-    try {
-      const res = await api.post("/annonces", form);
-      setAnnonces([...annonces, res.data.annonce]);
-      resetForm();
-    } catch (err) {
-      if (err.response?.data?.errors) {
-        setErrors(err.response.data.errors);
-      } else {
-        setApiError(err.response?.data?.message || "Erreur lors de la création");
-      }
     }
   };
 
@@ -74,13 +65,12 @@ export default function AnnoncesList() {
     setForm({
       titre: annonce.titre || "",
       description: annonce.description || "",
-      prix_propose: annonce.prix_propose || "",
     });
     setErrors({});
   };
 
   const resetForm = () => {
-    setForm({ titre: "", description: "", prix_propose: "" });
+    setForm({ titre: "", description: "" });
     setEditingId(null);
   };
 
@@ -115,7 +105,7 @@ export default function AnnoncesList() {
 
       <form onSubmit={handleSubmit} className="bg-white shadow p-4 rounded space-y-4">
         <h2 className="text-xl font-semibold">
-          {editingId ? "Modifier l'annonce" : "Nouvelle annonce"}
+          {editingId ? "Modifier l'annonce" : "Sélectionner une annonce"}
         </h2>
         <div>
           <label className="block font-semibold">Titre</label>
@@ -140,26 +130,15 @@ export default function AnnoncesList() {
             <p className="text-red-600 text-sm">{errors.description[0]}</p>
           )}
         </div>
-        <div>
-          <label className="block font-semibold">Prix proposé</label>
-          <input
-            type="number"
-            name="prix_propose"
-            value={form.prix_propose}
-            onChange={handleChange}
-            className="w-full border p-2 rounded"
-          />
-          {errors.prix_propose && (
-            <p className="text-red-600 text-sm">{errors.prix_propose[0]}</p>
-          )}
-        </div>
         <div className="flex gap-4">
-          <button
-            type="submit"
-            className="admin-btn-primary"
-          >
-            {editingId ? "Mettre à jour" : "Ajouter"}
-          </button>
+          {editingId && (
+            <button
+              type="submit"
+              className="admin-btn-primary"
+            >
+              Mettre à jour
+            </button>
+          )}
           {editingId && (
             <button
               type="button"
@@ -178,7 +157,6 @@ export default function AnnoncesList() {
             <tr className="bg-gray-100 text-left text-sm uppercase text-gray-600">
               <th className="p-3">Titre</th>
               <th className="p-3">Description</th>
-              <th className="p-3">Prix</th>
               <th className="p-3">Actions</th>
             </tr>
           </thead>
@@ -187,20 +165,23 @@ export default function AnnoncesList() {
               <tr key={a.id} className="border-b hover:bg-gray-50">
                 <td className="p-3">{a.titre}</td>
                 <td className="p-3">{a.description}</td>
-                <td className="p-3">{a.prix_propose}</td>
                 <td className="p-3 space-x-2">
-                  <button
-                    onClick={() => startEdit(a)}
-                    className="text-yellow-600 hover:underline"
-                  >
-                    Modifier
-                  </button>
-                  <button
-                    onClick={() => deleteAnnonce(a.id)}
-                    className="text-red-600 hover:underline"
-                  >
-                    Supprimer
-                  </button>
+                  {!isEngagee(a) && (
+                    <>
+                      <button
+                        onClick={() => startEdit(a)}
+                        className="text-yellow-600 hover:underline"
+                      >
+                        Modifier
+                      </button>
+                      <button
+                        onClick={() => deleteAnnonce(a.id)}
+                        className="text-red-600 hover:underline"
+                      >
+                        Supprimer
+                      </button>
+                    </>
+                  )}
                 </td>
               </tr>
             ))}

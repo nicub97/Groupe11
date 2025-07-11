@@ -64,6 +64,10 @@ class AnnonceController extends Controller
     {
         $user = Auth::user();
 
+        if (! in_array($user->role, ['client', 'commercant'])) {
+            return response()->json(['message' => 'Action non autorisée.'], 403);
+        }
+
         // Déterminer les règles dynamiquement selon le rôle
         $rules = [
             'type' => 'required|in:livraison_client,produit_livre',
@@ -126,8 +130,8 @@ class AnnonceController extends Controller
         }
 
         if (
-            $annonce->type === 'produit_livre' &&
-            $annonce->id_client !== null
+            ($annonce->type === 'produit_livre' && $annonce->id_client !== null) ||
+            ($annonce->type === 'livraison_client' && $annonce->id_livreur_reservant !== null)
         ) {
             return response()->json(['message' => 'Cette annonce a déjà été réservée et ne peut plus être modifiée.'], 403);
         }
@@ -165,8 +169,8 @@ class AnnonceController extends Controller
         }
 
         if (
-            $annonce->type === 'produit_livre' &&
-            $annonce->id_client !== null
+            ($annonce->type === 'produit_livre' && $annonce->id_client !== null) ||
+            ($annonce->type === 'livraison_client' && $annonce->id_livreur_reservant !== null)
         ) {
             return response()->json(['message' => 'Cette annonce a déjà été réservée et ne peut plus être modifiée.'], 403);
         }
