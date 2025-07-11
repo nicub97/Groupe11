@@ -127,14 +127,14 @@ export default function AddAdmin() {
         <div className="flex gap-4">
           <button
             type="submit"
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            className="admin-btn-primary"
           >
             Créer
           </button>
           <button
             type="button"
             onClick={handleCancel}
-            className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+            className="admin-btn-secondary"
           >
             Annuler
           </button>

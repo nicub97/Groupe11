@@ -188,7 +188,7 @@ export default function RegisterLivreur() {
       </div>
       {errors.rgpd_consent && <p className="text-red-500 text-sm">{errors.rgpd_consent}</p>}
 
-      <button type="submit" className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700">
+      <button type="submit" className="btn-primary w-full">
         S'inscrire
       </button>
     </form>

@@ -34,7 +34,7 @@ export default function Profil() {
       </div>
 
       <div className="text-center mt-4">
-        <Link to="/profil/edit" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+        <Link to="/profil/edit" className="btn-primary">
           Modifier mes informations
         </Link>
       </div>
@@ -57,7 +57,7 @@ export default function Profil() {
 
       <hr className="my-6" />
 
-      <button onClick={handleDelete} className="w-full bg-red-600 text-white py-2 rounded">
+      <button onClick={handleDelete} className="btn-danger w-full">
         Supprimer mon compte
       </button>
     </div>

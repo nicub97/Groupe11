@@ -20,7 +20,7 @@ export default function Navbar() {
         {!token ? (
           <Link
             to="/login"
-            className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-white"
+            className="admin-btn-primary"
           >
             Se connecter
           </Link>
@@ -102,7 +102,7 @@ export default function Navbar() {
 
             <button
               onClick={handleLogout}
-              className="bg-red-500 hover:bg-red-600 px-4 py-2 rounded"
+              className="admin-btn-danger"
             >
               Déconnexion
             </button>

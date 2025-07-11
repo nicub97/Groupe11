@@ -234,14 +234,14 @@ export default function PrestationList() {
           {errors.statut && <p className="text-red-600 text-sm">{errors.statut[0]}</p>}
         </div>
         <div className="flex gap-4">
-          <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+          <button type="submit" className="admin-btn-primary">
             {editingId ? "Mettre à jour" : "Ajouter"}
           </button>
           {editingId && (
             <button
               type="button"
               onClick={resetForm}
-              className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+              className="admin-btn-secondary"
             >
               Annuler
             </button>

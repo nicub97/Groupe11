@@ -62,7 +62,7 @@ export default function AnnonceDetail() {
       {user?.role === "client" && !annonce.id_client && (
         <button
           onClick={reserver}
-          className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          className="btn-primary mt-4"
         >
           Réserver
         </button>

@@ -122,7 +122,7 @@ export default function EditProfil() {
           </>
         )}
 
-        <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded">Enregistrer les modifications</button>
+        <button type="submit" className="btn-primary w-full">Enregistrer les modifications</button>
       </form>
 
       <div className="mt-4 text-center">
