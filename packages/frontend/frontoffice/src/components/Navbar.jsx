@@ -167,6 +167,7 @@ export default function Navbar() {
                   </details>
                 </li>
               )}
+              {user.role !== "prestataire" && (
               <li>
                 <details className="relative group">
                   <summary className="flex items-center gap-1 px-3 py-2 rounded cursor-pointer text-green-700 hover:bg-green-50 transition">
@@ -192,6 +193,7 @@ export default function Navbar() {
                   </ul>
                 </details>
               </li>
+              )}
               <li>
                 <details className="relative group">
                   <summary className="flex items-center gap-1 px-3 py-2 rounded cursor-pointer text-green-700 hover:bg-green-50 transition">
@@ -317,6 +319,7 @@ export default function Navbar() {
                     </details>
                   </li>
                 )}
+                {user.role !== "prestataire" && (
                 <li>
                   <details className="relative group">
                     <summary className="flex items-center gap-1 px-3 py-2 rounded cursor-pointer text-green-700 hover:bg-green-50 transition">
@@ -342,6 +345,7 @@ export default function Navbar() {
                     </ul>
                   </details>
                 </li>
+                )}
                 <li>
                   <details className="relative group">
                     <summary className="flex items-center gap-1 px-3 py-2 rounded cursor-pointer text-green-700 hover:bg-green-50 transition">
