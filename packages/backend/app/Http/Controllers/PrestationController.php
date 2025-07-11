@@ -128,8 +128,8 @@ class PrestationController extends Controller
             return response()->json(['message' => 'Prestation introuvable.'], 404);
         }
 
-        if ($prestation->statut !== 'en_attente') {
-            return response()->json(['message' => 'Impossible de modifier une prestation non en attente.'], 403);
+        if ($prestation->client_id !== null || $prestation->prestataire_id !== null) {
+            return response()->json(['message' => 'Impossible de modifier une prestation déjà réservée ou assignée.'], 403);
         }
 
         $user = Auth::user();
@@ -167,8 +167,8 @@ class PrestationController extends Controller
             return response()->json(['message' => 'Suppression non autorisée.'], 403);
         }
 
-        if ($prestation->statut !== 'en_attente') {
-            return response()->json(['message' => 'Impossible de supprimer une prestation déjà validée ou refusée.'], 403);
+        if ($prestation->client_id !== null || $prestation->prestataire_id !== null) {
+            return response()->json(['message' => 'Impossible de supprimer une prestation déjà réservée ou assignée.'], 403);
         }
 
         $prestation->delete();

@@ -5,14 +5,8 @@ export default function PrestationList() {
   const [prestations, setPrestations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({
-    prestataire_id: "",
-    client_id: "",
     type_prestation: "",
     description: "",
-    date_heure: "",
-    duree_estimee: "",
-    tarif: "",
-    statut: "en_attente",
   });
   const [editingId, setEditingId] = useState(null);
   const [errors, setErrors] = useState({});
@@ -45,24 +39,8 @@ export default function PrestationList() {
 
     if (editingId) {
       await updatePrestation();
-    } else {
-      await createPrestation();
     }
   };
-
-  async function createPrestation() {
-    try {
-      const res = await api.post("/prestations", form);
-      setPrestations([...prestations, res.data.prestation]);
-      resetForm();
-    } catch (err) {
-      if (err.response?.data?.errors) {
-        setErrors(err.response.data.errors);
-      } else {
-        setApiError(err.response?.data?.message || "Erreur lors de la création");
-      }
-    }
-  }
 
   async function updatePrestation() {
     try {
@@ -90,32 +68,21 @@ export default function PrestationList() {
     }
   }
 
+  const isEngagee = (p) => {
+    return p.client_id || p.prestataire_id;
+  };
+
   const startEdit = (prestation) => {
     setEditingId(prestation.id);
     setForm({
-      prestataire_id: prestation.prestataire_id || "",
-      client_id: prestation.client_id || "",
       type_prestation: prestation.type_prestation || "",
       description: prestation.description || "",
-      date_heure: prestation.date_heure || "",
-      duree_estimee: prestation.duree_estimee || "",
-      tarif: prestation.tarif || "",
-      statut: prestation.statut || "en_attente",
     });
     setErrors({});
   };
 
   const resetForm = () => {
-    setForm({
-      prestataire_id: "",
-      client_id: "",
-      type_prestation: "",
-      description: "",
-      date_heure: "",
-      duree_estimee: "",
-      tarif: "",
-      statut: "en_attente",
-    });
+    setForm({ type_prestation: "", description: "" });
     setEditingId(null);
   };
 
@@ -132,34 +99,8 @@ export default function PrestationList() {
 
       <form onSubmit={handleSubmit} className="bg-white shadow p-4 rounded space-y-4">
         <h2 className="text-xl font-semibold">
-          {editingId ? "Modifier la prestation" : "Nouvelle prestation"}
+          {editingId ? "Modifier la prestation" : "Sélectionner une prestation"}
         </h2>
-        <div>
-          <label className="block font-semibold">Prestataire ID</label>
-          <input
-            type="number"
-            name="prestataire_id"
-            value={form.prestataire_id}
-            onChange={handleChange}
-            className="w-full border p-2 rounded"
-          />
-          {errors.prestataire_id && (
-            <p className="text-red-600 text-sm">{errors.prestataire_id[0]}</p>
-          )}
-        </div>
-        <div>
-          <label className="block font-semibold">Client ID</label>
-          <input
-            type="number"
-            name="client_id"
-            value={form.client_id}
-            onChange={handleChange}
-            className="w-full border p-2 rounded"
-          />
-          {errors.client_id && (
-            <p className="text-red-600 text-sm">{errors.client_id[0]}</p>
-          )}
-        </div>
         <div>
           <label className="block font-semibold">Type</label>
           <input
@@ -185,58 +126,12 @@ export default function PrestationList() {
             <p className="text-red-600 text-sm">{errors.description[0]}</p>
           )}
         </div>
-        <div>
-          <label className="block font-semibold">Date et heure</label>
-          <input
-            type="datetime-local"
-            name="date_heure"
-            value={form.date_heure}
-            onChange={handleChange}
-            className="w-full border p-2 rounded"
-          />
-          {errors.date_heure && (
-            <p className="text-red-600 text-sm">{errors.date_heure[0]}</p>
-          )}
-        </div>
-        <div>
-          <label className="block font-semibold">Durée estimée (min)</label>
-          <input
-            type="number"
-            name="duree_estimee"
-            value={form.duree_estimee}
-            onChange={handleChange}
-            className="w-full border p-2 rounded"
-          />
-          {errors.duree_estimee && (
-            <p className="text-red-600 text-sm">{errors.duree_estimee[0]}</p>
-          )}
-        </div>
-        <div>
-          <label className="block font-semibold">Tarif</label>
-          <input
-            type="number"
-            name="tarif"
-            value={form.tarif}
-            onChange={handleChange}
-            className="w-full border p-2 rounded"
-          />
-          {errors.tarif && <p className="text-red-600 text-sm">{errors.tarif[0]}</p>}
-        </div>
-        <div>
-          <label className="block font-semibold">Statut</label>
-          <input
-            type="text"
-            name="statut"
-            value={form.statut}
-            onChange={handleChange}
-            className="w-full border p-2 rounded"
-          />
-          {errors.statut && <p className="text-red-600 text-sm">{errors.statut[0]}</p>}
-        </div>
         <div className="flex gap-4">
-          <button type="submit" className="admin-btn-primary">
-            {editingId ? "Mettre à jour" : "Ajouter"}
-          </button>
+          {editingId && (
+            <button type="submit" className="admin-btn-primary">
+              Mettre à jour
+            </button>
+          )}
           {editingId && (
             <button
               type="button"
@@ -278,12 +173,16 @@ export default function PrestationList() {
                 <td className="p-3">{p.prestataire_id}</td>
                 <td className="p-3">{p.client_id}</td>
                 <td className="p-3 space-x-2">
-                  <button onClick={() => startEdit(p)} className="text-yellow-600 hover:underline">
-                    Modifier
-                  </button>
-                  <button onClick={() => deletePrestation(p.id)} className="text-red-600 hover:underline">
-                    Supprimer
-                  </button>
+                  {!isEngagee(p) && (
+                    <>
+                      <button onClick={() => startEdit(p)} className="text-yellow-600 hover:underline">
+                        Modifier
+                      </button>
+                      <button onClick={() => deletePrestation(p.id)} className="text-red-600 hover:underline">
+                        Supprimer
+                      </button>
+                    </>
+                  )}
                 </td>
               </tr>
             ))}
