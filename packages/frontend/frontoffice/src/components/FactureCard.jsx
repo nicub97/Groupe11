@@ -15,7 +15,7 @@ export default function FactureCard({ facture }) {
         href={url}
         target="_blank"
         rel="noopener noreferrer"
-        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+        className="btn-primary"
       >
         Télécharger PDF
       </a>

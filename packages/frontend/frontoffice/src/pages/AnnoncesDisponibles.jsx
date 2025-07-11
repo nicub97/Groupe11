@@ -144,7 +144,7 @@ export default function AnnoncesDisponibles() {
         />
         <button
           onClick={handleReset}
-          className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+          className="btn-secondary"
         >
           Réinitialiser les filtres
         </button>
@@ -166,7 +166,7 @@ export default function AnnoncesDisponibles() {
 
               <button
                 onClick={() => handleAccepter(a.id)}
-                className="mt-4 bg-green-700 text-white px-4 py-2 rounded hover:bg-green-800"
+                className="btn-primary mt-4"
               >
                 Accepter l’annonce
               </button>

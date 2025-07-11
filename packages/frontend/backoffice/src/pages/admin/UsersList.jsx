@@ -23,13 +23,13 @@ export default function UsersList() {
         <div className="flex gap-2">
           <button
             onClick={() => navigate("/admin/utilisateurs/ajouter-admin")}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            className="admin-btn-primary"
           >
             Créer un admin
           </button>
           <button
             onClick={() => navigate("/admin/utilisateurs/ajouter")}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            className="admin-btn-primary"
           >
             Ajouter un utilisateur
           </button>

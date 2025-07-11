@@ -89,7 +89,7 @@ export default function Annonces() {
       {["client", "commercant"].includes(user?.role) && (
         <button
           onClick={() => navigate("/annonces/creer")}
-          className="mb-4 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+          className="btn-primary mb-4"
         >
           Créer une annonce
         </button>
@@ -139,7 +139,7 @@ export default function Annonces() {
         />
         <button
           onClick={handleReset}
-          className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+          className="btn-secondary"
         >
           Réinitialiser les filtres
         </button>
@@ -167,7 +167,7 @@ export default function Annonces() {
 
               <button
                 onClick={() => navigate(`/annonces/${annonce.id}`)}
-                className="mt-3 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                className="btn-primary mt-3"
               >
                 Voir l'annonce
               </button>

@@ -34,14 +34,14 @@ export default function ActionButtons({ prestationId, statut, onChange }) {
           <button
             onClick={() => changerStatut("acceptée")}
             disabled={loading}
-            className="bg-green-600 text-white px-3 py-1 rounded disabled:opacity-50"
+            className="btn-primary disabled:opacity-50"
           >
             Accepter
           </button>
           <button
             onClick={() => changerStatut("refusée")}
             disabled={loading}
-            className="bg-red-600 text-white px-3 py-1 rounded disabled:opacity-50"
+            className="btn-danger disabled:opacity-50"
           >
             Refuser
           </button>
@@ -52,7 +52,7 @@ export default function ActionButtons({ prestationId, statut, onChange }) {
         <button
           onClick={() => changerStatut("terminée")}
           disabled={loading}
-          className="bg-blue-600 text-white px-3 py-1 rounded disabled:opacity-50"
+          className="btn-primary disabled:opacity-50"
         >
           Terminer
         </button>

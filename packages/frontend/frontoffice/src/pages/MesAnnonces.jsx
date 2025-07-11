@@ -172,7 +172,7 @@ export default function MesAnnonces() {
                 <button
                   onClick={() => handlePay(a)}
                   disabled={payLoadingId === a.id}
-                  className="mt-2 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:opacity-50"
+                  className="btn-primary mt-2 disabled:opacity-50"
                 >
                   {payLoadingId === a.id ? "Redirection..." : "Payer maintenant"}
                 </button>
@@ -182,7 +182,7 @@ export default function MesAnnonces() {
               {a.etapes_livraison?.length === 0 && (!a.id_client || a.type !== "produit_livre") && (
                 <button
                   onClick={() => handleDelete(a.id)}
-                  className="mt-4 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+                  className="btn-danger mt-4"
                 >
                   Annuler l’annonce
                 </button>

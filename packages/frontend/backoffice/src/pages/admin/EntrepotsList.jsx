@@ -166,7 +166,7 @@ export default function EntrepotsList() {
         <div className="flex gap-4">
           <button
             type="submit"
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            className="admin-btn-primary"
           >
             {editingId ? "Mettre \xE0 jour" : "Ajouter"}
           </button>
@@ -174,7 +174,7 @@ export default function EntrepotsList() {
             <button
               type="button"
               onClick={resetForm}
-              className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+              className="admin-btn-secondary"
             >
               Annuler
             </button>

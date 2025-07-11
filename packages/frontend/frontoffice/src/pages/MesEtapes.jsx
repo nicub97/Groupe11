@@ -79,7 +79,7 @@ export default function MesEtapes() {
                 boutonAction = (
                   <Link
                     to={`/validation-code/${e.id}?type=retrait`}
-                    className="inline-block mt-3 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                    className="btn-primary inline-block mt-3"
                   >
                     Saisir le code pour retirer
                   </Link>
@@ -91,7 +91,7 @@ export default function MesEtapes() {
                     onClick={() =>
                       navigate(`/validation-code/${e.id}?type=retrait`)
                     }
-                    className="inline-block mt-3 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                    className="btn-primary inline-block mt-3"
                   >
                     Saisir le code pour retirer
                   </button>
@@ -102,7 +102,7 @@ export default function MesEtapes() {
               boutonAction = (
                 <Link
                   to={`/validation-code/${e.id}?type=depot`}
-                  className="inline-block mt-3 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                  className="btn-primary inline-block mt-3"
                 >
                   Saisir le code pour déposer
                 </Link>

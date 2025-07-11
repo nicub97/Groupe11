@@ -53,7 +53,7 @@ export default function PlanningForm({ onSubmit }) {
           className="flex-1 p-2 border rounded"
         />
       </div>
-      <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
+      <button type="submit" className="btn-primary w-full">
         Ajouter
       </button>
     </form>
