@@ -1,6 +1,6 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Transition } from "@headlessui/react";
 
 export default function Navbar() {
@@ -8,6 +8,7 @@ export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const navRef = useRef(null);
 
   useEffect(() => {
     if (user?.role === "livreur" && location.pathname === "/") {
@@ -73,8 +74,26 @@ export default function Navbar() {
 
   const menuItems = getMenuItems();
 
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (!navRef.current) return;
+      const openMenus = navRef.current.querySelectorAll('details[open]');
+      openMenus.forEach((menu) => {
+        if (!menu.contains(e.target)) {
+          menu.removeAttribute('open');
+        }
+      });
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   return (
-    <header className="bg-white text-green-900 shadow-md sticky top-0 z-50 border-b border-gray-200">
+    <header
+      ref={navRef}
+      className="bg-white text-green-900 shadow-md sticky top-0 z-50 border-b border-gray-200"
+    >
       <nav className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
         <Link to="/" className="text-2xl font-bold hover:text-lime-300 transition">
           EcoDeli

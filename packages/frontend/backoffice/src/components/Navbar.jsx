@@ -1,17 +1,37 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useEffect, useRef } from 'react';
 
 export default function Navbar() {
   const { token, logout } = useAuth();
   const navigate = useNavigate();
+  const navRef = useRef(null);
 
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
 
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (!navRef.current) return;
+      const openMenus = navRef.current.querySelectorAll('details[open]');
+      openMenus.forEach((menu) => {
+        if (!menu.contains(e.target)) {
+          menu.removeAttribute('open');
+        }
+      });
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   return (
-    <nav className="bg-gray-800 text-white px-6 py-4 flex justify-between items-center">
+    <nav
+      ref={navRef}
+      className="bg-gray-800 text-white px-6 py-4 flex justify-between items-center"
+    >
       <div className="text-lg font-bold">
         <Link to="/admin">EcoDeli Admin</Link>
       </div>
