@@ -15,7 +15,8 @@ COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 # Prepare environment
-RUN cp .env.example .env && \
+RUN cp .env.production .env && \
+    # TODO: adapter le fichier .env en fonction de l'environnement de déploiement
     sed -i 's/DB_HOST=127.0.0.1/DB_HOST=postgres/' .env
 
 # Install PHP and JS dependencies and build assets
