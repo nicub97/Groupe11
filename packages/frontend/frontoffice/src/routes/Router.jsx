@@ -16,7 +16,6 @@ import GuestRoute from "./GuestRoute";
 import Annonces from "../pages/Annonces";
 import CreerAnnonce from "../pages/CreerAnnonce";
 import AnnonceDetail from "../pages/AnnonceDetail";
-import AdresseLivraison from "../pages/AdresseLivraison";
 import Paiement from "../pages/Paiement";
 import PaiementSuccess from "../pages/PaiementSuccess";
 import PaiementCancel from "../pages/PaiementCancel";
@@ -93,10 +92,6 @@ export default function AppRouter() {
                 </RoleRoute>
               </PrivateRoute>
             }
-          />
-          <Route
-            path="/adresse-livraison/:commandeId"
-            element={<AdresseLivraison />}
           />
           <Route
             path="/paiement/:commandeId"
