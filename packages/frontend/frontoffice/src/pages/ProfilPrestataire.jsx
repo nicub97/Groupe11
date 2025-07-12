@@ -82,18 +82,6 @@ export default function ProfilPrestataire() {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Supprimer ce document ?")) return;
-    try {
-      await api.delete(`/prestataires/justificatifs/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setJustificatifs((prev) => prev.filter((j) => j.id !== id));
-  } catch {
-      alert("Suppression impossible");
-    }
-  };
-
   if (error) return <p className="text-red-600 p-4">{error}</p>;
   if (!prestataire) return <p className="p-4">Chargement...</p>;
 
@@ -158,14 +146,7 @@ export default function ProfilPrestataire() {
               >
                 {j.chemin.split("/").pop()}
               </a>
-              {j.statut === "refuse" && (
-                <button
-                  onClick={() => handleDelete(j.id)}
-                  className="text-sm text-red-600 hover:underline"
-                >
-                  Supprimer
-                </button>
-              )}
+              {/* Le justificatif refusé est désormais supprimé côté admin */}
             </li>
           ))}
         </ul>
