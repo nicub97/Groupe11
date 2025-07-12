@@ -11,6 +11,8 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
 COPY . .
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 # Prepare environment
 RUN cp .env.example .env && \
@@ -24,5 +26,7 @@ RUN composer install --no-interaction --prefer-dist && \
 # Fix permissions
 RUN chown -R www-data:www-data storage bootstrap/cache
 
-EXPOSE 8000
-CMD php artisan migrate --seed && php artisan serve --host=0.0.0.0 --port=8000
+EXPOSE 8000 # TODO: changer le port si le backend est derrière nginx ou un reverse proxy
+# TODO: en production, utiliser php-fpm + nginx au lieu de php artisan serve
+# TODO: en production, exécuter composer install --no-dev pour éviter les dépendances inutiles
+ENTRYPOINT ["/entrypoint.sh"]
