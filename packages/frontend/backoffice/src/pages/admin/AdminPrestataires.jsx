@@ -10,6 +10,8 @@ export default function AdminPrestataires() {
   const [evaluations, setEvaluations] = useState({});
   const [showEval, setShowEval] = useState({});
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [typeFilter, setTypeFilter] = useState("");
 
   useEffect(() => {
     fetchPrestataires();
@@ -68,18 +70,61 @@ export default function AdminPrestataires() {
     }
   };
 
+  const filteredPrestataires = prestataires.filter((p) => {
+    const term = search.toLowerCase();
+    const user = p.utilisateur || {};
+    const matchesText =
+      (user.nom || "").toLowerCase().includes(term) ||
+      (user.prenom || "").toLowerCase().includes(term) ||
+      (user.email || "").toLowerCase().includes(term);
+    const matchesStatus = statusFilter ? p.statut === statusFilter : true;
+    const matchesType = typeFilter
+      ? (p.domaine || "").toLowerCase().includes(typeFilter.toLowerCase())
+      : true;
+    return matchesText && matchesStatus && matchesType;
+  });
+
   if (loading) return <div className="p-4">Chargement...</div>;
 
   return (
     <div className="p-6 space-y-6">
       <h1 className="text-2xl font-bold">Prestataires</h1>
-      <input
-        type="text"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder="Rechercher..."
-        className="border p-2 mb-4 w-full max-w-xs"
-      />
+      <div className="flex flex-wrap items-end gap-4 mb-4">
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Rechercher..."
+          className="border p-2 rounded"
+        />
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="border p-2 rounded"
+        >
+          <option value="">Tous les statuts</option>
+          <option value="valide">Validé</option>
+          <option value="en_attente">En attente</option>
+          <option value="refuse">Refusé</option>
+        </select>
+        <input
+          type="text"
+          value={typeFilter}
+          onChange={(e) => setTypeFilter(e.target.value)}
+          placeholder="Type ou domaine"
+          className="border p-2 rounded"
+        />
+        <button
+          onClick={() => {
+            setSearch("");
+            setStatusFilter("");
+            setTypeFilter("");
+          }}
+          className="admin-btn-secondary"
+        >
+          Réinitialiser les filtres
+        </button>
+      </div>
       <div className="overflow-x-auto">
         <table className="min-w-full bg-white rounded shadow">
           <thead>
@@ -93,13 +138,7 @@ export default function AdminPrestataires() {
             </tr>
           </thead>
           <tbody>
-            {prestataires
-              .filter(
-                (p) =>
-                  p.utilisateur?.nom.toLowerCase().includes(search.toLowerCase()) ||
-                  p.utilisateur?.prenom.toLowerCase().includes(search.toLowerCase())
-              )
-              .map((p) => (
+            {filteredPrestataires.map((p) => (
               <tr key={p.id} className="border-b hover:bg-gray-50 align-top">
                 <td className="p-3">{p.utilisateur?.prenom} {p.utilisateur?.nom}</td>
                 <td className="p-3">{p.utilisateur?.email}</td>
