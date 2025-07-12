@@ -7,7 +7,6 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AnnonceController;
 use App\Http\Controllers\CommandeController;
 use App\Http\Controllers\PaiementController;
-use App\Http\Controllers\ColisController;
 use App\Http\Controllers\BoxController;
 use App\Http\Controllers\EntrepotController;
 use App\Http\Controllers\FactureController;
@@ -105,8 +104,6 @@ Route::middleware(['auth:sanctum', 'role:admin,client'])->group(function () {
 
 // LIVREUR uniquement
 Route::middleware(['auth:sanctum', 'role:admin,livreur'])->group(function () {
-    Route::post('/colis', [ColisController::class, 'store']);
-    Route::patch('/colis/{id}/box', [ColisController::class, 'affecterBox']);
     Route::get('/livreurs/{id}', [LivreurController::class, 'show'])->whereNumber('id');
     Route::patch('/livreurs/{id}', [LivreurController::class, 'update'])->whereNumber('id');
     Route::get('/livreurs/{id}/justificatifs', [JustificatifLivreurController::class, 'index'])->whereNumber('id');
@@ -171,10 +168,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/paiements/{id}', [PaiementController::class, 'show']);
     Route::post('/paiements', [PaiementController::class, 'store']);
     Route::post('/paiements/checkout-session', [PaiementController::class, 'createCheckoutSession']);
-
-    // Colis
-    Route::get('/colis', [ColisController::class, 'index']);
-    Route::get('/colis/{id}', [ColisController::class, 'show']);
 
     // Boxes
     Route::get('/boxes', [BoxController::class, 'index']);
