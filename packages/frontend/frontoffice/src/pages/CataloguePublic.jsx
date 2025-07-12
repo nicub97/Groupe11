@@ -10,7 +10,13 @@ export default function CataloguePublic() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // VITE_API_URL doit pointer vers l'API backend (ex: http://localhost:8000/api)
+        console.log("VITE_API_URL", import.meta.env.VITE_API_URL);
         const res = await api.get("/public/prestations");
+        console.log(res.data);
+        if (res.headers["content-type"]) {
+          console.log(res.headers["content-type"]);
+        }
         setData(res.data);
       } catch (err) {
         setError(err);
