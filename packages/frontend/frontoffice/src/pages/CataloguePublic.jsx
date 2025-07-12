@@ -17,7 +17,8 @@ export default function CataloguePublic() {
         if (res.headers["content-type"]) {
           console.log(res.headers["content-type"]);
         }
-        setData(res.data);
+        const prestationsArray = Array.isArray(res.data.data) ? res.data.data : [];
+        setData(prestationsArray);
       } catch (err) {
         setError(err);
       } finally {
