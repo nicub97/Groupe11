@@ -463,6 +463,19 @@ class AnnonceController extends Controller
                     ]
                 );
 
+                if (
+                    $annonce->type === 'produit_livre' &&
+                    ! $annonce->id_client &&
+                    Auth::check() &&
+                    Auth::user()->role === 'client'
+                ) {
+                    $annonce->id_client = $utilisateurId;
+                    Log::info('Attribution automatique du client via paiementCallback', [
+                        'annonce_id' => $annonce->id,
+                        'utilisateur_id' => $utilisateurId,
+                    ]);
+                }
+
                 $annonce->is_paid = true;
                 $annonce->save();
 

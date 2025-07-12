@@ -62,14 +62,28 @@ export default function PaiementSuccess() {
 
         if (!paiementOk) return;
 
-        if (context === "reserver" && annonceId && entrepotId) {
-          await api.post(
-            `/annonces/${annonceId}/reserver`,
-            { entrepot_arrivee_id: Number(entrepotId) },
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
-          localStorage.removeItem("reservationEntrepot");
-          setMessage("Réservation confirmée !");
+        if (context === "reserver") {
+          if (!annonceId || !entrepotId || !token) {
+            console.error("Données manquantes pour la réservation", {
+              annonceId,
+              entrepotId,
+              token,
+            });
+            setMessage("Impossible de réserver l'annonce : informations manquantes.");
+          } else {
+            try {
+              await api.post(
+                `/annonces/${annonceId}/reserver`,
+                { entrepot_arrivee_id: Number(entrepotId) },
+                { headers: { Authorization: `Bearer ${token}` } }
+              );
+              localStorage.removeItem("reservationEntrepot");
+              setMessage("Réservation confirmée !");
+            } catch (err) {
+              console.error("Erreur lors de la réservation :", err);
+              setMessage("Erreur lors de la réservation de l'annonce.");
+            }
+          }
         } else if (context === "prestation_reserver" && prestationId) {
           setMessage("Prestation réservée !");
           localStorage.removeItem("prestationId");
