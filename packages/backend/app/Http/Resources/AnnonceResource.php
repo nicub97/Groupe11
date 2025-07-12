@@ -20,6 +20,7 @@ class AnnonceResource extends JsonResource
             'description' => $this->description,
             'prix_propose' => $this->prix_propose,
             'photo' => $this->photo,
+            'type' => $this->type,
             'entrepot_depart' => $this->entrepotDepart?->ville,
             'entrepot_arrivee' => $this->entrepotArrivee?->ville,
             'created_at' => $this->created_at,
