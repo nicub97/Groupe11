@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  VITE_API_URL=http://localhost:8000/api # TODO: changer cette URL avec celle de l'API en production
+  baseURL: import.meta.env.VITE_API_URL, // TODO: mettre l'URL API de production ici
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
