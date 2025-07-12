@@ -84,11 +84,6 @@ class Utilisateur extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Paiement::class, 'utilisateur_id');
     }
 
-    public function colisLivres()
-    {
-        return $this->hasMany(Colis::class, 'livreur_id');
-    }
-
     public function messagesEnvoyes()
     {
         return $this->hasMany(Communication::class, 'expediteur_id');
