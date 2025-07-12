@@ -12,6 +12,7 @@ import ChangePassword from "../pages/ChangePassword";
 import ResetPassword from "../pages/ResetPassword";
 import MainLayout from "../layouts/MainLayout";
 import PrivateRoute from "./PrivateRoute";
+import GuestRoute from "./GuestRoute";
 import Annonces from "../pages/Annonces";
 import CreerAnnonce from "../pages/CreerAnnonce";
 import AnnonceDetail from "../pages/AnnonceDetail";
@@ -28,6 +29,10 @@ import PublierPrestation from "../pages/PublierPrestation";
 import Notifications from "../pages/Notifications";
 import Catalogue from "../pages/Catalogue";
 import PrestationDetail from "../pages/PrestationDetail";
+import AnnoncesPublic from "../pages/AnnoncesPublic";
+import AnnonceDetailPublic from "../pages/AnnonceDetailPublic";
+import CataloguePublic from "../pages/CataloguePublic";
+import PrestationDetailPublic from "../pages/PrestationDetailPublic";
 import Prestations from "../pages/Prestations";
 import Disponibilites from "../pages/Disponibilites";
 import MesTrajets from "../pages/MesTrajets";
@@ -280,6 +285,38 @@ export default function AppRouter() {
           />
 
           <Route path="/prestations/catalogue" element={<Catalogue />} />
+          <Route
+            path="/annonces-public"
+            element={
+              <GuestRoute>
+                <AnnoncesPublic />
+              </GuestRoute>
+            }
+          />
+          <Route
+            path="/annonces-public/:id"
+            element={
+              <GuestRoute>
+                <AnnonceDetailPublic />
+              </GuestRoute>
+            }
+          />
+          <Route
+            path="/prestations/catalogue-public"
+            element={
+              <GuestRoute>
+                <CataloguePublic />
+              </GuestRoute>
+            }
+          />
+          <Route
+            path="/prestations/catalogue-public/:id"
+            element={
+              <GuestRoute>
+                <PrestationDetailPublic />
+              </GuestRoute>
+            }
+          />
 
           <Route
             path="/validation-code/:id"
