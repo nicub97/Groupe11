@@ -38,6 +38,7 @@ export default function ReserverAnnonce() {
           headers: { Authorization: `Bearer ${token}` },
         });
         setEntrepots(res.data);
+        console.log("Entrepôts chargés :", res.data);
       } catch (err) {
         console.error("Erreur chargement entrepôts :", err);
       }
@@ -106,6 +107,12 @@ export default function ReserverAnnonce() {
         <label className="block font-medium mb-1">
           Sélectionnez un entrepôt d’arrivée :
         </label>
+        {entrepots.length === 0 && (
+          <p className="text-red-600 font-medium mb-2">
+            Aucun entrepôt disponible ou erreur de chargement. Veuillez
+            réessayer.
+          </p>
+        )}
         <select
           value={entrepotArriveeId}
           onChange={(e) => setEntrepotArriveeId(e.target.value)}
