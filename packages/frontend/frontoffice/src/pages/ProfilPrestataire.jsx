@@ -55,13 +55,17 @@ export default function ProfilPrestataire() {
     const data = new FormData();
     data.append("fichier", newFile);
     try {
-      const res = await api.post("/prestataires/justificatifs", data, {
+      await api.post("/prestataires/justificatifs", data, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
         },
       });
-      setJustificatifs((prev) => [...prev, res.data]);
+
+      const list = await api.get("/prestataires/justificatifs", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setJustificatifs(list.data);
 
       const profil = await api.get(`/prestataires/${user.id}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -165,14 +169,7 @@ export default function ProfilPrestataire() {
             </li>
           ))}
         </ul>
-        {prestataire.statut === "refuse" &&
-          justificatifs.some((j) => j.statut === "refuse") && (
-          <p className="text-sm text-gray-600">
-            📂 Vous devez supprimer les justificatifs refusés avant d’en ajouter
-            un nouveau.
-          </p>
-        )}
-        {prestataire.statut === "refuse" && justificatifs.length === 0 && (
+        {prestataire.statut === "refuse" && (
           <>
             <label className="block font-medium">Justificatif (RIB, RC Pro, etc.)</label>
             <input
