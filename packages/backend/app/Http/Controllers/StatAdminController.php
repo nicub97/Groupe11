@@ -9,7 +9,6 @@ use App\Models\Livreur;
 use App\Models\Prestataire;
 use App\Models\Prestation;
 use App\Models\Commande; // pour les prestations
-use App\Models\Colis;     // pour les livraisons
 
 class StatAdminController extends Controller
 {
