@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
         
             $table->unsignedBigInteger('utilisateur_id'); // celui qui paie ou reçoit
-            $table->unsignedBigInteger('commande_id')->nullable(); // si rattaché à une commande
+            // $table->unsignedBigInteger('commande_id')->nullable(); // si rattaché à une commande
         
             $table->decimal('montant', 10, 2);
             $table->enum('sens', ['credit', 'debit']); // credit = reçoit, debit = paie
@@ -24,7 +24,6 @@ return new class extends Migration
             $table->timestamps();
         
             $table->foreign('utilisateur_id')->references('id')->on('utilisateurs')->onDelete('cascade');
-            $table->foreign('commande_id')->references('id')->on('commandes')->onDelete('set null');
         });
     }
 
