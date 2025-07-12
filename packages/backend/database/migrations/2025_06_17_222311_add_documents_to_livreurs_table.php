@@ -23,7 +23,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('livreurs', function (Blueprint $table) {
-            //
+            $table->dropColumn(['piece_identite_document', 'permis_conduire_document']); // TODO: vérifier la suppression lors du déploiement
         });
     }
 };
