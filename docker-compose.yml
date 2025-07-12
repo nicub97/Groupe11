@@ -5,16 +5,16 @@ services:
     build: ./packages/backend
     container_name: backend
     ports:
-      - "8000:8000"
+      - "8000:8000" # TODO: changer ce port selon la config d’hébergement
     volumes:
-      - backend-storage:/app/storage
+      - backend-storage:/app/storage # TODO: sauvegarder ce volume en cas de déploiement sur serveur
     environment:
       DB_CONNECTION: pgsql
       DB_HOST: postgres
       DB_PORT: 5432
       DB_DATABASE: ecodeli_pa
       DB_USERNAME: postgres
-      DB_PASSWORD: ""
+      DB_PASSWORD: elliot # TODO: utiliser un mot de passe sécurisé en production
     depends_on:
       - postgres
     networks:
@@ -24,7 +24,7 @@ services:
     build: ./packages/frontend/frontoffice
     container_name: frontoffice
     ports:
-      - "4173:4173"
+      - "4173:4173" # TODO: ajuster ce port en production
     depends_on:
       - backend
     networks:
@@ -34,7 +34,7 @@ services:
     build: ./packages/frontend/backoffice
     container_name: backoffice
     ports:
-      - "4174:4174"
+      - "4174:4174" # TODO: ajuster ce port en production
     depends_on:
       - backend
     networks:
