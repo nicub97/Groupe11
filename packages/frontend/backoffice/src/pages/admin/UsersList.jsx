@@ -19,9 +19,9 @@ export default function UsersList() {
   const filteredUsers = users.filter((u) => {
     const term = searchText.toLowerCase();
     const matchesText =
-      u.nom.toLowerCase().includes(term) ||
-      u.prenom.toLowerCase().includes(term) ||
-      u.email.toLowerCase().includes(term);
+      (u.nom || "").toLowerCase().includes(term) ||
+      (u.prenom || "").toLowerCase().includes(term) ||
+      (u.email || "").toLowerCase().includes(term);
     const matchesRole = roleFilter ? u.role === roleFilter : true;
     return matchesText && matchesRole;
   });
