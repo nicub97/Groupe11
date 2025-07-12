@@ -447,10 +447,12 @@ class AnnonceController extends Controller
         if ($session && $session->payment_status === 'paid') {
             DB::transaction(function () use ($annonce, $sessionId) {
                 // Enregistrer le paiement s'il n'existe pas déjà
+                $utilisateurId = Auth::id() ?: $annonce->id_client ?: $annonce->id_commercant;
+
                 Paiement::firstOrCreate(
                     [
                         'annonce_id' => $annonce->id,
-                        'utilisateur_id' => $annonce->id_client,
+                        'utilisateur_id' => $utilisateurId,
                     ],
                     [
                         'montant' => $annonce->prix_propose,
