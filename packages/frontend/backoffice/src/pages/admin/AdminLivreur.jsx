@@ -7,6 +7,8 @@ export default function AdminLivreur() {
   const [livreurs, setLivreurs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [cityFilter, setCityFilter] = useState("");
 
   useEffect(() => {
     fetchLivreurs();
@@ -44,18 +46,63 @@ export default function AdminLivreur() {
     }
   };
 
+  const filteredLivreurs = livreurs.filter((l) => {
+    const term = search.toLowerCase();
+    const user = l.utilisateur || {};
+    const matchesText =
+      (user.nom || "").toLowerCase().includes(term) ||
+      (user.prenom || "").toLowerCase().includes(term) ||
+      (user.email || "").toLowerCase().includes(term);
+    const matchesStatus = statusFilter ? l.statut === statusFilter : true;
+    const matchesCity = cityFilter
+      ? (user.adresse_postale || "")
+          .toLowerCase()
+          .includes(cityFilter.toLowerCase())
+      : true;
+    return matchesText && matchesStatus && matchesCity;
+  });
+
   if (loading) return <div className="p-4">Chargement...</div>;
 
   return (
     <div className="p-6 space-y-6">
       <h1 className="text-2xl font-bold">Livreurs</h1>
-      <input
-        type="text"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder="Rechercher..."
-        className="border p-2 mb-4 w-full max-w-xs"
-      />
+      <div className="flex flex-wrap items-end gap-4 mb-4">
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Rechercher..."
+          className="border p-2 rounded"
+        />
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="border p-2 rounded"
+        >
+          <option value="">Tous les statuts</option>
+          <option value="valide">Validé</option>
+          <option value="en_attente">En attente</option>
+          <option value="refuse">Refusé</option>
+        </select>
+        <input
+          type="text"
+          value={cityFilter}
+          onChange={(e) => setCityFilter(e.target.value)}
+          placeholder="Ville ou adresse"
+          className="border p-2 rounded"
+        />
+        <button
+          onClick={() => {
+            setSearch("");
+            setStatusFilter("");
+            setCityFilter("");
+          }}
+          className="admin-btn-secondary"
+        >
+          Réinitialiser les filtres
+        </button>
+      </div>
       <div className="overflow-x-auto">
         <table className="min-w-full bg-white rounded shadow">
           <thead>
@@ -70,13 +117,7 @@ export default function AdminLivreur() {
             </tr>
           </thead>
           <tbody>
-            {livreurs
-              .filter(
-                (l) =>
-                  l.utilisateur?.nom.toLowerCase().includes(search.toLowerCase()) ||
-                  l.utilisateur?.prenom.toLowerCase().includes(search.toLowerCase())
-              )
-              .map((l) => (
+            {filteredLivreurs.map((l) => (
               <tr key={l.id} className="border-b hover:bg-gray-50 align-top">
                 <td className="p-3">{l.utilisateur?.prenom} {l.utilisateur?.nom}</td>
                 <td className="p-3">{l.utilisateur?.email}</td>
