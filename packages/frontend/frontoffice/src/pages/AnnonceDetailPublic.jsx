@@ -12,7 +12,7 @@ export default function AnnonceDetailPublic() {
     const fetchAnnonce = async () => {
       try {
         const res = await api.get(`/public/annonces/${id}`);
-        setAnnonce(res.data);
+        setAnnonce(res.data.data);
       } catch (err) {
         console.error("Erreur chargement annonce :", err);
       } finally {
@@ -33,12 +33,19 @@ export default function AnnonceDetailPublic() {
   return (
     <div className="max-w-2xl mx-auto mt-10 p-6 bg-white shadow rounded">
       <h2 className="text-2xl font-bold mb-4">{annonce.titre}</h2>
+      {annonce.photo && (
+        <img
+          src={annonce.photo}
+          alt="Photo de l’annonce"
+          className="w-full max-w-md rounded-xl shadow mb-4"
+        />
+      )}
       <p className="mb-2">{annonce.description}</p>
       <p className="mb-2">
         <strong>Prix :</strong> {annonce.prix_propose} €
       </p>
       <p className="mb-2">
-        <strong>Trajet :</strong> {annonce.entrepot_depart?.ville || "❓"} → {annonce.entrepot_arrivee?.ville || "❓"}
+        <strong>Trajet :</strong> {annonce.entrepot_depart || "❓"} → {annonce.entrepot_arrivee || "❓"}
       </p>
       <button onClick={reserver} className="btn-primary mt-4">
         Réserver
