@@ -46,11 +46,6 @@ class Annonce extends Model
         return $this->hasMany(Commande::class, 'annonce_id');
     }
 
-    public function colis()
-    {
-        return $this->hasOne(Colis::class);
-    }
-
     public function etapesLivraison()
     {
         return $this->hasMany(EtapeLivraison::class, 'annonce_id');
