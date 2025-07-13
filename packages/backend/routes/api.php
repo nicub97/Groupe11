@@ -38,6 +38,24 @@ use App\Http\Controllers\PublicController;
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
 
+// Informations sur l'utilisateur actuellement connecté
+Route::middleware('auth:sanctum')->get('/me', function (Request $request) {
+    return response()->json(
+        $request->user()->only([
+            'id',
+            'nom',
+            'prenom',
+            'email',
+            'identifiant',
+            'role',
+            'pays',
+            'telephone',
+            'adresse_postale',
+            'tutorial_done',
+        ])
+    );
+});
+
 // Route de confirmation de l'email (sans authentification)
 Route::get('/verify-email/{id}/{hash}', [EmailVerificationController::class, 'verify'])
     ->middleware('signed')
