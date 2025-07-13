@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
-import { createCheckoutSession } from "../services/paiement";
 
 export default function AnnonceDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { token, user } = useAuth();
   const [annonce, setAnnonce] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -27,24 +27,6 @@ export default function AnnonceDetail() {
     fetchAnnonce();
   }, [id, token]);
 
-  const reserver = async () => {
-    try {
-      localStorage.setItem("paymentContext", "reserver");
-      localStorage.setItem("reservationAnnonceId", id);
-      const { checkout_url } = await createCheckoutSession(
-        { annonce_id: Number(id), type: annonce.type },
-        token,
-        "reserver",
-      );
-      window.location.href = checkout_url;
-    } catch (err) {
-      console.error("Erreur réservation :", err);
-      alert(
-        err.response?.data?.message ||
-          "Erreur lors de la redirection de paiement.",
-      );
-    }
-  };
 
   if (loading) return <p className="mt-10 text-center">Chargement...</p>;
   if (!annonce) return <p className="mt-10 text-center">Annonce introuvable</p>;
@@ -61,7 +43,7 @@ export default function AnnonceDetail() {
       </p>
       {user?.role === "client" && !annonce.id_client && (
         <button
-          onClick={reserver}
+          onClick={() => navigate(`/annonces/${id}/reserver`)}
           className="btn-primary mt-4"
         >
           Réserver
