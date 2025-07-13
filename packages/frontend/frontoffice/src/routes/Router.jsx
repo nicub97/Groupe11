@@ -6,6 +6,7 @@ import Register from "../pages/Register";
 import RegisterCommercant from "../pages/RegisterCommercant";
 import RegisterLivreur from "../pages/RegisterLivreur";
 import RegisterPrestataire from "../pages/RegisterPrestataire";
+import DevenirLivreur from "../pages/DevenirLivreur";
 import DevenirPrestataire from "../pages/DevenirPrestataire";
 import Profil from "../pages/Profil";
 import EditProfil from "../pages/EditProfil";
@@ -56,7 +57,6 @@ export default function AppRouter() {
             path="/register-prestataire"
             element={<RegisterPrestataire />}
           />
-          <Route path="/devenir-prestataire" element={<DevenirPrestataire />} />
           <Route
             path="/annonces-public"
             element={
@@ -88,6 +88,22 @@ export default function AppRouter() {
                 <PrestationDetailPublic />
               </GuestRoute>
             }
+          />
+          <Route
+            path="/Devenir-livreur"
+            element={
+              <GuestRoute>
+                <DevenirLivreur />
+              </GuestRoute>
+            }
+          />
+          <Route 
+            path="/devenir-prestataire" 
+            element={
+              <GuestRoute>
+                <DevenirPrestataire />
+              </GuestRoute>
+            } 
           />
           <Route
             path="/annonces"
@@ -313,7 +329,14 @@ export default function AppRouter() {
             }
           />
 
-          <Route path="/prestations/catalogue" element={<Catalogue />} />
+          <Route
+            path="/prestations/catalogue" 
+            element={
+              <PrivateRoute>
+                <Catalogue />
+              </PrivateRoute>
+            } 
+          />
 
           <Route
             path="/validation-code/:id"
