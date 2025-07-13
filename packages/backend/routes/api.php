@@ -32,6 +32,7 @@ use App\Http\Controllers\StatAdminController;
 use App\Http\Controllers\Api\EmailVerificationController;
 use Laravel\Fortify\Http\Controllers\EmailVerificationNotificationController;
 use App\Http\Controllers\TrajetLivreurController;
+use App\Http\Controllers\PublicController;
 
 // Authentification
 Route::post('/login', [AuthController::class, 'login']);
@@ -41,6 +42,14 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::get('/verify-email/{id}/{hash}', [EmailVerificationController::class, 'verify'])
     ->middleware('signed')
     ->name('verification.verify');
+
+// Routes publiques sans authentification
+Route::prefix('public')->group(function () {
+    Route::get('/annonces', [PublicController::class, 'listAnnonces']);
+    Route::get('/annonces/{id}', [PublicController::class, 'showAnnonce']);
+    Route::get('/prestations', [PublicController::class, 'listPrestations']);
+    Route::get('/prestations/{id}', [PublicController::class, 'showPrestation']);
+});
 
 // ADMIN uniquement
 Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
