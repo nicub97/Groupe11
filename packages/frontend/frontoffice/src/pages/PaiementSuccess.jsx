@@ -36,41 +36,60 @@ export default function PaiementSuccess() {
     const finalize = async () => {
       try {
         let paiementOk = true;
-        if (annonceId && sessionId) {
+
+        if (context === "reserver" && annonceId && entrepotId && sessionId) {
           try {
-            await api.get(`/annonces/${annonceId}/paiement-callback`, {
-              params: { session_id: sessionId },
-              headers: { Authorization: `Bearer ${token}` },
-            });
+            await api.post(
+              `/annonces/${annonceId}/reserver`,
+              { entrepot_arrivee_id: Number(entrepotId) },
+              { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            await api.post(
+              `/annonces/${annonceId}/paiement-callback?session_id=${sessionId}`,
+              {},
+              { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            localStorage.removeItem("reservationEntrepot");
+            localStorage.removeItem("reservationAnnonceId");
+            localStorage.removeItem("paymentContext");
+
+            setMessage("Réservation confirmée !");
           } catch (err) {
-            console.error("Erreur callback paiement :", err);
-            setMessage("\u274C Une erreur est survenue. Paiement non valid\u00e9.");
+            console.error("Erreur réservation ou callback paiement :", err);
+            setMessage("Une erreur est survenue. Paiement non validé.");
             paiementOk = false;
           }
-        }
-        if (context === "prestation_reserver" && prestationId && sessionId) {
-          try {
-            await api.get(`/prestations/${prestationId}/paiement-callback`, {
-              params: { session_id: sessionId },
-              headers: { Authorization: `Bearer ${token}` },
-            });
-          } catch (err) {
-            console.error("Erreur callback paiement prestation:", err);
-            setMessage("Erreur lors de la réservation de la prestation.");
+        } else {
+          if (annonceId && sessionId) {
+            try {
+              await api.get(`/annonces/${annonceId}/paiement-callback`, {
+                params: { session_id: sessionId },
+                headers: { Authorization: `Bearer ${token}` },
+              });
+            } catch (err) {
+              console.error("Erreur callback paiement :", err);
+              setMessage("\u274C Une erreur est survenue. Paiement non valid\u00e9.");
+              paiementOk = false;
+            }
+          }
+          if (context === "prestation_reserver" && prestationId && sessionId) {
+            try {
+              await api.get(`/prestations/${prestationId}/paiement-callback`, {
+                params: { session_id: sessionId },
+                headers: { Authorization: `Bearer ${token}` },
+              });
+            } catch (err) {
+              console.error("Erreur callback paiement prestation:", err);
+              setMessage("Erreur lors de la réservation de la prestation.");
+            }
           }
         }
 
         if (!paiementOk) return;
 
-        if (context === "reserver" && annonceId && entrepotId) {
-          await api.post(
-            `/annonces/${annonceId}/reserver`,
-            { entrepot_arrivee_id: Number(entrepotId) },
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
-          localStorage.removeItem("reservationEntrepot");
-          setMessage("Réservation confirmée !");
-        } else if (context === "prestation_reserver" && prestationId) {
+        if (context === "prestation_reserver" && prestationId) {
           setMessage("Prestation réservée !");
           localStorage.removeItem("prestationId");
         } else if (context === "creer" && annonceData) {
