@@ -23,6 +23,7 @@ import PaiementCancel from "../pages/PaiementCancel";
 import MesAnnonces from "../pages/MesAnnonces";
 import AnnoncesDisponibles from "../pages/AnnoncesDisponibles";
 import Factures from "../pages/Factures";
+import FacturesManuelles from "../pages/FacturesManuelles";
 import ProfilPrestataire from "../pages/ProfilPrestataire";
 import PublierPrestation from "../pages/PublierPrestation";
 import ProfilLivreur from "../pages/ProfilLivreur";
@@ -282,6 +283,17 @@ export default function AppRouter() {
               <PrivateRoute>
                 <RoleRoute role={["prestataire"]}>
                   <Factures />
+                </RoleRoute>
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/factures-manuelles"
+            element={
+              <PrivateRoute>
+                <RoleRoute role={["livreur", "client", "commercant"]}>
+                  <FacturesManuelles />
                 </RoleRoute>
               </PrivateRoute>
             }
