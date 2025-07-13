@@ -17,7 +17,6 @@ import PrivateRoute from "./PrivateRoute";
 import Annonces from "../pages/Annonces";
 import CreerAnnonce from "../pages/CreerAnnonce";
 import AnnonceDetail from "../pages/AnnonceDetail";
-import Paiement from "../pages/Paiement";
 import PaiementSuccess from "../pages/PaiementSuccess";
 import PaiementCancel from "../pages/PaiementCancel";
 import MesAnnonces from "../pages/MesAnnonces";
@@ -141,14 +140,6 @@ export default function AppRouter() {
                 <RoleRoute role={["client", "commercant"]}>
                   <MesAnnonces />
                 </RoleRoute>
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/paiement/:commandeId"
-            element={
-              <PrivateRoute>
-                <Paiement />
               </PrivateRoute>
             }
           />
