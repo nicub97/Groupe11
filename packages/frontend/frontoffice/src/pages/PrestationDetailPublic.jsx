@@ -14,7 +14,7 @@ export default function PrestationDetailPublic() {
     const fetchPrestation = async () => {
       try {
         const res = await api.get(`/public/prestations/${id}`);
-        setPrestation(res.data);
+        setPrestation(res.data.data);
       } catch (err) {
         setError(err);
       } finally {
