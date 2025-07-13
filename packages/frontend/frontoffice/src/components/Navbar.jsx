@@ -39,6 +39,7 @@ export default function Navbar() {
         { path: "/prestations/catalogue", label: "Catalogue", group: "prestations" },
         { path: "/prestations", label: "Mes prestations", group: "prestations" },
         { path: "/mes-paiements", label: "Mes paiements", group: "profil" },
+        { path: "/factures-manuelles", label: "Factures", group: "profil" },
       ];
     }
 
@@ -57,6 +58,7 @@ export default function Navbar() {
         ...common,
         { path: "/annonces/creer", label: "Créer une annonce", group: "annonces" },
         { path: "/mes-annonces", label: "Mes annonces", group: "annonces" },
+        { path: "/factures-manuelles", label: "Factures", group: "profil" },
       ];
     }
 
@@ -66,6 +68,7 @@ export default function Navbar() {
         { path: "/mes-trajets", label: "Mes trajets", group: "annonces" },
         { path: "/annonces-disponibles", label: "Annonces disponibles", group: "annonces" },
         { path: "/mes-etapes", label: "Mes étapes", group: "annonces" },
+        { path: "/factures-manuelles", label: "Factures", group: "profil" },
       ];
     }
 
