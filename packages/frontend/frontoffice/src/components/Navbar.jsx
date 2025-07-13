@@ -112,10 +112,18 @@ export default function Navbar() {
 
           {!user ? (
             <>
-              {/* Liens prestations accessibles sans connexion */}
+              {/* Liens vitrine accessibles sans connexion */}
               <li>
                 <Link
-                  to="/prestations/catalogue"
+                  to="/annonces-public"
+                  className="hover:text-lime-300 transition"
+                >
+                  Annonces
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/catalogue-public"
                   className="hover:text-lime-300 transition"
                 >
                   Prestations
@@ -270,10 +278,18 @@ export default function Navbar() {
             <li><Link to="/" className="block hover:text-lime-300">Accueil</Link></li>
             {!user ? (
               <>
-                {/* Liens prestations accessibles sans connexion */}
+                {/* Liens vitrine accessibles sans connexion */}
                 <li>
                   <Link
-                    to="/prestations/catalogue"
+                    to="/annonces-public"
+                    className="block hover:text-lime-300"
+                  >
+                    Annonces
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/catalogue-public"
                     className="block hover:text-lime-300"
                   >
                     Prestations
