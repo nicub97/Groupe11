@@ -35,6 +35,7 @@ use App\Http\Controllers\TrajetLivreurController;
 use App\Http\Controllers\PublicController;
 
 // Authentification
+Route::post('/login', [AuthController::class, 'login']);
 Route::post('/register', [AuthController::class, 'register']);
 
 // Informations sur l'utilisateur actuellement connecté
@@ -290,5 +291,6 @@ Route::middleware('auth:sanctum')->group(function () {
     // Route::post('/user/2fa/enable', [TwoFactorController::class, 'enable']);
     // Route::post('/user/2fa/disable', [TwoFactorController::class, 'disable']);
 
-    // Déconnexion - gérée via les routes web pour bénéficier de la session
+    // Déconnexion
+    Route::post('/logout', [AuthController::class, 'logout']);
 });
