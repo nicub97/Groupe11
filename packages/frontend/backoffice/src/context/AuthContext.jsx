@@ -23,10 +23,18 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = async (identifiant, password) => {
+    // Laravel Sanctum nécessite d'abord la récupération du cookie CSRF
     await api.get("/sanctum/csrf-cookie", {
       baseURL: api.defaults.baseURL.replace("/api", ""),
     });
-    const res = await api.post("/login", { identifiant, password });
+
+    // L'endpoint /login n'est pas préfixé par /api :
+    // on surcharge donc temporairement baseURL pour cette requête
+    const res = await api.post(
+      "/login",
+      { identifiant, password },
+      { baseURL: api.defaults.baseURL.replace("/api", "") }
+    );
 
     const user = res.data.user;
 
