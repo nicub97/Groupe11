@@ -33,42 +33,42 @@ export default function Navbar() {
     if (user.role === "client") {
       return [
         ...common,
-        { path: "/annonces", label: "Annonces", group: "annonces", dataTour: "creer-annonce" },
-        { path: "/mes-annonces", label: "Mes annonces", group: "annonces", dataTour: "mes-annonces" },
+        { path: "/annonces", label: "Annonces", group: "annonces" },
+        { path: "/mes-annonces", label: "Mes annonces", group: "annonces" },
 
-        { path: "/prestations/catalogue", label: "Catalogue", group: "prestations", dataTour: "catalogue" },
-        { path: "/prestations", label: "Mes prestations", group: "prestations", dataTour: "prestations" },
+        { path: "/prestations/catalogue", label: "Catalogue", group: "prestations" },
+        { path: "/prestations", label: "Mes prestations", group: "prestations" },
         { path: "/mes-paiements", label: "Mes paiements", group: "profil" },
-        { path: "/factures-manuelles", label: "Factures", group: "profil", dataTour: "factures" },
+        { path: "/factures-manuelles", label: "Factures", group: "profil" },
       ];
     }
 
     if (user.role === "prestataire") {
       return [
         ...common,
-        { path: "/prestations", label: "Prestations assignées", group: "prestations", dataTour: "prestations" },
-        { path: "/disponibilites", label: "Disponibilités", group: "prestations", dataTour: "planning" },
+        { path: "/prestations", label: "Prestations assignées", group: "prestations" },
+        { path: "/disponibilites", label: "Disponibilités", group: "prestations" },
         { path: "/prestations/publier", label: "Publier une prestation", group: "prestations" },
-        { path: "/factures", label: "Factures", group: "profil", dataTour: "factures" },
+        { path: "/factures", label: "Factures", group: "profil" },
       ];
     }
 
     if (user.role === "commercant") {
       return [
         ...common,
-        { path: "/annonces/creer", label: "Créer une annonce", group: "annonces", dataTour: "creer-annonce" },
-        { path: "/mes-annonces", label: "Mes annonces", group: "annonces", dataTour: "mes-annonces" },
-        { path: "/factures-manuelles", label: "Factures", group: "profil", dataTour: "factures" },
+        { path: "/annonces/creer", label: "Créer une annonce", group: "annonces" },
+        { path: "/mes-annonces", label: "Mes annonces", group: "annonces" },
+        { path: "/factures-manuelles", label: "Factures", group: "profil" },
       ];
     }
 
     if (user.role === "livreur") {
       return [
         ...common,
-        { path: "/mes-trajets", label: "Mes trajets", group: "annonces", dataTour: "trajets" },
-        { path: "/annonces-disponibles", label: "Annonces disponibles", group: "annonces", dataTour: "annonces-disponibles" },
-        { path: "/mes-etapes", label: "Mes étapes", group: "annonces", dataTour: "mes-etapes" },
-        { path: "/factures-manuelles", label: "Factures", group: "profil", dataTour: "factures" },
+        { path: "/mes-trajets", label: "Mes trajets", group: "annonces" },
+        { path: "/annonces-disponibles", label: "Annonces disponibles", group: "annonces" },
+        { path: "/mes-etapes", label: "Mes étapes", group: "annonces" },
+        { path: "/factures-manuelles", label: "Factures", group: "profil" },
       ];
     }
 
@@ -185,7 +185,7 @@ export default function Navbar() {
                         .filter((i) => i.group === "prestations")
                         .map((item) => (
                           <li key={item.path}>
-                            <Link to={item.path} data-tour={item.dataTour} className="block px-4 py-2 hover:bg-green-50 text-green-800">
+                            <Link to={item.path} className="block px-4 py-2 hover:bg-green-50 text-green-800">
                               {item.label}
                             </Link>
                           </li>
@@ -212,7 +212,7 @@ export default function Navbar() {
                       .filter((i) => i.group === "annonces")
                       .map((item) => (
                         <li key={item.path}>
-                          <Link to={item.path} data-tour={item.dataTour} className="block px-4 py-2 hover:bg-green-50 text-green-800">
+                          <Link to={item.path} className="block px-4 py-2 hover:bg-green-50 text-green-800">
                             {item.label}
                           </Link>
                         </li>
@@ -238,7 +238,7 @@ export default function Navbar() {
                       .filter((i) => i.group === "profil")
                       .map((item) => (
                         <li key={item.path}>
-                          <Link to={item.path} data-tour={item.dataTour} className="block px-4 py-2 hover:bg-green-50 text-green-800">
+                          <Link to={item.path} className="block px-4 py-2 hover:bg-green-50 text-green-800">
                             {item.label}
                           </Link>
                         </li>
@@ -250,7 +250,7 @@ export default function Navbar() {
                 .filter((i) => !i.group)
                 .map((item) => (
                   <li key={item.path}>
-                    <Link to={item.path} data-tour={item.dataTour}>{item.label}</Link>
+                    <Link to={item.path}>{item.label}</Link>
                   </li>
                 ))}
               <li>
@@ -361,7 +361,7 @@ export default function Navbar() {
                           .filter((i) => i.group === "prestations")
                           .map((item) => (
                             <li key={item.path}>
-                              <Link to={item.path} data-tour={item.dataTour} className="block px-4 py-2 hover:bg-green-50 text-green-800">
+                                <Link to={item.path} className="block px-4 py-2 hover:bg-green-50 text-green-800">
                                 {item.label}
                               </Link>
                             </li>
@@ -388,7 +388,7 @@ export default function Navbar() {
                         .filter((i) => i.group === "annonces")
                         .map((item) => (
                           <li key={item.path}>
-                            <Link to={item.path} data-tour={item.dataTour} className="block px-4 py-2 hover:bg-green-50 text-green-800">
+                              <Link to={item.path} className="block px-4 py-2 hover:bg-green-50 text-green-800">
                               {item.label}
                             </Link>
                           </li>
@@ -426,7 +426,7 @@ export default function Navbar() {
                   .filter((i) => !i.group)
                   .map((item) => (
                     <li key={item.path}>
-                      <Link to={item.path} data-tour={item.dataTour}>{item.label}</Link>
+                        <Link to={item.path}>{item.label}</Link>
                     </li>
                   ))}
                 <li>
