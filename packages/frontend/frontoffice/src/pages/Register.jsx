@@ -123,19 +123,19 @@ export default function Register() {
       <div className="flex justify-center gap-4 mb-6">
         <button
           onClick={() => navigate("/register-livreur")}
-          className="bg-gray-200 hover:bg-gray-300 text-sm px-4 py-2 rounded"
+          className="btn-secondary text-sm"
         >
           Je suis un livreur
         </button>
         <button
           onClick={() => navigate("/register-commercant")}
-          className="bg-gray-200 hover:bg-gray-300 text-sm px-4 py-2 rounded"
+          className="btn-secondary text-sm"
         >
           Je suis un commerçant
         </button>
         <button
           onClick={() => navigate("/register-prestataire")}
-          className="bg-gray-200 hover:bg-gray-300 text-sm px-4 py-2 rounded"
+          className="btn-secondary text-sm"
         >
           Je suis un prestataire
         </button>
@@ -171,7 +171,7 @@ export default function Register() {
         </div>
         {errors.rgpd_consent && <p className="text-red-500 text-sm">{errors.rgpd_consent}</p>}
 
-        <button type="submit" className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700">
+        <button type="submit" className="btn-primary w-full">
           S'inscrire
         </button>
       </form>

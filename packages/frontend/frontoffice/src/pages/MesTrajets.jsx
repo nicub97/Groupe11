@@ -3,8 +3,9 @@ import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
 
 export default function MesTrajets() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [trajets, setTrajets] = useState([]);
+  const [livreur, setLivreur] = useState(null);
   const [entrepots, setEntrepots] = useState([]);
   const [form, setForm] = useState({
     entrepot_depart_id: "",
@@ -15,7 +16,17 @@ export default function MesTrajets() {
 
   useEffect(() => {
     fetchEntrepots();
-    fetchTrajets();
+    if (user) {
+      api
+        .get(`/livreurs/${user.id}`, { headers: { Authorization: `Bearer ${token}` } })
+        .then((res) => {
+          setLivreur(res.data);
+          if (res.data.statut === "valide") {
+            fetchTrajets();
+          }
+        })
+        .catch(() => setLivreur(null));
+    }
   }, []);
 
   const fetchEntrepots = async () => {
@@ -41,7 +52,13 @@ export default function MesTrajets() {
   };
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm((prev) => {
+      if (name === "entrepot_depart_id" && value === prev.entrepot_arrivee_id) {
+        return { ...prev, entrepot_depart_id: value, entrepot_arrivee_id: "" };
+      }
+      return { ...prev, [name]: value };
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -75,6 +92,14 @@ export default function MesTrajets() {
     }
   };
 
+  if (livreur && livreur.statut !== "valide") {
+    return (
+      <p className="p-4 text-red-600">
+        ⛔ Vous ne pouvez pas accéder à cette fonctionnalité tant que votre profil n’est pas validé.
+      </p>
+    );
+  }
+
   return (
     <div className="max-w-3xl mx-auto mt-10 p-6 bg-white shadow rounded">
       <h2 className="text-2xl font-bold mb-4">Mes trajets disponibles</h2>
@@ -101,9 +126,11 @@ export default function MesTrajets() {
           className="w-full p-2 border rounded"
         >
           <option value="">Ville d’arrivée</option>
-          {entrepots.map((e) => (
-            <option key={e.id} value={e.id}>{e.ville}</option>
-          ))}
+          {entrepots
+            .filter((e) => e.id !== Number(form.entrepot_depart_id))
+            .map((e) => (
+              <option key={e.id} value={e.id}>{e.ville}</option>
+            ))}
         </select>
 
         <input
@@ -120,7 +147,7 @@ export default function MesTrajets() {
           onChange={handleChange}
           className="w-full p-2 border rounded"
         />
-        <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+        <button type="submit" className="btn-primary">
           Ajouter le trajet
         </button>
       </form>

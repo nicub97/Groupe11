@@ -8,6 +8,12 @@ export default function Annonces() {
   const { user, token } = useAuth();
   const navigate = useNavigate();
 
+  const [searchText, setSearchText] = useState("");
+  const [minPrice, setMinPrice] = useState(null);
+  const [maxPrice, setMaxPrice] = useState(null);
+  const [dateDepart, setDateDepart] = useState(null);
+  const [dateArrivee, setDateArrivee] = useState(null);
+
   useEffect(() => {
     if (user?.role === "livreur") {
       navigate("/annonces-disponibles");
@@ -21,8 +27,13 @@ export default function Annonces() {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        // Filtrer uniquement les annonces de type "produit_livre"
-        const annoncesFiltrees = res.data.filter(a => a.type === "produit_livre");
+        // Filtrer uniquement les annonces de type "produit_livre" qui ne sont
+        // pas encore réservées (ni client ni entrepôt d'arrivée définis)
+        const annoncesFiltrees = res.data.filter((a) => {
+          if (a.type !== "produit_livre") return false;
+          const estReservee = a.id_client !== null || a.entrepot_arrivee_id !== null;
+          return !estReservee;
+        });
         setAnnonces(annoncesFiltrees);
       } catch (error) {
         console.error("Erreur lors du chargement des annonces :", error);
@@ -32,24 +43,113 @@ export default function Annonces() {
     fetchAnnonces();
   }, [token]);
 
+  const handleReset = () => {
+    setSearchText("");
+    setMinPrice(null);
+    setMaxPrice(null);
+    setDateDepart(null);
+    setDateArrivee(null);
+  };
+
+  const filteredAnnonces = annonces.filter((annonce) => {
+    const keyword = searchText.toLowerCase();
+
+    if (keyword) {
+      const inDesc = (annonce.description || "")
+        .toLowerCase()
+        .includes(keyword);
+      const inVille =
+        (annonce.entrepot_depart?.ville || "")
+          .toLowerCase()
+          .includes(keyword) ||
+        (annonce.entrepot_arrivee?.ville || "")
+          .toLowerCase()
+          .includes(keyword);
+      if (!(inDesc || inVille)) return false;
+    }
+
+    const price = Number(annonce.prix_propose);
+    if (minPrice !== null && price < minPrice) return false;
+    if (maxPrice !== null && price > maxPrice) return false;
+
+    if (dateDepart !== null && new Date(annonce.date_depart) < new Date(dateDepart)) {
+      return false;
+    }
+    if (dateArrivee !== null && new Date(annonce.date_arrivee) > new Date(dateArrivee)) {
+      return false;
+    }
+
+    return true;
+  });
+
   return (
     <div className="max-w-4xl mx-auto mt-8">
       <h2 className="text-2xl font-bold mb-6">Annonces disponibles</h2>
 
-      {["client", "commercant", "prestataire"].includes(user?.role) && (
+      {["client", "commercant"].includes(user?.role) && (
         <button
           onClick={() => navigate("/annonces/creer")}
-          className="mb-4 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+          className="btn-primary mb-4"
         >
           Créer une annonce
         </button>
       )}
 
-      {annonces.length === 0 ? (
-        <p>Aucune annonce trouvée.</p>
+      <div className="flex flex-wrap items-end gap-4 mb-6">
+        <input
+          type="text"
+          placeholder="Rechercher..."
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          className="p-2 border rounded flex-1 min-w-[150px]"
+        />
+        <input
+          type="number"
+          placeholder="Prix min"
+          value={minPrice ?? ""}
+          onChange={(e) =>
+            setMinPrice(e.target.value === "" ? null : Number(e.target.value))
+          }
+          className="p-2 border rounded w-28"
+        />
+        <input
+          type="number"
+          placeholder="Prix max"
+          value={maxPrice ?? ""}
+          onChange={(e) =>
+            setMaxPrice(e.target.value === "" ? null : Number(e.target.value))
+          }
+          className="p-2 border rounded w-28"
+        />
+        <input
+          type="date"
+          value={dateDepart ?? ""}
+          onChange={(e) =>
+            setDateDepart(e.target.value === "" ? null : e.target.value)
+          }
+          className="p-2 border rounded"
+        />
+        <input
+          type="date"
+          value={dateArrivee ?? ""}
+          onChange={(e) =>
+            setDateArrivee(e.target.value === "" ? null : e.target.value)
+          }
+          className="p-2 border rounded"
+        />
+        <button
+          onClick={handleReset}
+          className="btn-secondary"
+        >
+          Réinitialiser les filtres
+        </button>
+      </div>
+
+      {filteredAnnonces.length === 0 ? (
+        <p>Aucune annonce disponible pour le moment.</p>
       ) : (
         <ul className="space-y-4">
-          {annonces.map((annonce) => (
+          {filteredAnnonces.map((annonce) => (
             <li key={annonce.id} className="p-4 border rounded bg-white shadow">
               <h3
                 onClick={() => navigate(`/annonces/${annonce.id}`)}
@@ -65,14 +165,12 @@ export default function Annonces() {
                 Publié le : {new Date(annonce.created_at).toLocaleDateString()}
               </p>
 
-              {user?.role === "client" && !annonce.id_client && (
-                <button
-                  onClick={() => navigate(`/annonces/${annonce.id}/reserver`)}
-                  className="mt-3 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                >
-                  Réserver
-                </button>
-              )}
+              <button
+                onClick={() => navigate(`/annonces/${annonce.id}`)}
+                className="btn-primary mt-3"
+              >
+                Voir l'annonce
+              </button>
             </li>
           ))}
         </ul>

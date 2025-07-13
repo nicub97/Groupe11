@@ -6,6 +6,11 @@ use App\Models\Prestation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Notification;
+use App\Models\PlanningPrestataire;
+use Carbon\Carbon;
+use Stripe\StripeClient;
+use Illuminate\Support\Facades\Log;
+use App\Models\Paiement;
 
 class PrestationController extends Controller
 {
@@ -13,7 +18,11 @@ class PrestationController extends Controller
     {
         $user = Auth::user();
 
-        $prestations = Prestation::with(['client.utilisateur', 'prestataire.utilisateur'])
+        $prestations = Prestation::with([
+            'client.utilisateur',
+            'prestataire.utilisateur',
+            'intervention',
+        ])
             ->when($user->role === 'client', function ($query) use ($user) {
                 $query->whereHas('client', function ($q) use ($user) {
                     $q->where('utilisateur_id', $user->id);
@@ -46,6 +55,25 @@ class PrestationController extends Controller
             'tarif' => 'required|numeric|min:0',
         ]);
 
+        $debut = Carbon::parse($validated['date_heure']);
+        $fin = (clone $debut)->addMinutes($validated['duree_estimee'] ?? 0);
+
+        $date = $debut->toDateString();
+        $heureDebut = $debut->format('H:i:s');
+        $heureFin = $fin->format('H:i:s');
+
+        $disponible = PlanningPrestataire::where('prestataire_id', $user->prestataire->id)
+            ->whereDate('date_disponible', $date)
+            ->whereTime('heure_debut', '<=', $heureDebut)
+            ->whereTime('heure_fin', '>=', $heureFin)
+            ->exists();
+
+        if (! $disponible) {
+            return response()->json([
+                'message' => 'Vous n’avez pas défini ce créneau dans vos disponibilités.'
+            ], 422);
+        }
+
         $prestation = new Prestation($validated);
         $prestation->prestataire_id = $user->prestataire->id;
         $prestation->statut = 'disponible'; // visible par les clients
@@ -60,14 +88,32 @@ class PrestationController extends Controller
 
     public function show($id)
     {
-        $prestation = Prestation::with(['client', 'prestataire'])->find($id);
+        $prestation = Prestation::with([
+            'client.utilisateur',
+            'prestataire.utilisateur',
+            'intervention',
+        ])->find($id);
 
         if (! $prestation) {
             return response()->json(['message' => 'Prestation introuvable.'], 404);
         }
 
         $user = Auth::user();
-        if ($user->id !== $prestation->client_id && $user->id !== $prestation->prestataire_id) {
+        $clientId      = $user->role === 'client' ? $user->client?->id : null;
+        $prestataireId = $user->role === 'prestataire' ? $user->prestataire?->id : null;
+
+        $authorized = false;
+
+        if ($user->role === 'client') {
+            $authorized = (
+                ($prestation->client_id === null && $prestation->statut === 'disponible') ||
+                $prestation->client_id === $clientId
+            );
+        } elseif ($user->role === 'prestataire') {
+            $authorized = $prestation->prestataire_id === $prestataireId;
+        }
+
+        if (! $authorized) {
             return response()->json(['message' => 'Accès non autorisé.'], 403);
         }
 
@@ -82,12 +128,15 @@ class PrestationController extends Controller
             return response()->json(['message' => 'Prestation introuvable.'], 404);
         }
 
-        if ($prestation->statut !== 'en_attente') {
-            return response()->json(['message' => 'Impossible de modifier une prestation non en attente.'], 403);
+        // Modification impossible dès qu'un client a réservé la prestation
+        if ($prestation->client_id !== null) {
+            return response()->json(['message' => 'Impossible de modifier une prestation déjà réservée par un client.'], 403);
         }
 
         $user = Auth::user();
-        if ($user->id !== $prestation->client_id) {
+        $clientId = $user->role === 'client' ? $user->client?->id : null;
+
+        if ($user->role !== 'admin' && $prestation->client_id !== $clientId) {
             return response()->json(['message' => 'Modification non autorisée.'], 403);
         }
 
@@ -113,12 +162,15 @@ class PrestationController extends Controller
         }
 
         $user = Auth::user();
-        if ($user->id !== $prestation->client_id) {
+        $clientId = $user->role === 'client' ? $user->client?->id : null;
+
+        if ($user->role !== 'admin' && $prestation->client_id !== $clientId) {
             return response()->json(['message' => 'Suppression non autorisée.'], 403);
         }
 
-        if ($prestation->statut !== 'en_attente') {
-            return response()->json(['message' => 'Impossible de supprimer une prestation déjà validée ou refusée.'], 403);
+        // Suppression impossible dès qu'un client a réservé la prestation
+        if ($prestation->client_id !== null) {
+            return response()->json(['message' => 'Impossible de supprimer une prestation déjà réservée par un client.'], 403);
         }
 
         $prestation->delete();
@@ -129,10 +181,11 @@ class PrestationController extends Controller
     public function changerStatut(Request $request, $id)
     {
         $user = auth()->user();
+        $prestataireId = $user->role === 'prestataire' ? $user->prestataire?->id : null;
 
         $prestation = Prestation::with('prestataire')->find($id);
 
-        if (! $prestation || $user->role !== 'prestataire' || $prestation->prestataire->utilisateur_id !== $user->id) {
+        if (! $prestation || $user->role !== 'prestataire' || $prestation->prestataire_id !== $prestataireId) {
             return response()->json(['message' => 'Non autorisé.'], 403);
         }
 
@@ -140,11 +193,34 @@ class PrestationController extends Controller
             'statut' => 'required|in:acceptée,refusée,terminée',
         ]);
 
-        if ($prestation->statut !== 'en_attente') {
-            return response()->json(['message' => 'Statut déjà défini.'], 400);
+        // ne pas modifier une prestation déjà refusée ou terminée
+        if (in_array($prestation->statut, ['refusée', 'terminée'])) {
+            return response()->json([
+                'message' => 'Impossible de modifier une prestation finalisée.'
+            ], 403);
         }
 
-        $prestation->statut = $request->statut;
+        $transitionsValides = [
+            'en_attente' => ['acceptée', 'refusée'],
+            'acceptée'   => ['terminée'],
+        ];
+
+        $statutActuel = $prestation->statut;
+        $nouveauStatut = $request->input('statut');
+
+        if (! isset($transitionsValides[$statutActuel]) ||
+            ! in_array($nouveauStatut, $transitionsValides[$statutActuel])) {
+            Log::warning('Transition de statut refusée', [
+                'prestation_id' => $prestation->id,
+                'from' => $statutActuel,
+                'to' => $nouveauStatut,
+            ]);
+            return response()->json([
+                'message' => 'Transition de statut non autorisée.'
+            ], 422);
+        }
+
+        $prestation->statut = $nouveauStatut;
         $prestation->save();
 
         // Créer notification pour le client (si la prestation a bien un client)
@@ -162,44 +238,6 @@ class PrestationController extends Controller
     }
 
 
-    public function reserver($id)
-    {
-        $user = auth()->user();
-
-        if ($user->role !== 'client') {
-            return response()->json(['message' => 'Seuls les clients peuvent réserver une prestation.'], 403);
-        }
-
-        $client = \App\Models\Client::where('utilisateur_id', $user->id)->first();
-
-        if (! $client) {
-            return response()->json(['message' => 'Client introuvable.'], 404);
-        }
-
-        $prestation = \App\Models\Prestation::find($id);
-
-        if (! $prestation) {
-            return response()->json(['message' => 'Prestation introuvable.'], 404);
-        }
-
-        if ($prestation->client_id !== null) {
-            return response()->json(['message' => 'Cette prestation est déjà réservée.'], 400);
-        }
-
-        $prestation->client_id = $client->id;
-        $prestation->statut = 'en_attente';
-        $prestation->save();
-
-        Notification::create([
-            'utilisateur_id' => $prestation->prestataire->utilisateur_id,
-            'titre' => 'Nouvelle réservation',
-            'contenu' => "Votre prestation '{$prestation->type_prestation}' a été réservée.",
-            'cible_type' => 'prestation',
-            'cible_id' => $prestation->id,
-        ]);
-
-        return response()->json(['message' => 'Réservation confirmée.']);
-    }
 
     public function catalogue()
     {
@@ -211,6 +249,125 @@ class PrestationController extends Controller
             ->get();
 
         return response()->json($prestations);
+    }
+
+    public function assigner(Request $request, $id)
+    {
+        $request->validate([
+            'prestataire_id' => 'required|exists:prestataires,id',
+        ]);
+
+        $prestation = Prestation::find($id);
+
+        if (! $prestation) {
+            return response()->json(['message' => 'Prestation introuvable.'], 404);
+        }
+
+        $prestataire = \App\Models\Prestataire::find($request->prestataire_id);
+        if (! $prestataire->valide) {
+            return response()->json(['message' => 'Prestataire non valide.'], 403);
+        }
+
+        $disponible = PlanningPrestataire::where('prestataire_id', $prestataire->id)
+            ->whereDate('date_disponible', $prestation->date_heure)
+            ->whereTime('heure_debut', '<=', $prestation->date_heure)
+            ->whereTime('heure_fin', '>=', Carbon::parse($prestation->date_heure)->addMinutes($prestation->duree_estimee))
+            ->exists();
+
+        if (! $disponible) {
+            Log::warning('Prestataire indisponible', [
+                'prestataire_id' => $prestataire->id,
+                'prestation_id' => $prestation->id,
+            ]);
+            return response()->json(['message' => "Le prestataire n'est pas disponible."], 422);
+        }
+
+        $prestation->prestataire_id = $prestataire->id;
+        $prestation->save();
+
+        return response()->json(['message' => 'Prestataire assigné.', 'prestation' => $prestation]);
+    }
+
+    public function payer(Request $request, Prestation $prestation)
+    {
+        $this->authorize('pay', $prestation);
+
+        $stripe = new StripeClient(config('services.stripe.secret'));
+
+        $session = $stripe->checkout->sessions->create([
+            'payment_method_types' => ['card'],
+            'mode' => 'payment',
+            'line_items' => [[
+                'price_data' => [
+                    'currency' => 'eur',
+                    'product_data' => ['name' => 'Paiement prestation'],
+                    'unit_amount' => (int) ($prestation->tarif * 100),
+                ],
+                'quantity' => 1,
+            ]],
+            'success_url' => sprintf(
+                '%s/paiement/success?session_id={CHECKOUT_SESSION_ID}&context=prestation_reserver&prestation_id=%s',
+                rtrim(env('FRONTEND_URL', ''), '/'),
+                $prestation->id
+            ),
+            'cancel_url' => rtrim(env('FRONTEND_URL', ''), '/') . '/paiement/cancel',
+        ]);
+
+        return response()->json(['checkout_url' => $session->url]);
+    }
+
+    public function paiementCallback(Request $request, Prestation $prestation)
+    {
+        $sessionId = $request->query('session_id');
+
+        if (! $sessionId) {
+            return response()->json(['message' => 'Session manquante.'], 400);
+        }
+
+        $stripe = new StripeClient(config('services.stripe.secret'));
+        $session = $stripe->checkout->sessions->retrieve($sessionId);
+
+        if ($session && $session->payment_status === 'paid') {
+            if ($prestation->is_paid) {
+                return response()->json(['message' => 'Paiement déjà confirmé.']);
+            }
+
+            $user = Auth::user();
+            if (! $user->relationLoaded('client')) {
+                $user->load('client');
+            }
+
+            $clientId = $prestation->client_id ?: $user->client?->id;
+
+            if ($clientId && ! Paiement::where('utilisateur_id', $clientId)->where('reference', $sessionId)->exists()) {
+                Paiement::create([
+                    'utilisateur_id' => $clientId,
+                    'annonce_id' => null,
+                    'commande_id' => null,
+                    'montant' => $prestation->tarif,
+                    'sens' => 'debit',
+                    'type' => 'stripe',
+                    'reference' => $sessionId,
+                    'statut' => 'valide',
+                ]);
+            }
+
+            $prestation->is_paid = true;
+
+            if (! $prestation->client_id && $prestation->statut === 'disponible' && $user->client) {
+                $prestation->client_id = $user->client->id;
+                $prestation->statut = 'en_attente';
+            }
+
+            $prestation->save();
+
+            Log::info('Prestation payée et réservée', [
+                'prestation_id' => $prestation->id,
+                'client_id' => $prestation->client_id,
+            ]);
+        }
+
+        return response()->json(['message' => 'ok']);
     }
 
 }

@@ -10,8 +10,11 @@ class PrestataireController extends Controller
 
     public function index()
     {
+        $user = auth()->user();
         $prestataires = Prestataire::with('utilisateur')
-            ->where('valide', true)
+            ->when($user->role !== 'admin', function ($query) {
+                $query->where('valide', true);
+            })
             ->get();
 
         return response()->json($prestataires);

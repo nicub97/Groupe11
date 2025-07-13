@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
+import { createCheckoutSession } from "../services/paiement";
 import { useAuth } from "../context/AuthContext";
 import { Link } from "react-router-dom";
 
 export default function MesAnnonces() {
   const { token } = useAuth();
   const [annonces, setAnnonces] = useState([]);
+  const [payLoadingId, setPayLoadingId] = useState(null);
 
   useEffect(() => {
     const fetchAnnonces = async () => {
@@ -35,6 +37,27 @@ export default function MesAnnonces() {
     }
   };
 
+  const handlePay = async (annonce) => {
+    setPayLoadingId(annonce.id);
+    try {
+      localStorage.setItem("paymentContext", "payer");
+      localStorage.setItem("payerAnnonceId", annonce.id);
+      const { checkout_url } = await createCheckoutSession(
+        { annonce_id: annonce.id, type: annonce.type },
+        token,
+        "payer"
+      );
+      window.location.href = checkout_url;
+    } catch (err) {
+      console.error("Erreur paiement :", err);
+      alert(
+        err.response?.data?.message ||
+          "Erreur lors de la redirection de paiement."
+      );
+      setPayLoadingId(null);
+    }
+  };
+
   const afficherStatut = (statut) => {
     switch (statut) {
       case "en_attente":
@@ -48,6 +71,24 @@ export default function MesAnnonces() {
     }
   };
 
+  const estCloturee = (annonce) => {
+    const steps = annonce.etapes_livraison || [];
+    const last = steps[steps.length - 1];
+    return (
+      last &&
+      last.est_client === true &&
+      last.est_mini_etape === true &&
+      last.statut === "terminee"
+    );
+  };
+
+  const annoncesTriees = [...annonces].sort((a, b) => {
+    const finiA = estCloturee(a);
+    const finiB = estCloturee(b);
+    if (finiA === finiB) return 0;
+    return finiA ? 1 : -1;
+  });
+
   return (
     <div className="max-w-4xl mx-auto mt-10 p-6 bg-white shadow rounded">
       <h2 className="text-2xl font-bold mb-6">Mes annonces</h2>
@@ -56,21 +97,37 @@ export default function MesAnnonces() {
         <p>Aucune annonce trouvée.</p>
       ) : (
         <ul className="space-y-6">
-          {annonces.map((a) => (
+          {annoncesTriees.map((a) => (
             <li key={a.id} className="border p-4 rounded shadow-sm">
               <h3 className="text-xl font-semibold flex items-center gap-2">
                 {a.titre}
 
-                {a.type === "produit_livre" && (
-                  a.id_client ? (
-                    <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
-                      Réservée par un client
-                    </span>
-                  ) : (
-                    <span className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded-full">
-                      Non réservée
-                    </span>
-                  )
+                {estCloturee(a) ? (
+                  <span className="badge badge-success">Annonce clôturée</span>
+                ) : (
+                  <>
+                    {a.type === "produit_livre" && (
+                      a.id_client ? (
+                        <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
+                          Réservée par un client
+                        </span>
+                      ) : (
+                        <span className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded-full">
+                          Non réservée
+                        </span>
+                      )
+                    )}
+
+                    {a.is_paid ? (
+                      <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                        Annonce payée
+                      </span>
+                    ) : (
+                      <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded-full">
+                        Paiement en attente
+                      </span>
+                    )}
+                  </>
                 )}
               </h3>
               <p className="text-gray-600 mb-2">{a.description}</p>
@@ -82,9 +139,11 @@ export default function MesAnnonces() {
                 </p>
               )}
 
-              <p className="mt-2 text-blue-700 font-medium">
-                Statut global : {afficherStatut(a.statut)}
-              </p>
+              {!estCloturee(a) && (
+                <p className="mt-2 text-blue-700 font-medium">
+                  Statut global : {afficherStatut(a.statut)}
+                </p>
+              )}
 
               {a.etapes_livraison?.length > 0 ? (
                 <div className="mt-4">
@@ -109,11 +168,21 @@ export default function MesAnnonces() {
                 Suivre l'annonce
               </Link>
 
+              {!a.is_paid && a.id_livreur_reservant !== null && (
+                <button
+                  onClick={() => handlePay(a)}
+                  disabled={payLoadingId === a.id}
+                  className="btn-primary mt-2 disabled:opacity-50"
+                >
+                  {payLoadingId === a.id ? "Redirection..." : "Payer maintenant"}
+                </button>
+              )}
+
               {/* ❗️Afficher le bouton seulement si aucune étape n’est liée */}
               {a.etapes_livraison?.length === 0 && (!a.id_client || a.type !== "produit_livre") && (
                 <button
                   onClick={() => handleDelete(a.id)}
-                  className="mt-4 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+                  className="btn-danger mt-4"
                 >
                   Annuler l’annonce
                 </button>

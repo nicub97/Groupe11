@@ -7,7 +7,6 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AnnonceController;
 use App\Http\Controllers\CommandeController;
 use App\Http\Controllers\PaiementController;
-use App\Http\Controllers\ColisController;
 use App\Http\Controllers\BoxController;
 use App\Http\Controllers\EntrepotController;
 use App\Http\Controllers\FactureController;
@@ -25,10 +24,13 @@ use App\Http\Controllers\PrestationController;
 use App\Http\Controllers\PlanningPrestataireController;
 use App\Http\Controllers\InterventionController;
 use App\Http\Controllers\FacturePrestataireController;
+use App\Http\Controllers\PrestataireValidationController;
+use App\Http\Controllers\LivreurValidationController;
+use App\Http\Controllers\JustificatifController;
+use App\Http\Controllers\JustificatifLivreurController;
 use App\Http\Controllers\StatAdminController;
 use App\Http\Controllers\Api\EmailVerificationController;
 use Laravel\Fortify\Http\Controllers\EmailVerificationNotificationController;
-use App\Http\Controllers\TwoFactorController;
 use App\Http\Controllers\TrajetLivreurController;
 
 // Authentification
@@ -52,9 +54,6 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
     Route::post('/utilisateurs', [UtilisateurController::class, 'store']);
     Route::patch('/utilisateurs/{id}', [UtilisateurController::class, 'update']);
 
-    // Notifications
-    Route::post('/notifications', [NotificationController::class, 'store']);
-
     // Entrepôts
     Route::post('/entrepots', [EntrepotController::class, 'store']);
     Route::patch('/entrepots/{id}', [EntrepotController::class, 'update']);
@@ -74,6 +73,22 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
     Route::get('/clients/{id}', [ClientController::class, 'show']);
     Route::patch('/clients/{id}', [ClientController::class, 'update']);
 
+    // Validation prestataires
+    Route::patch('/prestataires/{id}/valider', [PrestataireValidationController::class, 'valider']);
+    Route::patch('/prestataires/{id}/refuser', [PrestataireValidationController::class, 'refuser']);
+
+    // Validation livreurs
+    Route::get('/admin/livreurs', [LivreurValidationController::class, 'index']);
+    Route::post('/admin/livreurs/{id}/valider', [LivreurValidationController::class, 'valider']);
+    Route::post('/admin/livreurs/{id}/refuser', [LivreurValidationController::class, 'refuser']);
+
+    // Assignation d'un prestataire à une prestation
+    Route::patch('/prestations/{id}/assigner', [PrestationController::class, 'assigner']);
+
+    // Factures prestataires
+    Route::get('/admin/factures-prestataire', [FacturePrestataireController::class, 'index']);
+    Route::get('/admin/factures-prestataire/{id}', [FacturePrestataireController::class, 'show']);
+
 });
 
 // CLIENT uniquement
@@ -88,15 +103,19 @@ Route::middleware(['auth:sanctum', 'role:admin,client'])->group(function () {
 
 // LIVREUR uniquement
 Route::middleware(['auth:sanctum', 'role:admin,livreur'])->group(function () {
-    Route::post('/colis', [ColisController::class, 'store']);
-    Route::patch('/colis/{id}/box', [ColisController::class, 'affecterBox']);
-    Route::get('/livreurs/{id}', [LivreurController::class, 'show']);
-    Route::patch('/livreurs/{id}', [LivreurController::class, 'update']);
-    Route::get('/annonces-disponibles', [AnnonceController::class, 'annoncesDisponibles']);
-    Route::post('/annonces/{id}/accepter', [AnnonceController::class, 'accepterAnnonce']);
-    Route::get('/mes-trajets', [TrajetLivreurController::class, 'index']);
-    Route::post('/mes-trajets', [TrajetLivreurController::class, 'store']);
-    Route::delete('/mes-trajets/{id}', [TrajetLivreurController::class, 'destroy']);
+    Route::get('/livreurs/{id}', [LivreurController::class, 'show'])->whereNumber('id');
+    Route::patch('/livreurs/{id}', [LivreurController::class, 'update'])->whereNumber('id');
+    Route::get('/livreurs/{id}/justificatifs', [JustificatifLivreurController::class, 'index'])->whereNumber('id');
+    Route::post('/livreurs/justificatifs', [JustificatifLivreurController::class, 'store']);
+    Route::delete('/livreurs/justificatifs/{type}', [JustificatifLivreurController::class, 'destroy']);
+
+    Route::middleware('livreur.valide')->group(function () {
+        Route::get('/annonces-disponibles', [AnnonceController::class, 'annoncesDisponibles']);
+        Route::post('/annonces/{id}/accepter', [AnnonceController::class, 'accepterAnnonce']);
+        Route::get('/mes-trajets', [TrajetLivreurController::class, 'index']);
+        Route::post('/mes-trajets', [TrajetLivreurController::class, 'store']);
+        Route::delete('/mes-trajets/{id}', [TrajetLivreurController::class, 'destroy']);
+    });
 });
 
 // COMMERCANT uniquement
@@ -107,9 +126,15 @@ Route::middleware(['auth:sanctum', 'role:admin,commercant'])->group(function () 
 
 // PRESTATAIRE uniquement
 Route::middleware(['auth:sanctum', 'role:admin,prestataire'])->group(function () {
-    Route::get('/prestataires/{id}', [PrestataireController::class, 'show']);
-    Route::patch('/prestataires/{id}', [PrestataireController::class, 'update']);
-    Route::post('/prestations', [PrestationController::class, 'store']);
+    Route::get('/prestataires/{id}', [PrestataireController::class, 'show'])->whereNumber('id');
+    Route::patch('/prestataires/{id}', [PrestataireController::class, 'update'])->whereNumber('id');
+    Route::post('/prestations', [PrestationController::class, 'store'])->middleware('prestataire.valide');
+    Route::post('/prestataires/{id}/justificatifs', [PrestataireValidationController::class, 'store'])->whereNumber('id');
+    Route::get('/prestataires/{id}/justificatifs', [PrestataireValidationController::class, 'index'])->whereNumber('id');
+
+    Route::get('/prestataires/justificatifs', [JustificatifController::class, 'index']);
+    Route::post('/prestataires/justificatifs', [JustificatifController::class, 'store']);
+    Route::delete('/prestataires/justificatifs/{id}', [JustificatifController::class, 'destroy']);
 });
 
 // Routes accessibles à tout utilisateur connecté
@@ -126,6 +151,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/annonces', [AnnonceController::class, 'index']);
     Route::get('/annonces/{id}', [AnnonceController::class, 'show']);
     Route::get('/mes-annonces', [AnnonceController::class, 'mesAnnonces']);
+    Route::post('/annonces/{annonce}/payer', [AnnonceController::class, 'payer'])->name('annonces.payer')->middleware('can:pay,annonce');
+    Route::get('/annonces/{annonce}/paiement-callback', [AnnonceController::class, 'paiementCallback'])->name('annonces.payer.callback');
     Route::post('/annonces', [AnnonceController::class, 'store']);
     Route::patch('/annonces/{id}', [AnnonceController::class, 'update']);
     Route::delete('/annonces/{id}', [AnnonceController::class, 'destroy']);
@@ -139,10 +166,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/paiements', [PaiementController::class, 'index']);
     Route::get('/paiements/{id}', [PaiementController::class, 'show']);
     Route::post('/paiements', [PaiementController::class, 'store']);
+    Route::post('/paiements/checkout-session', [PaiementController::class, 'createCheckoutSession']);
 
-    // Colis
-    Route::get('/colis', [ColisController::class, 'index']);
-    Route::get('/colis/{id}', [ColisController::class, 'show']);
 
     // Boxes
     Route::get('/boxes', [BoxController::class, 'index']);
@@ -174,14 +199,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/communications/{id}/lire', [CommunicationController::class, 'markAsRead']);
 
     // Étapes de livraison
-    Route::get('/mes-etapes', [EtapeLivraisonController::class, 'mesEtapes']);
+    Route::middleware('livreur.valide')->group(function () {
+        Route::get('/mes-etapes', [EtapeLivraisonController::class, 'mesEtapes']);
+        Route::post('/valider-code-box', [EtapeLivraisonController::class, 'validerCode']);
+    });
     Route::get('/etapes/{id}', [EtapeLivraisonController::class, 'show']);
     Route::patch('/etapes/{id}/statut', [EtapeLivraisonController::class, 'changerStatut']);
     Route::patch('/etapes/{id}/cloturer', [EtapeLivraisonController::class, 'cloturerEtape']);
     Route::get('/etapes/{id}/suivante', [EtapeLivraisonController::class, 'etapeSuivante']);
 
     // Codes validation box
-    Route::post('/valider-code-box', [EtapeLivraisonController::class, 'validerCode']);
     Route::get('/etapes/{id}/codes', [EtapeLivraisonController::class, 'codes']);
 
     // Livreur
@@ -203,19 +230,21 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/prestations/{id}', [PrestationController::class, 'update']);
     Route::delete('/prestations/{id}', [PrestationController::class, 'destroy']);
     Route::patch('/prestations/{id}/statut', [PrestationController::class, 'changerStatut']);
-    Route::patch('/prestations/{id}/reserver', [PrestationController::class, 'reserver']);
+    Route::post('/prestations/{prestation}/payer', [PrestationController::class, 'payer'])->middleware('can:pay,prestation');
+    Route::get('/prestations/{prestation}/paiement-callback', [PrestationController::class, 'paiementCallback']);
 
 
     // PlanningPrestataire
     Route::get('/plannings', [PlanningPrestataireController::class, 'index']);
-    Route::post('/plannings', [PlanningPrestataireController::class, 'store']);
+    Route::post('/plannings', [PlanningPrestataireController::class, 'store'])->middleware('prestataire.valide');
     Route::delete('/plannings/{id}', [PlanningPrestataireController::class, 'destroy']);
 
     // InterventionPrestataire
-    Route::get('/interventions', [InterventionController::class, 'index']);
-    Route::post('/interventions', [InterventionController::class, 'store']);
-    Route::put('/interventions/{id}', [InterventionController::class, 'update']);
-
+    Route::middleware('prestataire.valide')->group(function () {
+        Route::get('/interventions', [InterventionController::class, 'index']);
+        Route::post('/interventions', [InterventionController::class, 'store']);
+    });
+    
     // FacturePrestataire
     Route::get('/factures-prestataire', [FacturePrestataireController::class, 'mesFactures']);
     Route::post('/factures-prestataire/{mois}', [FacturePrestataireController::class, 'genererFactureMensuelle']);
@@ -225,13 +254,11 @@ Route::middleware('auth:sanctum')->group(function () {
         ->name('verification.send');
 
 
-    // Double Authentification
-    Route::get('/user/2fa-status', [TwoFactorController::class, 'status']);
-    Route::post('/user/2fa/enable', [TwoFactorController::class, 'enable']);
-    Route::post('/user/2fa/disable', [TwoFactorController::class, 'disable']);
+    // Double Authentification (désactivée)
+    // Route::get('/user/2fa-status', [TwoFactorController::class, 'status']);
+    // Route::post('/user/2fa/enable', [TwoFactorController::class, 'enable']);
+    // Route::post('/user/2fa/disable', [TwoFactorController::class, 'disable']);
 
     // Déconnexion
     Route::post('/logout', [AuthController::class, 'logout']);
 });
-
-

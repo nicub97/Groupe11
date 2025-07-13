@@ -13,7 +13,10 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
 
-        // ➕ Ajout du seeder des entrepôts + boxes
-        $this->call(EntrepotsBoxesSeeder::class);
+        $this->call([
+            AdminSeeder::class,
+            UtilisateursSeeder::class,
+            EntrepotsBoxesSeeder::class,
+        ]);
     }
 }

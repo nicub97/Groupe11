@@ -17,8 +17,4 @@ class Box extends Model
         return $this->belongsTo(Entrepot::class, 'entrepot_id');
     }
 
-    public function colis()
-    {
-        return $this->hasOne(Colis::class, 'box_id');
-    }
 }

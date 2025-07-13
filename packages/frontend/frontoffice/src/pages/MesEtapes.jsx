@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function MesEtapes() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
+  const livreur = user?.livreur;
+  const navigate = useNavigate();
   const [etapes, setEtapes] = useState([]);
   const [toutesEtapes, setToutesEtapes] = useState([]);
 
@@ -15,7 +17,9 @@ export default function MesEtapes() {
       });
 
       const toutes = res.data;
-      const livreurEtapes = toutes.filter((e) => !e.est_client && !e.est_commercant);
+      const livreurEtapes = toutes.filter(
+        (e) => !e.est_client && !e.est_commercant && e.statut === "en_cours"
+      );
 
       setToutesEtapes(toutes);
       setEtapes(livreurEtapes);
@@ -28,12 +32,20 @@ export default function MesEtapes() {
     fetchEtapes();
   }, [token]);
 
+  if (livreur && livreur.statut !== "valide") {
+    return (
+      <p className="p-4 text-red-600">
+        ⛔️ Vous ne pouvez pas accéder à cette fonctionnalité tant que votre profil n’est pas validé.
+      </p>
+    );
+  }
+
   return (
     <div className="max-w-4xl mx-auto mt-10 p-6 bg-white shadow rounded">
       <h2 className="text-2xl font-bold mb-6">Mes étapes de livraison</h2>
 
       {etapes.length === 0 ? (
-        <p>Aucune étape en cours.</p>
+        <p>⏳ En attente du dépôt du client.</p>
       ) : (
         <ul className="space-y-6">
           {etapes.map((e) => {
@@ -43,31 +55,54 @@ export default function MesEtapes() {
             let infoMessage = "";
             let boutonAction = null;
 
-            // ✅ Vérifie si un dépôt a été effectué par le client ou le commerçant
+            // Étapes client/commerçant précédentes non terminées pour la même annonce
+            const etapeBlocante = toutesEtapes.some(
+              (et) =>
+                et.annonce_id === e.annonce_id &&
+                (et.est_client === true || et.est_commercant === true) &&
+                et.statut !== "terminee" &&
+                new Date(et.created_at) < new Date(e.created_at)
+            );
+
             const colisEstDisponible = toutesEtapes.some(
               (et) =>
+                et.annonce_id === e.annonce_id &&
                 (et.est_client === true || et.est_commercant === true) &&
                 et.codes?.some((c) => c.type === "depot" && c.utilise)
             );
 
-            if (!codeRetrait?.utilise && colisEstDisponible) {
-              infoMessage = "🔓 Prêt pour retrait du colis";
-              boutonAction = (
-                <Link
-                  to={`/etapes/${e.id}/validation-code`}
-                  className="inline-block mt-3 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-                >
-                  Saisir le code pour retirer
-                </Link>
-              );
-            } else if (!codeRetrait?.utilise && !colisEstDisponible) {
-              infoMessage = "⏳ En attente de dépôt du commerçant ou client";
+            if (!codeRetrait?.utilise && e.statut === "en_cours") {
+              if (etapeBlocante) {
+                infoMessage = "⏳ En attente de dépôt du commerçant ou client";
+              } else if (colisEstDisponible) {
+                infoMessage = "🔓 Prêt pour retrait du colis";
+                boutonAction = (
+                  <Link
+                    to={`/validation-code/${e.id}?type=retrait`}
+                    className="btn-primary inline-block mt-3"
+                  >
+                    Saisir le code pour retirer
+                  </Link>
+                );
+              } else if (!e.est_client && !e.est_commercant) {
+                infoMessage = "⏳ En attente de retrait par vous";
+                boutonAction = (
+                  <button
+                    onClick={() =>
+                      navigate(`/validation-code/${e.id}?type=retrait`)
+                    }
+                    className="btn-primary inline-block mt-3"
+                  >
+                    Saisir le code pour retirer
+                  </button>
+                );
+              }
             } else if (!codeDepot?.utilise && codeDepot) {
               infoMessage = "📦 Prêt pour dépôt à l'arrivée";
               boutonAction = (
                 <Link
-                  to={`/etapes/${e.id}/validation-code`}
-                  className="inline-block mt-3 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                  to={`/validation-code/${e.id}?type=depot`}
+                  className="btn-primary inline-block mt-3"
                 >
                   Saisir le code pour déposer
                 </Link>

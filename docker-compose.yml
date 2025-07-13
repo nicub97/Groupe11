@@ -1,0 +1,69 @@
+services:
+  backend:
+    build: ./packages/backend
+    container_name: backend
+    ports:
+      - "8000:8000" # TODO: changer ce port selon la config d’hébergement
+    volumes:
+      - backend-storage:/app/storage # TODO: sauvegarder ce volume en cas de déploiement sur serveur
+    environment:
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ecodeli_pa
+      DB_USERNAME: postgres
+      DB_PASSWORD: elliot # TODO: utiliser un mot de passe sécurisé en production
+    depends_on:
+      - postgres
+    networks:
+      - ecodeli
+
+  frontoffice:
+    build: ./packages/frontend/frontoffice
+    container_name: frontoffice
+    ports:
+      - "5173:5173" # TODO: ajuster ce port en production
+    depends_on:
+      - backend
+    networks:
+      - ecodeli
+
+  backoffice:
+    build: ./packages/frontend/backoffice
+    container_name: backoffice
+    ports:
+      - "6174:6174" # TODO: ajuster ce port en production
+    depends_on:
+      - backend
+    networks:
+      - ecodeli
+
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: ecodeli_pa
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ""
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - ecodeli
+
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - ecodeli
+
+volumes:
+  db-data:
+  backend-storage:
+
+networks:
+  ecodeli:
+    driver: bridge

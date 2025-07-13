@@ -15,24 +15,26 @@ import PrivateRoute from "./PrivateRoute";
 import Annonces from "../pages/Annonces";
 import CreerAnnonce from "../pages/CreerAnnonce";
 import AnnonceDetail from "../pages/AnnonceDetail";
-import AdresseLivraison from "../pages/AdresseLivraison";
 import Paiement from "../pages/Paiement";
-import DetailsService from "../pages/DetailsService";
+import PaiementSuccess from "../pages/PaiementSuccess";
+import PaiementCancel from "../pages/PaiementCancel";
 import MesAnnonces from "../pages/MesAnnonces";
 import AnnoncesDisponibles from "../pages/AnnoncesDisponibles";
-import MesLivraisons from "../pages/MesLivraisons";
-import Planning from "../pages/Planning";
-import MesPrestations from "../pages/MesPrestations";
-import Interventions from "../pages/Interventions";
 import Factures from "../pages/Factures";
+import ProfilPrestataire from "../pages/ProfilPrestataire";
 import PublierPrestation from "../pages/PublierPrestation";
+import ProfilLivreur from "../pages/ProfilLivreur";
 import Notifications from "../pages/Notifications";
-import CataloguePrestations from "../pages/CataloguePrestations";
+import Catalogue from "../pages/Catalogue";
+import PrestationDetail from "../pages/PrestationDetail";
+import Prestations from "../pages/Prestations";
+import Disponibilites from "../pages/Disponibilites";
 import MesTrajets from "../pages/MesTrajets";
 import MesEtapes from "../pages/MesEtapes";
 import ValidationCodeBox from "../pages/ValidationCodeBox";
 import SuiviAnnonce from "../pages/SuiviAnnonce";
-import ReserverAnnonce from "../pages/ReserverAnnonce"
+import ReserverAnnonce from "../pages/ReserverAnnonce";
+import MesPaiements from "../pages/client/MesPaiements";
 
 export default function AppRouter() {
   return (
@@ -44,7 +46,10 @@ export default function AppRouter() {
           <Route path="/register" element={<Register />} />
           <Route path="/register-commercant" element={<RegisterCommercant />} />
           <Route path="/register-livreur" element={<RegisterLivreur />} />
-          <Route path="/register-prestataire" element={<RegisterPrestataire />} />
+          <Route
+            path="/register-prestataire"
+            element={<RegisterPrestataire />}
+          />
           <Route
             path="/annonces"
             element={
@@ -83,7 +88,6 @@ export default function AppRouter() {
               </PrivateRoute>
             }
           />
-          <Route path="/adresse-livraison/:commandeId" element={<AdresseLivraison />} />
           <Route
             path="/paiement/:commandeId"
             element={
@@ -93,10 +97,18 @@ export default function AppRouter() {
             }
           />
           <Route
-            path="/details-service/:commandeId"
+            path="/paiement/success"
             element={
               <PrivateRoute>
-                <DetailsService />
+                <PaiementSuccess />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/paiement/cancel"
+            element={
+              <PrivateRoute>
+                <PaiementCancel />
               </PrivateRoute>
             }
           />
@@ -168,43 +180,43 @@ export default function AppRouter() {
           />
 
           <Route
-            path="/mes-livraisons"
+            path="/mes-paiements"
             element={
               <PrivateRoute>
-                <MesLivraisons />
+                <RoleRoute role="client">
+                  <MesPaiements />
+                </RoleRoute>
               </PrivateRoute>
             }
           />
 
           <Route
-            path="/planning"
+            path="/disponibilites"
             element={
               <PrivateRoute>
                 <RoleRoute role={["prestataire"]}>
-                  <Planning />
+                  <Disponibilites />
                 </RoleRoute>
               </PrivateRoute>
             }
           />
 
           <Route
-            path="/mes-prestations"
+            path="/prestations"
             element={
               <PrivateRoute>
                 <RoleRoute role={["client", "prestataire"]}>
-                  <MesPrestations />
+                  <Prestations />
                 </RoleRoute>
               </PrivateRoute>
             }
           />
 
           <Route
-            path="/interventions"
+            path="/prestations/:id"
             element={
               <PrivateRoute>
-                <RoleRoute role={["client", "prestataire"]}>
-                  <Interventions />
-                </RoleRoute>
+                <PrestationDetail />
               </PrivateRoute>
             }
           />
@@ -221,6 +233,28 @@ export default function AppRouter() {
           />
 
           <Route
+            path="/profil-prestataire"
+            element={
+              <PrivateRoute>
+                <RoleRoute role={["prestataire"]}>
+                  <ProfilPrestataire />
+                </RoleRoute>
+              </PrivateRoute>
+            }
+          />
+
+          <Route
+            path="/profil-livreur"
+            element={
+              <PrivateRoute>
+                <RoleRoute role={["livreur"]}>
+                  <ProfilLivreur />
+                </RoleRoute>
+              </PrivateRoute>
+            }
+          />
+
+          <Route
             path="/prestations/publier"
             element={
               <PrivateRoute>
@@ -231,7 +265,6 @@ export default function AppRouter() {
             }
           />
 
-
           <Route
             path="/notifications"
             element={
@@ -241,44 +274,34 @@ export default function AppRouter() {
             }
           />
 
-          <Route
-            path="/prestations/catalogue"
-            element={
-              <PrivateRoute>
-                <RoleRoute role="client">
-                  <CataloguePrestations />
-                </RoleRoute>
-              </PrivateRoute>
-            }
-          />
+          <Route path="/prestations/catalogue" element={<Catalogue />} />
 
-          <Route 
-            path="/etapes/:etapeId/validation-code" 
+          <Route
+            path="/validation-code/:id"
             element={
               <PrivateRoute>
                 <ValidationCodeBox />
               </PrivateRoute>
-            } 
+            }
           />
 
-          <Route 
+          <Route
             path="/annonces/:annonceId/suivi"
             element={
               <PrivateRoute>
                 <SuiviAnnonce />
               </PrivateRoute>
-            } 
+            }
           />
 
-          <Route 
+          <Route
             path="/annonces/:annonceId/reserver"
             element={
               <PrivateRoute>
                 <ReserverAnnonce />
               </PrivateRoute>
-            } 
+            }
           />
-
         </Routes>
       </MainLayout>
     </Router>

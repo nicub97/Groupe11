@@ -31,6 +31,12 @@ class TrajetLivreurController extends Controller
             'disponible_au' => 'nullable|date|after_or_equal:disponible_du',
         ]);
 
+        abort_if(
+            $validated['entrepot_depart_id'] == $validated['entrepot_arrivee_id'],
+            422,
+            "L'entrepôt d'arrivée doit être différent de l'entrepôt de départ."
+        );
+
         $trajet = TrajetLivreur::create([
             'livreur_id' => $user->id,
             ...$validated

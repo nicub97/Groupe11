@@ -23,7 +23,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('etapes_livraison', function (Blueprint $table) {
-            //
+            $table->dropColumn('est_client'); // TODO: vérifier la suppression lors du déploiement
         });
     }
 };

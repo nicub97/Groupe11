@@ -25,7 +25,6 @@ class EntrepotController extends Controller
             'adresse' => 'required|string|max:255',
             'ville' => 'required|string|max:255',
             'code_postal' => 'required|string|max:20',
-            'pays' => 'required|string|max:255'
         ]);
 
         $entrepot = Entrepot::create($validated);
@@ -66,7 +65,6 @@ class EntrepotController extends Controller
             'adresse' => 'sometimes|string|max:255',
             'ville' => 'sometimes|string|max:255',
             'code_postal' => 'sometimes|string|max:20',
-            'pays' => 'sometimes|string|max:255'
         ]);
 
         $entrepot->update($validated);

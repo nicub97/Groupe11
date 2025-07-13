@@ -74,7 +74,7 @@ export default function Login() {
 
       <button
         type="submit"
-        className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
+        className="btn-primary w-full"
       >
         Se connecter
       </button>

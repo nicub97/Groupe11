@@ -150,14 +150,14 @@ export default function EditMesAnnonce() {
           <div className="flex gap-4">
             <button
               type="submit"
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+              className="btn-primary"
             >
               Enregistrer
             </button>
             <button
               type="button"
               onClick={handleDelete}
-              className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+              className="btn-danger"
             >
               Supprimer
             </button>

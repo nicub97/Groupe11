@@ -6,6 +6,8 @@ use App\Models\Intervention;
 use App\Models\Prestation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class InterventionController extends Controller
 {
@@ -13,12 +15,15 @@ class InterventionController extends Controller
     {
         $user = Auth::user();
 
+        $prestataireId = $user->role === 'prestataire' ? $user->prestataire?->id : null;
+        $clientId = $user->role === 'client' ? $user->client?->id : null;
+
         $interventions = Intervention::with(['prestation.client', 'prestation.prestataire'])
-            ->whereHas('prestation', function ($query) use ($user) {
+            ->whereHas('prestation', function ($query) use ($user, $prestataireId, $clientId) {
                 if ($user->role === 'prestataire') {
-                    $query->where('prestataire_id', $user->id);
+                    $query->where('prestataire_id', $prestataireId);
                 } elseif ($user->role === 'client') {
-                    $query->where('client_id', $user->id);
+                    $query->where('client_id', $clientId);
                 }
             })->latest()->get();
 
@@ -28,6 +33,7 @@ class InterventionController extends Controller
     public function store(Request $request)
     {
         $user = Auth::user();
+        $prestataireId = $user->role === 'prestataire' ? $user->prestataire?->id : null;
 
         if ($user->role !== 'prestataire') {
             return response()->json(['message' => 'Seuls les prestataires peuvent valider une intervention.'], 403);
@@ -40,8 +46,24 @@ class InterventionController extends Controller
 
         $prestation = Prestation::find($validated['prestation_id']);
 
-        if ($prestation->prestataire_id !== $user->id) {
-            return response()->json(['message' => 'Non autorisé.'], 403);
+        // Vérifier que le prestataire est bien celui lié à la prestation
+        if ($prestation->prestataire_id !== ($user->prestataire->id ?? null)) {
+            return response()->json(['message' => 'Accès interdit.'], 403);
+        }
+
+        // Empêcher la création d'une intervention avant la date de la prestation
+        // Désactivé temporairement pour la phase de test fonctionnel
+        if (Carbon::now()->lt($prestation->date_heure)) {
+            Log::warning('Intervention avant date prévue', ['prestation_id' => $prestation->id]);
+            // La vérification est momentanément désactivée : on ne bloque pas la création
+        }
+
+        // Empêcher la duplication d'intervention pour la même prestation
+        if (Intervention::where('prestation_id', $prestation->id)->exists()) {
+            Log::warning('Intervention déjà enregistrée', [
+                'prestation_id' => $prestation->id,
+            ]);
+            return response()->json(['message' => 'Une intervention a déjà été enregistrée.'], 422);
         }
 
         if ($prestation->statut !== 'acceptée' && $prestation->statut !== 'terminée') {
@@ -53,6 +75,11 @@ class InterventionController extends Controller
             'statut_final' => $validated['statut_final'],
         ]);
 
+        Log::info('Intervention enregistrée', [
+            'intervention_id' => $intervention->id,
+            'prestataire_id' => $user->prestataire->id ?? null,
+        ]);
+
         // Mettre à jour le statut de la prestation
         $prestation->statut = 'terminée';
         $prestation->save();
@@ -62,24 +89,6 @@ class InterventionController extends Controller
 
     public function update(Request $request, $id)
     {
-        $intervention = Intervention::with('prestation')->find($id);
-        $user = Auth::user();
-
-        if (! $intervention) {
-            return response()->json(['message' => 'Intervention introuvable.'], 404);
-        }
-
-        if ($intervention->prestation->client_id !== $user->id) {
-            return response()->json(['message' => 'Non autorisé.'], 403);
-        }
-
-        $validated = $request->validate([
-            'note' => 'nullable|integer|min:1|max:5',
-            'commentaire_client' => 'nullable|string|max:1000',
-        ]);
-
-        $intervention->update($validated);
-
-        return response()->json(['message' => 'Intervention mise à jour.', 'intervention' => $intervention]);
+        return response()->json(['message' => 'Utilisez /evaluations pour évaluer une intervention.'], 410);
     }
 }

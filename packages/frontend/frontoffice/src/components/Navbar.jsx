@@ -1,6 +1,6 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Transition } from "@headlessui/react";
 
 export default function Navbar() {
@@ -8,6 +8,7 @@ export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const navRef = useRef(null);
 
   useEffect(() => {
     if (user?.role === "livreur" && location.pathname === "/") {
@@ -24,45 +25,47 @@ export default function Navbar() {
     if (!user) return [];
 
     const common = [
-      { path: "/monprofil", label: "Mon Profil" },
+      { path: "/monprofil", label: "Mon Profil", group: "profil" },
       { path: "/notifications", label: "Notifications" },
+      { path: "/profil/motdepasse", label: "Modifier mot de passe", group: "profil" },
     ];
 
     if (user.role === "client") {
       return [
         ...common,
-        { path: "/annonces", label: "Annonces" },
-        { path: "/mes-annonces", label: "Mes annonces" },
-        { path: "/prestations/catalogue", label: "Prestations" },
-        { path: "/interventions", label: "Interventions" },
+        { path: "/annonces", label: "Annonces", group: "annonces" },
+        { path: "/mes-annonces", label: "Mes annonces", group: "annonces" },
+
+        { path: "/prestations/catalogue", label: "Catalogue", group: "prestations" },
+        { path: "/prestations", label: "Mes prestations", group: "prestations" },
+        { path: "/mes-paiements", label: "Mes paiements", group: "profil" },
       ];
     }
 
     if (user.role === "prestataire") {
       return [
         ...common,
-        { path: "/mes-prestations", label: "Mes prestations" },
-        { path: "/prestations/publier", label: "Publier une prestation" },
-        { path: "/interventions", label: "Interventions" },
-        { path: "/planning", label: "Planning" },
-        { path: "/factures", label: "Factures" },
+        { path: "/prestations", label: "Prestations assignées", group: "prestations" },
+        { path: "/disponibilites", label: "Disponibilités", group: "prestations" },
+        { path: "/prestations/publier", label: "Publier une prestation", group: "prestations" },
+        { path: "/factures", label: "Factures", group: "profil" },
       ];
     }
 
     if (user.role === "commercant") {
       return [
         ...common,
-        { path: "/annonces", label: "Annonces" },
-        { path: "/mes-annonces", label: "Mes annonces" },
+        { path: "/annonces/creer", label: "Créer une annonce", group: "annonces" },
+        { path: "/mes-annonces", label: "Mes annonces", group: "annonces" },
       ];
     }
 
     if (user.role === "livreur") {
       return [
         ...common,
-        { path: "/mes-trajets", label: "Mes trajets" },
-        { path: "/annonces-disponibles", label: "Annonces disponibles" },
-        { path: "/mes-etapes", label: "Mes étapes" },
+        { path: "/mes-trajets", label: "Mes trajets", group: "annonces" },
+        { path: "/annonces-disponibles", label: "Annonces disponibles", group: "annonces" },
+        { path: "/mes-etapes", label: "Mes étapes", group: "annonces" },
       ];
     }
 
@@ -71,28 +74,158 @@ export default function Navbar() {
 
   const menuItems = getMenuItems();
 
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (!navRef.current) return;
+      const openMenus = navRef.current.querySelectorAll('details[open]');
+      openMenus.forEach((menu) => {
+        if (!menu.contains(e.target)) {
+          menu.removeAttribute('open');
+        }
+      });
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   return (
-    <header className="bg-white text-green-900 shadow-md sticky top-0 z-50 border-b border-gray-200">
+    <header
+      ref={navRef}
+      className="bg-white text-green-900 shadow-md sticky top-0 z-50 border-b border-gray-200"
+    >
       <nav className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
         <Link to="/" className="text-2xl font-bold hover:text-lime-300 transition">
           EcoDeli
         </Link>
 
         <ul className="hidden sm:flex gap-6 text-sm font-medium items-center">
+          <li>
+            <button
+              onClick={() => navigate(-1)}
+              className="hover:text-lime-300 transition"
+            >
+              ← Retour
+            </button>
+          </li>
           <li><Link to="/" className="hover:text-lime-300 transition">Accueil</Link></li>
 
           {!user ? (
             <>
-              <li><Link to="/login" className="hover:text-lime-300 transition">Connexion</Link></li>
-              <li><Link to="/register" className="hover:text-lime-300 transition">Inscription</Link></li>
+              {/* Liens prestations accessibles sans connexion */}
+              <li>
+                <Link
+                  to="/prestations/catalogue"
+                  className="hover:text-lime-300 transition"
+                >
+                  Prestations
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/login"
+                  className="hover:text-lime-300 transition"
+                >
+                  Connexion
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/register"
+                  className="hover:text-lime-300 transition"
+                >
+                  Inscription
+                </Link>
+              </li>
             </>
           ) : (
             <>
-              {menuItems.map((item) => (
-                <li key={item.path}>
-                  <Link to={item.path} className="hover:text-lime-300 transition">{item.label}</Link>
+              {(user.role === "prestataire" || user.role === "client") && (
+                <li>
+                  <details className="relative group">
+                    <summary className="flex items-center gap-1 px-3 py-2 rounded cursor-pointer text-green-700 hover:bg-green-50 transition">
+                      Prestations
+                      <svg
+                        className="w-4 h-4 ml-1 transition-transform duration-200 group-open:rotate-180"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path d="M5 7l5 5 5-5H5z" />
+                      </svg>
+                    </summary>
+                    <ul className="absolute z-10 mt-2 w-48 bg-white border border-green-200 rounded shadow-lg py-1 text-sm">
+                      {menuItems
+                        .filter((i) => i.group === "prestations")
+                        .map((item) => (
+                          <li key={item.path}>
+                            <Link to={item.path} className="block px-4 py-2 hover:bg-green-50 text-green-800">
+                              {item.label}
+                            </Link>
+                          </li>
+                        ))}
+                    </ul>
+                  </details>
                 </li>
-              ))}
+              )}
+              {user.role !== "prestataire" && (
+              <li>
+                <details className="relative group">
+                  <summary className="flex items-center gap-1 px-3 py-2 rounded cursor-pointer text-green-700 hover:bg-green-50 transition">
+                    Annonces / Livraisons
+                    <svg
+                      className="w-4 h-4 ml-1 transition-transform duration-200 group-open:rotate-180"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path d="M5 7l5 5 5-5H5z" />
+                    </svg>
+                  </summary>
+                  <ul className="absolute z-10 mt-2 w-48 bg-white border border-green-200 rounded shadow-lg py-1 text-sm">
+                    {menuItems
+                      .filter((i) => i.group === "annonces")
+                      .map((item) => (
+                        <li key={item.path}>
+                          <Link to={item.path} className="block px-4 py-2 hover:bg-green-50 text-green-800">
+                            {item.label}
+                          </Link>
+                        </li>
+                      ))}
+                  </ul>
+                </details>
+              </li>
+              )}
+              <li>
+                <details className="relative group">
+                  <summary className="flex items-center gap-1 px-3 py-2 rounded cursor-pointer text-green-700 hover:bg-green-50 transition">
+                    Paiement / Profil
+                    <svg
+                      className="w-4 h-4 ml-1 transition-transform duration-200 group-open:rotate-180"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path d="M5 7l5 5 5-5H5z" />
+                    </svg>
+                  </summary>
+                  <ul className="absolute z-10 mt-2 w-48 bg-white border border-green-200 rounded shadow-lg py-1 text-sm">
+                    {menuItems
+                      .filter((i) => i.group === "profil")
+                      .map((item) => (
+                        <li key={item.path}>
+                          <Link to={item.path} className="block px-4 py-2 hover:bg-green-50 text-green-800">
+                            {item.label}
+                          </Link>
+                        </li>
+                      ))}
+                  </ul>
+                </details>
+              </li>
+              {menuItems
+                .filter((i) => !i.group)
+                .map((item) => (
+                  <li key={item.path}>
+                    <Link to={item.path}>{item.label}</Link>
+                  </li>
+                ))}
               <li>
                 <button onClick={handleLogout} className="hover:text-red-300 transition">
                   Se déconnecter
@@ -126,17 +259,125 @@ export default function Navbar() {
       >
         <div className="sm:hidden bg-white px-6 pb-4 space-y-2 text-sm font-medium text-green-900">
           <ul>
+            <li>
+              <button
+                onClick={() => navigate(-1)}
+                className="block hover:text-lime-300"
+              >
+                ← Retour
+              </button>
+            </li>
             <li><Link to="/" className="block hover:text-lime-300">Accueil</Link></li>
             {!user ? (
               <>
-                <li><Link to="/login" className="block hover:text-lime-300">Connexion</Link></li>
-                <li><Link to="/register" className="block hover:text-lime-300">Inscription</Link></li>
+                {/* Liens prestations accessibles sans connexion */}
+                <li>
+                  <Link
+                    to="/prestations/catalogue"
+                    className="block hover:text-lime-300"
+                  >
+                    Prestations
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/login" className="block hover:text-lime-300">
+                    Connexion
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/register" className="block hover:text-lime-300">
+                    Inscription
+                  </Link>
+                </li>
               </>
             ) : (
               <>
-                {menuItems.map((item) => (
-                  <li key={item.path}><Link to={item.path} className="block hover:text-lime-300">{item.label}</Link></li>
-                ))}
+                {(user.role === "prestataire" || user.role === "client") && (
+                  <li>
+                    <details className="relative group">
+                      <summary className="flex items-center gap-1 px-3 py-2 rounded cursor-pointer text-green-700 hover:bg-green-50 transition">
+                        Prestations
+                        <svg
+                          className="w-4 h-4 ml-1 transition-transform duration-200 group-open:rotate-180"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path d="M5 7l5 5 5-5H5z" />
+                        </svg>
+                      </summary>
+                      <ul className="absolute z-10 mt-2 w-48 bg-white border border-green-200 rounded shadow-lg py-1 text-sm">
+                        {menuItems
+                          .filter((i) => i.group === "prestations")
+                          .map((item) => (
+                            <li key={item.path}>
+                              <Link to={item.path} className="block px-4 py-2 hover:bg-green-50 text-green-800">
+                                {item.label}
+                              </Link>
+                            </li>
+                          ))}
+                      </ul>
+                    </details>
+                  </li>
+                )}
+                {user.role !== "prestataire" && (
+                <li>
+                  <details className="relative group">
+                    <summary className="flex items-center gap-1 px-3 py-2 rounded cursor-pointer text-green-700 hover:bg-green-50 transition">
+                      Annonces / Livraisons
+                      <svg
+                        className="w-4 h-4 ml-1 transition-transform duration-200 group-open:rotate-180"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path d="M5 7l5 5 5-5H5z" />
+                      </svg>
+                    </summary>
+                    <ul className="absolute z-10 mt-2 w-48 bg-white border border-green-200 rounded shadow-lg py-1 text-sm">
+                      {menuItems
+                        .filter((i) => i.group === "annonces")
+                        .map((item) => (
+                          <li key={item.path}>
+                            <Link to={item.path} className="block px-4 py-2 hover:bg-green-50 text-green-800">
+                              {item.label}
+                            </Link>
+                          </li>
+                        ))}
+                    </ul>
+                  </details>
+                </li>
+                )}
+                <li>
+                  <details className="relative group">
+                    <summary className="flex items-center gap-1 px-3 py-2 rounded cursor-pointer text-green-700 hover:bg-green-50 transition">
+                      Paiement / Profil
+                      <svg
+                        className="w-4 h-4 ml-1 transition-transform duration-200 group-open:rotate-180"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path d="M5 7l5 5 5-5H5z" />
+                      </svg>
+                    </summary>
+                    <ul className="absolute z-10 mt-2 w-48 bg-white border border-green-200 rounded shadow-lg py-1 text-sm">
+                      {menuItems
+                        .filter((i) => i.group === "profil")
+                        .map((item) => (
+                          <li key={item.path}>
+                            <Link to={item.path} className="block px-4 py-2 hover:bg-green-50 text-green-800">
+                              {item.label}
+                            </Link>
+                          </li>
+                        ))}
+                    </ul>
+                  </details>
+                </li>
+                {menuItems
+                  .filter((i) => !i.group)
+                  .map((item) => (
+                    <li key={item.path}>
+                      <Link to={item.path}>{item.label}</Link>
+                    </li>
+                  ))}
                 <li>
                   <button onClick={handleLogout} className="block hover:text-red-300">Se déconnecter</button>
                 </li>

@@ -14,6 +14,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => \App\Http\Middleware\CheckRole::class,
             'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,
+            'prestataire.valide' => \App\Http\Middleware\PrestataireValide::class,
+            'livreur.valide' => \App\Http\Middleware\LivreurValide::class
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

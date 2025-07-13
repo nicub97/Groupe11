@@ -19,11 +19,13 @@ class EtapeLivraison extends Model
         'statut',
         'est_client',
         'est_commercant',
+        'est_mini_etape',
     ];
 
     protected $casts = [
         'est_client' => 'boolean',
         'est_commercant' => 'boolean',
+        'est_mini_etape' => 'boolean',
     ];
 
     public function annonce()
@@ -39,5 +41,21 @@ class EtapeLivraison extends Model
     public function codes()
     {
         return $this->hasMany(CodeBox::class, 'etape_livraison_id');
+    }
+
+    /**
+     * Détermine si le retrait peut être validé pour cette étape.
+     * Il ne doit exister aucune étape précédente de la même annonce
+     * créée pour le client ou le commerçant qui n'est pas encore terminée.
+     */
+    public function peutRetirer(): bool
+    {
+        return !self::where('annonce_id', $this->annonce_id)
+            ->where(function ($q) {
+                $q->where('est_client', true)->orWhere('est_commercant', true);
+            })
+            ->where('statut', '!=', 'terminee')
+            ->where('created_at', '<', $this->created_at)
+            ->exists();
     }
 }

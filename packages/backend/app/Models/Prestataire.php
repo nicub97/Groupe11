@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\JustificatifPrestataire;
 
 class Prestataire extends Model
 {
@@ -14,6 +15,8 @@ class Prestataire extends Model
         'domaine',
         'description',
         'valide',
+        'statut',
+        'motif_refus',
     ];
 
     public function utilisateur()
@@ -34,6 +37,11 @@ class Prestataire extends Model
     public function factures()
     {
         return $this->hasMany(FacturePrestataire::class);
+    }
+
+    public function justificatifs()
+    {
+        return $this->hasMany(JustificatifPrestataire::class);
     }
 
 }

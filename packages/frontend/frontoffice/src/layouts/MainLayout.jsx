@@ -1,13 +1,11 @@
 import Navbar from "../components/Navbar";
-import TutorielOverlay from "../components/TutorielOverlay";
 
 export default function MainLayout({ children }) {
   return (
     <div className="bg-gray-100 min-h-screen flex flex-col">
       <Navbar />
 
-      {/* Affiche le tutoriel dès qu'un utilisateur client est connecté */}
-      <TutorielOverlay />
+      {/* Tutoriel d'accueil supprimé (ancienne mention des services) */}
 
       <main className="flex-grow container mx-auto px-6 py-8 bg-white rounded shadow-md mt-4">
         {children}

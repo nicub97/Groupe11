@@ -6,12 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-use Laravel\Fortify\TwoFactorAuthenticatable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 
 class Utilisateur extends Authenticatable implements MustVerifyEmail
 {
-    use HasApiTokens, HasFactory, Notifiable, TwoFactorAuthenticatable;
+    use HasApiTokens, HasFactory, Notifiable;
 
     protected $table = 'utilisateurs';
 
@@ -30,8 +29,6 @@ class Utilisateur extends Authenticatable implements MustVerifyEmail
     protected $hidden = [
         'password',
         'remember_token',
-        'two_factor_recovery_codes',
-        'two_factor_secret',
     ];
 
     // Mutator pour hasher automatiquement le mot de passe
@@ -42,7 +39,7 @@ class Utilisateur extends Authenticatable implements MustVerifyEmail
         }
     }
 
-    // Annonces créées par le client (type livraison_client, service ou produit_livre)
+    // Annonces créées par le client (type livraison_client ou produit_livre)
     public function annoncesClient()
     {
         return $this->hasMany(Annonce::class, 'id_client');
@@ -54,11 +51,6 @@ class Utilisateur extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Annonce::class, 'id_commercant');
     }
 
-    // Annonces créées par le prestataire (type service)
-    public function annoncesPrestataire()
-    {
-        return $this->hasMany(Annonce::class, 'id_prestataire');
-    }
 
     // Annonces pour lesquelles l'utilisateur est livreur
     public function livraisons()
@@ -90,11 +82,6 @@ class Utilisateur extends Authenticatable implements MustVerifyEmail
     public function paiements()
     {
         return $this->hasMany(Paiement::class, 'utilisateur_id');
-    }
-
-    public function colisLivres()
-    {
-        return $this->hasMany(Colis::class, 'livreur_id');
     }
 
     public function messagesEnvoyes()

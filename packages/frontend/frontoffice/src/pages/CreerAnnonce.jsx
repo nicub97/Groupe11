@@ -6,7 +6,6 @@ import api from "../services/api";
 export default function CreerAnnonce() {
   const { user, token } = useAuth();
   const navigate = useNavigate();
-
   // Déterminer le type selon le rôle
   let typeAnnonce = null;
   if (user?.role === "client") typeAnnonce = "livraison_client";
@@ -17,10 +16,14 @@ export default function CreerAnnonce() {
     titre: "",
     description: "",
     prix_propose: "",
-    photo: "",
     entrepot_depart_id: "",
     entrepot_arrivee_id: "",
   });
+  const [photoFile, setPhotoFile] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState("");
+  const [message, setMessage] = useState("");
+  const [success, setSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchEntrepots = async () => {
@@ -36,6 +39,7 @@ export default function CreerAnnonce() {
     fetchEntrepots();
   }, [token]);
 
+
   if (!typeAnnonce) {
     return (
       <p className="text-center mt-10 text-red-600">
@@ -45,29 +49,79 @@ export default function CreerAnnonce() {
   }
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm((prev) => {
+      if (name === "entrepot_depart_id" && value === prev.entrepot_arrivee_id) {
+        return { ...prev, entrepot_depart_id: value, entrepot_arrivee_id: "" };
+      }
+      return { ...prev, [name]: value };
+    });
+  };
+
+  const handlePhotoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setPhotoFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => setPhotoPreview(reader.result);
+      reader.readAsDataURL(file);
+    } else {
+      setPhotoFile(null);
+      setPhotoPreview("");
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    setMessage("");
+    setSuccess(false);
+    setLoading(true);
+
     try {
-      await api.post(
-        "/annonces",
-        { ...form, type: typeAnnonce },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      alert("Annonce créée avec succès.");
-      navigate("/annonces");
+      const data = new FormData();
+      for (const key in form) {
+        data.append(key, form[key]);
+      }
+      data.append("type", typeAnnonce);
+      if (photoFile) data.append("photo", photoFile);
+      await api.post("/annonces", data, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      setMessage("✅ Annonce créée avec succès !");
+      setSuccess(true);
+      setForm({
+        titre: "",
+        description: "",
+        prix_propose: "",
+        entrepot_depart_id: "",
+        entrepot_arrivee_id: "",
+      });
+      setPhotoFile(null);
+      setPhotoPreview("");
+      setTimeout(() => navigate("/annonces"), 1500);
     } catch (err) {
       console.error(err);
-      alert("Erreur lors de la création de l'annonce.");
+      const msg =
+        err.response?.data?.message ||
+        "Erreur lors de la création de l'annonce.";
+      setMessage(msg);
+      setSuccess(false);
+      setLoading(false);
     }
   };
 
   return (
     <div className="max-w-xl mx-auto mt-10 p-6 bg-white shadow rounded">
       <h2 className="text-2xl font-bold mb-4">Créer une annonce</h2>
+      {message && (
+        <p className={`mb-2 ${success ? "text-green-600" : "text-red-600"}`}>
+          {message}
+        </p>
+      )}
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
           type="text"
@@ -97,7 +151,8 @@ export default function CreerAnnonce() {
         />
 
         {/* Champ toujours visible : entrepôt de départ */}
-        {(typeAnnonce === "livraison_client" || typeAnnonce === "produit_livre") && (
+        {(typeAnnonce === "livraison_client" ||
+          typeAnnonce === "produit_livre") && (
           <select
             name="entrepot_depart_id"
             value={form.entrepot_depart_id}
@@ -124,29 +179,36 @@ export default function CreerAnnonce() {
             required
           >
             <option value="">Ville d'arrivée</option>
-            {entrepots.map((e) => (
-              <option key={e.id} value={e.id}>
-                {e.ville}
-              </option>
-            ))}
+            {entrepots
+              .filter((e) => e.id !== Number(form.entrepot_depart_id))
+              .map((e) => (
+                <option key={e.id} value={e.id}>
+                  {e.ville}
+                </option>
+              ))}
           </select>
         )}
 
         <input
-          type="text"
-          name="photo"
-          placeholder="URL de la photo (optionnel)"
-          value={form.photo}
-          onChange={handleChange}
+          type="file"
+          accept="image/*"
+          onChange={handlePhotoChange}
           className="w-full p-2 border rounded"
         />
+        {photoPreview && (
+          <img
+            src={photoPreview}
+            alt="Aperçu"
+            className="h-32 object-contain mt-2"
+          />
+        )}
 
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
-          disabled={entrepots.length === 0}
+          disabled={loading || entrepots.length === 0}
+          className="btn-primary w-full disabled:opacity-50"
         >
-          Créer l'annonce
+          {loading ? "Création..." : "Créer l'annonce"}
         </button>
       </form>
     </div>

@@ -50,7 +50,7 @@ export default function ChangePassword() {
         <input type="password" placeholder="Mot de passe actuel" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} className="w-full p-2 border rounded" required />
         <input type="password" placeholder="Nouveau mot de passe" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="w-full p-2 border rounded" required />
         <input type="password" placeholder="Confirmation du mot de passe" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="w-full p-2 border rounded" required />
-        <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded">Valider</button>
+        <button type="submit" className="btn-primary w-full">Valider</button>
       </form>
 
       <div className="mt-4 text-center space-y-1">

@@ -14,6 +14,10 @@ class Livreur extends Model
         'piece_identite',
         'permis_conduire',
         'valide',
+        'statut',
+        'motif_refus',
+        'piece_identite_document',
+        'permis_conduire_document',
     ];
 
     public function utilisateur()

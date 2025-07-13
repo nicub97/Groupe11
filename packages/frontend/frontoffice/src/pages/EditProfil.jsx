@@ -1,11 +1,10 @@
 import { useAuth } from "../context/AuthContext";
 import { useEffect, useState } from "react";
 import api from "../services/api";
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 export default function EditProfil() {
   const { user, token, updateUser } = useAuth();
-  const navigate = useNavigate();
   const [formData, setFormData] = useState({});
   const [message, setMessage] = useState("");
 
@@ -50,15 +49,11 @@ export default function EditProfil() {
 
     try {
       // PATCH utilisateur
-      const res = await api.patch(`/utilisateurs/${user.id}`, utilisateurData, {
+      await api.patch(`/utilisateurs/${user.id}`, utilisateurData, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
       // 🔄 MAJ user dans localStorage
-      const updatedUser = {
-        ...user,
-        ...utilisateurData,
-      };
       updateUser(utilisateurData);
 
       // PATCH données spécifiques selon le rôle

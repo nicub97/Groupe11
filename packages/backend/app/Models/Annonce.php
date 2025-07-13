@@ -20,9 +20,10 @@ class Annonce extends Model
         'photo',
         'id_client',
         'id_commercant',
-        'id_prestataire',
+        'id_livreur_reservant',
         'entrepot_depart_id',
         'entrepot_arrivee_id',
+        'is_paid',
     ];
 
     public function client()
@@ -35,14 +36,14 @@ class Annonce extends Model
         return $this->belongsTo(Utilisateur::class, 'id_commercant');
     }
 
+    public function livreurReservant()
+    {
+        return $this->belongsTo(Utilisateur::class, 'id_livreur_reservant');
+    }
+
     public function commandes()
     {
         return $this->hasMany(Commande::class, 'annonce_id');
-    }
-
-    public function colis()
-    {
-        return $this->hasOne(Colis::class);
     }
 
     public function etapesLivraison()
@@ -86,57 +87,5 @@ class Annonce extends Model
 
         return 'en_attente';
     }
-
-    public function genererEtapeRetraitClientFinaleSiBesoin()
-    {
-        $etapes = $this->etapesLivraison;
-
-        // Si une étape client finale existe déjà, on ne la recrée pas
-        $dejaCreee = $etapes->contains(fn($e) =>
-            $e->est_client === true &&
-            $e->lieu_depart === $this->entrepotArrivee->ville &&
-            $e->lieu_arrivee === $this->entrepotArrivee->ville &&
-            $e->statut !== 'annulee'
-        );
-
-        if ($dejaCreee) return;
-
-        // Dernière étape livreur terminée
-        $etapePrecedente = $etapes->where('est_client', false)
-            ->where('statut', 'terminee')
-            ->where('lieu_arrivee', $this->entrepotArrivee->ville)
-            ->last();
-
-        if (! $etapePrecedente) return;
-
-        $livreur = $etapePrecedente->livreur;
-
-        $etapeClient = EtapeLivraison::create([
-            'annonce_id' => $this->id,
-            'livreur_id' => $livreur->id, // pas de champ client
-            'lieu_depart' => $this->entrepotArrivee->ville,
-            'lieu_arrivee' => $this->entrepotArrivee->ville,
-            'statut' => 'en_cours',
-            'est_client' => true,
-        ]);
-
-        $box = Entrepot::where('ville', $this->entrepotArrivee->ville)
-            ->first()
-            ?->boxes()
-            ->where('est_occupe', false)
-            ->first();
-
-        if ($box) {
-            CodeBox::create([
-                'box_id' => $box->id,
-                'etape_livraison_id' => $etapeClient->id,
-                'type' => 'retrait',
-                'code_temporaire' => Str::upper(Str::random(6)),
-            ]);
-            $box->est_occupe = true;
-            $box->save();
-        }
-    }
-
 
 }

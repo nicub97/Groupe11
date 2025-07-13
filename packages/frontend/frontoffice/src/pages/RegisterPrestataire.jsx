@@ -19,6 +19,7 @@ export default function RegisterPrestataire() {
 
   const [errors, setErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState("");
+  const [files, setFiles] = useState([]);
   const navigate = useNavigate();
 
   const validate = () => {
@@ -115,19 +116,34 @@ export default function RegisterPrestataire() {
     });
   };
 
+  const handleFiles = (e) => {
+    setFiles(Array.from(e.target.files));
+  };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
 
-    const data = {
-      ...formData,
-      role: "prestataire"
-    };
+    const dataToSend = new FormData();
+    for (const key in formData) {
+      dataToSend.append(key, formData[key]);
+    }
+    dataToSend.append("role", "prestataire");
+    if (files[0]) {
+      dataToSend.append("justificatif", files[0]);
+    }
 
     try {
-      await api.post("/register", data);
-      setSuccessMessage("Inscription réussie ! Vérifiez votre email.");
+      await api.post("/register", dataToSend, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      setSuccessMessage(
+        "Inscription réussie. Votre compte doit être validé avant de publier."
+      );
       setTimeout(() => navigate("/login"), 3000);
     } catch (error) {
       const message = error.response?.data?.message || "Erreur serveur.";
@@ -163,13 +179,21 @@ export default function RegisterPrestataire() {
 
       <textarea name="description" placeholder="Description (optionnelle)" value={formData.description} onChange={handleChange} className="w-full p-2 border rounded" />
 
+      <input
+        type="file"
+        name="justificatif"
+        onChange={handleFiles}
+        accept=".pdf,.jpg,.jpeg,.png"
+        className="w-full p-2 border rounded"
+      />
+
       <div className="flex items-center space-x-2">
         <input type="checkbox" id="rgpd_consent" name="rgpd_consent" checked={formData.rgpd_consent} onChange={handleChange} className="w-4 h-4" />
         <label htmlFor="rgpd_consent">J'accepte la politique de confidentialité (RGPD)</label>
       </div>
       {errors.rgpd_consent && <p className="text-red-500 text-sm">{errors.rgpd_consent}</p>}
 
-      <button type="submit" className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700">
+      <button type="submit" className="btn-primary w-full">
         S'inscrire
       </button>
     </form>

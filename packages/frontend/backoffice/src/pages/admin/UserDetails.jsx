@@ -42,7 +42,7 @@ export default function UserDetails() {
         </Link>
         <Link
           to="/admin/utilisateurs"
-          className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+          className="admin-btn-secondary"
         >
           Retour
         </Link>

@@ -10,6 +10,11 @@ use App\Models\Entrepot;
 use App\Models\CodeBox;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
+use App\Services\LivraisonService;
+use App\Models\Paiement;
 
 class AnnonceController extends Controller
 {
@@ -59,13 +64,17 @@ class AnnonceController extends Controller
     {
         $user = Auth::user();
 
+        if (! in_array($user->role, ['client', 'commercant'])) {
+            return response()->json(['message' => 'Action non autorisée.'], 403);
+        }
+
         // Déterminer les règles dynamiquement selon le rôle
         $rules = [
             'type' => 'required|in:livraison_client,produit_livre',
             'titre' => 'required|string|max:255',
             'description' => 'required|string',
             'prix_propose' => 'required|numeric|min:0',
-            'photo' => 'nullable|url',
+            'photo' => 'nullable|file|image|max:2048',
             'entrepot_depart_id' => 'required|exists:entrepots,id',
         ];
 
@@ -74,9 +83,23 @@ class AnnonceController extends Controller
             $rules['entrepot_arrivee_id'] = 'required|exists:entrepots,id';
         }
 
+        if ($request->type === 'livraison_client') {
+            $rules['entrepot_arrivee_id'] = ($rules['entrepot_arrivee_id'] ?? 'required|exists:entrepots,id') . '|different:entrepot_depart_id';
+        }
+
         $validated = $request->validate($rules);
 
-        $annonce = new Annonce($validated);
+        $data = $validated;
+        unset($data['photo']);
+
+        DB::beginTransaction();
+
+        $annonce = new Annonce($data);
+
+        if ($request->hasFile('photo')) {
+            $path = $request->file('photo')->store('documents/annonces', 'public');
+            $annonce->photo = $path;
+        }
 
         if ($user->role === 'client') {
             $annonce->id_client = $user->id;
@@ -86,6 +109,10 @@ class AnnonceController extends Controller
         }
 
         $annonce->save();
+
+
+
+        DB::commit();
 
         return response()->json([
             'message' => 'Annonce créée avec succès.',
@@ -103,8 +130,8 @@ class AnnonceController extends Controller
         }
 
         if (
-            $annonce->type === 'produit_livre' &&
-            $annonce->id_client !== null
+            ($annonce->type === 'produit_livre' && $annonce->id_client !== null) ||
+            ($annonce->type === 'livraison_client' && $annonce->id_livreur_reservant !== null)
         ) {
             return response()->json(['message' => 'Cette annonce a déjà été réservée et ne peut plus être modifiée.'], 403);
         }
@@ -142,8 +169,8 @@ class AnnonceController extends Controller
         }
 
         if (
-            $annonce->type === 'produit_livre' &&
-            $annonce->id_client !== null
+            ($annonce->type === 'produit_livre' && $annonce->id_client !== null) ||
+            ($annonce->type === 'livraison_client' && $annonce->id_livreur_reservant !== null)
         ) {
             return response()->json(['message' => 'Cette annonce a déjà été réservée et ne peut plus être modifiée.'], 403);
         }
@@ -194,44 +221,78 @@ class AnnonceController extends Controller
             return response()->json(['annonces_disponibles' => []]);
         }
 
-        $annonces = Annonce::with(['etapesLivraison', 'entrepotDepart', 'entrepotArrivee'])
+        $annonces = Annonce::with([
+                'etapesLivraison',
+                'entrepotDepart',
+                'entrepotArrivee',
+                'client',
+                'commercant'
+            ])
             ->whereIn('type', ['livraison_client', 'produit_livre'])
+            ->whereNull('id_livreur_reservant')
+            ->where(function ($q) {
+                $q->where('is_paid', true)
+                  ->orWhereDoesntHave('etapesLivraison', function ($q2) {
+                      $q2->where('est_client', false)
+                          ->where('statut', '!=', 'terminee');
+                  });
+            })
             ->get();
 
         $disponibles = [];
 
         foreach ($annonces as $annonce) {
-            // ❗ Spécifique aux annonces produit_livre : ignorer si pas encore réservée
-            if (
-                $annonce->type === 'produit_livre' &&
-                (
-                    ! $annonce->id_client ||
-                    ! $annonce->entrepotArrivee
-                )
-            ) {
-                continue;
-            }
-
             $etapes = $annonce->etapesLivraison;
 
-            // ⚠️ S'il y a déjà des étapes, il ne faut AUCUNE étape livreur en cours
-            if ($etapes->count() > 0) {
-                $enCours = $etapes->first(fn($e) => $e->statut !== 'terminee' && $e->est_client === false);
-                if ($enCours) continue;
+            if ($annonce->type === 'produit_livre') {
+                if ($annonce->id_commercant === null) {
+                    // Annonce créée par un client : toutes les étapes doivent être terminées
+                    if (! $annonce->entrepotDepart || ! $annonce->entrepotArrivee) {
+                        continue;
+                    }
+
+                    if ($etapes->first(fn($e) => $e->statut !== 'terminee')) {
+                        continue;
+                    }
+                } else {
+                    // Annonce d'un commerçant : doit être réservée par un client
+                    if (! $annonce->id_client || ! $annonce->entrepotArrivee) {
+                        continue;
+                    }
+
+                    if ($etapes->first(fn($e) => $e->statut !== 'terminee' && $e->est_client === false)) {
+                        continue;
+                    }
+                }
+            } else {
+                if ($etapes->first(fn($e) => $e->statut !== 'terminee' && $e->est_client === false)) {
+                    continue;
+                }
             }
 
             // Déterminer la ville de départ actuelle
             $depart_actuel = $annonce->entrepotDepart?->ville ?? '';
-            $lastStep = $etapes->where('statut', 'terminee')->last();
+
+            $lastStep = $etapes
+                ->where('statut', 'terminee');
+
+            if ($annonce->type === 'produit_livre') {
+                $lastStep = $lastStep->where('est_commercant', false);
+            } elseif ($annonce->type === 'livraison_client') {
+                $lastStep = $lastStep->where('est_client', false);
+            }
+
+            $lastStep = $lastStep->last();
+
             if ($lastStep) {
                 $depart_actuel = $lastStep->lieu_arrivee;
             }
 
             // Vérifier compatibilité avec un trajet du livreur
-            $compatible = $trajets->first(fn($trajet) =>
-                $trajet->entrepotDepart &&
-                strcasecmp($trajet->entrepotDepart->ville, $depart_actuel) === 0
-            );
+            $compatible = $trajets->first(function ($trajet) use ($depart_actuel) {
+                return $trajet->entrepotDepart &&
+                    strcasecmp(trim($trajet->entrepotDepart->ville), trim($depart_actuel)) === 0;
+            });
 
             if ($compatible) {
                 $disponibles[] = $annonce;
@@ -254,156 +315,59 @@ class AnnonceController extends Controller
             return response()->json(['message' => 'Accès refusé'], 403);
         }
 
-        $annonce = Annonce::with(['etapesLivraison', 'entrepotDepart', 'entrepotArrivee'])->findOrFail($id);
+        $annonce = Annonce::with(['etapesLivraison', 'entrepotDepart'])->findOrFail($id);
+
+        if ($annonce->id_livreur_reservant) {
+            return response()->json(['message' => 'Annonce déjà réservée.'], 400);
+        }
 
         $enCours = $annonce->etapesLivraison()->where('statut', '!=', 'terminee')->exists();
-
         if ($enCours) {
             return response()->json(['message' => 'Cette annonce est déjà en cours de livraison.'], 400);
         }
 
-        $trajets = TrajetLivreur::with(['entrepotDepart', 'entrepotArrivee'])
-            ->where('livreur_id', $user->id)
-            ->get();
+        DB::transaction(function () use ($annonce, $user) {
+            $annonce->id_livreur_reservant = $user->id;
+            $annonce->save();
 
-        if ($trajets->isEmpty()) {
-            return response()->json(['message' => 'Aucun trajet disponible.'], 400);
-        }
-
-        // Déterminer le point de départ
-        $depart_actuel = $annonce->entrepotDepart?->ville ?? '';
-
-        // On récupère la dernière étape terminée **selon le type d’annonce**
-        $lastStep = $annonce->etapesLivraison()
-            ->where('statut', 'terminee')
-            ->when(
-                $annonce->type === 'produit_livre',
-                fn($q) => $q->where('est_commercant', false)
-            )
-            ->orderByDesc('created_at')
-            ->first();
-
-        if ($lastStep) {
-            $depart_actuel = $lastStep->lieu_arrivee;
-        }
-        
-        // Vérifier si un trajet correspond
-        $trajetCompatible = $trajets->first(fn($trajet) =>
-            $trajet->entrepotDepart && strcasecmp($trajet->entrepotDepart->ville, $depart_actuel) === 0
-        );
-        
-        if (is_null($trajetCompatible)) {
-            logger()->error("❌ Aucun trajet trouvé pour départ_actuel = $depart_actuel");
-            logger()->info("📦 Trajets disponibles : " . json_encode($trajets));
-        }
-
-        if (! $trajetCompatible || ! $trajetCompatible->entrepotArrivee) {
-            return response()->json(['message' => 'Aucun trajet compatible avec l’annonce.'], 400);
-        }
-
-        $destination = $trajetCompatible->entrepotArrivee->ville;
-        $villeFinale = $annonce->entrepotArrivee?->ville;
-
-        $isDerniereEtape = strcasecmp($destination, $villeFinale) === 0;
-
-        $etapesCreees = [];
-
-        if ($depart_actuel === $annonce->entrepotDepart->ville) {
-            if ($annonce->type === 'produit_livre') {
-                // Étape dépôt du commerçant
-                $etapeCommercant = EtapeLivraison::create([
-                    'annonce_id' => $annonce->id,
-                    'livreur_id' => $user->id,
-                    'lieu_depart' => $depart_actuel,
-                    'lieu_arrivee' => $depart_actuel,
-                    'statut' => 'en_cours',
-                    'est_client' => false,
-                    'est_commercant' => true,
-                ]);
-
-                $entrepot = Entrepot::where('ville', $depart_actuel)->first();
-                $box = $entrepot?->boxes()->where('est_occupe', false)->first();
-                if (!$box) return response()->json(['message' => 'Aucune box disponible pour le commerçant.'], 400);
-
-                CodeBox::create([
-                    'box_id' => $box->id,
-                    'etape_livraison_id' => $etapeCommercant->id,
-                    'type' => 'depot',
-                    'code_temporaire' => Str::upper(Str::random(6)),
-                ]);
-
-                $box->est_occupe = true;
-                $box->save();
-
-                $etapesCreees[] = $etapeCommercant;
-            } else {
-                // Étape dépôt du client
-                $etapeClient = EtapeLivraison::create([
-                    'annonce_id' => $annonce->id,
-                    'livreur_id' => $user->id,
-                    'lieu_depart' => $depart_actuel,
-                    'lieu_arrivee' => $depart_actuel,
-                    'statut' => 'en_cours',
-                    'est_client' => true,
-                ]);
-
-                $entrepot = Entrepot::where('ville', $depart_actuel)->first();
-                $box = $entrepot?->boxes()->where('est_occupe', false)->first();
-                if (!$box) return response()->json(['message' => 'Aucune box disponible pour le client.'], 400);
-
-                CodeBox::create([
-                    'box_id' => $box->id,
-                    'etape_livraison_id' => $etapeClient->id,
-                    'type' => 'depot',
-                    'code_temporaire' => Str::upper(Str::random(6)),
-                ]);
-
-                $box->est_occupe = true;
-                $box->save();
-
-                $etapesCreees[] = $etapeClient;
+            if ($annonce->etapesLivraison()->where('est_mini_etape', false)->exists()) {
+                LivraisonService::creerNouvelleEtapeDepuisDepotIntermediaire($annonce, $user);
+                return;
             }
-        }
 
-        // 🚚 Étape pour le livreur (retrait + dépôt OU retrait seul si destination finale)
-        $etapeLivreur = EtapeLivraison::create([
-            'annonce_id' => $annonce->id,
-            'livreur_id' => $user->id,
-            'lieu_depart' => $depart_actuel,
-            'lieu_arrivee' => $destination,
-            'statut' => 'en_cours',
-            'est_client' => false,
-        ]);
+            if (
+                $annonce->type === 'produit_livre' &&
+                ! $annonce->etapesLivraison()->exists()
+            ) {
+                $entrepot = $annonce->entrepotDepart;
+                $box = $entrepot?->boxes()->where('est_occupe', false)->first();
 
-        $entrepot = Entrepot::where('ville', $depart_actuel)->first();
-        $box = $entrepot?->boxes()->where('est_occupe', false)->first();
-        if (!$box) return response()->json(['message' => 'Aucune box disponible pour le livreur.'], 400);
+                if ($box) {
+                    $etapeDepot = EtapeLivraison::create([
+                        'annonce_id' => $annonce->id,
+                        'livreur_id' => $user->id,
+                        'lieu_depart' => $entrepot->ville,
+                        'lieu_arrivee' => $entrepot->ville,
+                        'statut' => 'en_cours',
+                        'est_client' => false,
+                        'est_commercant' => true,
+                        'est_mini_etape' => true,
+                    ]);
 
-        // retrait obligatoire
-        CodeBox::create([
-            'box_id' => $box->id,
-            'etape_livraison_id' => $etapeLivreur->id,
-            'type' => 'retrait',
-            'code_temporaire' => Str::upper(Str::random(6)),
-        ]);
-       
-        CodeBox::create([
-            'box_id' => $box->id,
-            'etape_livraison_id' => $etapeLivreur->id,
-            'type' => 'depot',
-            'code_temporaire' => Str::upper(Str::random(6)),
-        ]);
-        
+                    CodeBox::create([
+                        'box_id' => $box->id,
+                        'etape_livraison_id' => $etapeDepot->id,
+                        'type' => 'depot',
+                        'code_temporaire' => Str::random(6),
+                    ]);
 
-        $box->est_occupe = true;
-        $box->save();
+                    $box->est_occupe = true;
+                    $box->save();
+                }
+            }
+        });
 
-        $etapesCreees[] = $etapeLivreur;
-
-        return response()->json([
-            'message' => 'Annonce acceptée, étapes créées.',
-            'etapes' => $etapesCreees,
-        ]);
+        return response()->json(['message' => 'Annonce réservée avec succès.']);
     }
 
     public function reserverAnnonce(Request $request, $id)
@@ -424,6 +388,12 @@ class AnnonceController extends Controller
             return response()->json(['message' => 'Cette annonce ne peut pas être réservée.'], 400);
         }
 
+        abort_if(
+            $request->entrepot_arrivee_id == $annonce->entrepot_depart_id,
+            422,
+            "L'entrepôt d'arrivée doit être différent de l'entrepôt de départ."
+        );
+
         if ($annonce->id_client !== null || $annonce->entrepot_arrivee_id !== null) {
             return response()->json(['message' => 'Annonce déjà réservée.'], 400);
         }
@@ -433,6 +403,121 @@ class AnnonceController extends Controller
         $annonce->save();
 
         return response()->json(['message' => 'Annonce réservée avec succès.']);
+    }
+
+    public function payer(Request $request, Annonce $annonce)
+    {
+        $this->authorize('pay', $annonce);
+
+        $stripe = new \Stripe\StripeClient(config('services.stripe.secret'));
+
+        // Crée une session Checkout Stripe
+        $session = $stripe->checkout->sessions->create([
+            'payment_method_types' => ['card'],
+            'mode' => 'payment',
+            'line_items' => [[
+                'price_data' => [
+                    'currency' => 'eur',
+                    'product_data' => ['name' => 'Paiement annonce'],
+                    'unit_amount' => (int) ($annonce->prix_propose * 100),
+                ],
+                'quantity' => 1,
+            ]],
+            'success_url' => route('annonces.payer.callback', [
+                'annonce' => $annonce->id,
+                'session_id' => '{CHECKOUT_SESSION_ID}',
+            ]),
+            'cancel_url' => rtrim(env('FRONTEND_URL', ''), '/') . '/paiement/cancel',
+        ]);
+
+        return response()->json(['checkout_url' => $session->url]);
+    }
+
+    public function paiementCallback(Request $request, Annonce $annonce)
+    {
+        $sessionId = $request->query('session_id');
+
+        if (! $sessionId) {
+            return response()->json(['message' => 'Session manquante.'], 400);
+        }
+
+        $stripe = new \Stripe\StripeClient(config('services.stripe.secret'));
+        $session = $stripe->checkout->sessions->retrieve($sessionId);
+
+        if ($session && $session->payment_status === 'paid') {
+            DB::transaction(function () use ($annonce, $sessionId) {
+                // Enregistrer le paiement s'il n'existe pas déjà
+                Paiement::firstOrCreate(
+                    [
+                        'annonce_id' => $annonce->id,
+                        'utilisateur_id' => $annonce->id_client,
+                    ],
+                    [
+                        'montant' => $annonce->prix_propose,
+                        'sens' => 'debit',
+                        'type' => 'stripe',
+                        'reference' => $sessionId,
+                        'statut' => 'valide',
+                    ]
+                );
+
+                $annonce->is_paid = true;
+                $annonce->save();
+
+                if (! $annonce->id_livreur_reservant) {
+                    Log::warning('paiementCallback interrompu : livreur reservant manquant', [
+                        'annonce_id' => $annonce->id,
+                        'context' => 'paiementCallback',
+                    ]);
+                    report(new \Exception('paiementCallback interrompu : livreur reservant manquant'));
+                    return;
+                }
+
+                if ($annonce->etapesLivraison()->exists()) {
+                    Log::warning('paiementCallback interrompu : etapes de livraison déjà existantes', [
+                        'annonce_id' => $annonce->id,
+                        'context' => 'paiementCallback',
+                    ]);
+                    report(new \Exception('paiementCallback interrompu : etapes de livraison déjà existantes'));
+                    return;
+                }
+
+                $entrepot = $annonce->entrepotDepart;
+                $box = $entrepot?->boxes()->where('est_occupe', false)->first();
+                if (! $box) {
+                    Log::warning('paiementCallback interrompu : aucune box disponible', [
+                        'annonce_id' => $annonce->id,
+                        'context' => 'paiementCallback',
+                    ]);
+                    report(new \Exception('paiementCallback interrompu : aucune box disponible'));
+                    return;
+                }
+
+                $etapeDepot = EtapeLivraison::create([
+                    'annonce_id' => $annonce->id,
+                    'livreur_id' => $annonce->id_livreur_reservant,
+                    'lieu_depart' => $entrepot->ville,
+                    'lieu_arrivee' => $entrepot->ville,
+                    'statut' => 'en_cours',
+                    'est_client' => $annonce->type === 'livraison_client',
+                    'est_commercant' => $annonce->type === 'produit_livre',
+                    'est_mini_etape' => true,
+                ]);
+
+                CodeBox::create([
+                    'box_id' => $box->id,
+                    'etape_livraison_id' => $etapeDepot->id,
+                    'type' => 'depot',
+                    'code_temporaire' => Str::random(6),
+                ]);
+
+                $box->est_occupe = true;
+                $box->save();
+
+            });
+        }
+
+        return response()->json(['message' => 'Paiement enregistré avec succès.']);
     }
 
 }

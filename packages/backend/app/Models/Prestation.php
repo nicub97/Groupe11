@@ -18,6 +18,7 @@ class Prestation extends Model
         'duree_estimee',
         'tarif',
         'statut',
+        'is_paid',
     ];
 
     public function prestataire()
