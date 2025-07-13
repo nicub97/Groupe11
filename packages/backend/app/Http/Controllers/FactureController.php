@@ -3,6 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Facture;
+use App\Models\EtapeLivraison;
+use App\Models\Annonce;
+use App\Services\FactureService;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -53,5 +57,91 @@ class FactureController extends Controller
         }
 
         return response()->json($facture);
+    }
+
+    public function genererPourLivreur($id)
+    {
+        $user = Auth::user();
+        $etape = EtapeLivraison::with('annonce')->findOrFail($id);
+
+        if ($etape->livreur_id !== $user->id || $etape->statut !== 'terminee') {
+            return response()->json(['message' => 'Non autorisé.'], 403);
+        }
+
+        $chemin = "factures/livreurs/{$etape->id}.pdf";
+
+        $facture = FactureService::generer(
+            $user,
+            'factures.livreur',
+            [
+                'factureNumber' => $etape->id,
+                'date' => now()->format('d/m/Y'),
+                'livreur' => $user,
+                'etape' => $etape,
+                'montant' => (float) $etape->annonce->prix_propose,
+            ],
+            $chemin,
+            (float) $etape->annonce->prix_propose
+        );
+
+        return response()->json(['url' => Storage::disk('public')->url($chemin)]);
+    }
+
+    public function genererPourCommercant($id)
+    {
+        $user = Auth::user();
+        $annonce = Annonce::findOrFail($id);
+
+        if ($annonce->id_commercant !== $user->id || ! $annonce->is_paid) {
+            return response()->json(['message' => 'Non autorisé.'], 403);
+        }
+
+        $chemin = "factures/commercants/{$annonce->id}.pdf";
+
+        FactureService::generer(
+            $user,
+            'factures.annonce',
+            [
+                'factureNumber' => $annonce->id,
+                'date' => now()->format('d/m/Y'),
+                'utilisateur' => $user,
+                'annonce' => $annonce,
+                'montant' => (float) $annonce->prix_propose,
+                'role' => 'commercant',
+            ],
+            $chemin,
+            (float) $annonce->prix_propose
+        );
+
+        return response()->json(['url' => Storage::disk('public')->url($chemin)]);
+    }
+
+    public function genererPourClient($id)
+    {
+        $user = Auth::user();
+        $annonce = Annonce::findOrFail($id);
+
+        if ($annonce->id_client !== $user->id || ! $annonce->is_paid) {
+            return response()->json(['message' => 'Non autorisé.'], 403);
+        }
+
+        $chemin = "factures/clients/{$annonce->id}.pdf";
+
+        FactureService::generer(
+            $user,
+            'factures.annonce',
+            [
+                'factureNumber' => $annonce->id,
+                'date' => now()->format('d/m/Y'),
+                'utilisateur' => $user,
+                'annonce' => $annonce,
+                'montant' => (float) $annonce->prix_propose,
+                'role' => 'client',
+            ],
+            $chemin,
+            (float) $annonce->prix_propose
+        );
+
+        return response()->json(['url' => Storage::disk('public')->url($chemin)]);
     }
 }
