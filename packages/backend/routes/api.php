@@ -193,6 +193,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Factures
     Route::get('/factures', [FactureController::class, 'index']);
     Route::get('/factures/{id}', [FactureController::class, 'show']);
+    Route::post('/factures/livreur/etape/{id}', [FactureController::class, 'genererPourLivreur']);
+    Route::post('/factures/commercant/annonce/{id}', [FactureController::class, 'genererPourCommercant']);
+    Route::post('/factures/client/annonce/{id}', [FactureController::class, 'genererPourClient']);
 
     // Évaluations
     Route::get('/evaluations', [EvaluationController::class, 'index']);
