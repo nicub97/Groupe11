@@ -6,6 +6,7 @@ import Register from "../pages/Register";
 import RegisterCommercant from "../pages/RegisterCommercant";
 import RegisterLivreur from "../pages/RegisterLivreur";
 import RegisterPrestataire from "../pages/RegisterPrestataire";
+import DevenirPrestataire from "../pages/DevenirPrestataire";
 import Profil from "../pages/Profil";
 import EditProfil from "../pages/EditProfil";
 import ChangePassword from "../pages/ChangePassword";
@@ -55,6 +56,7 @@ export default function AppRouter() {
             path="/register-prestataire"
             element={<RegisterPrestataire />}
           />
+          <Route path="/devenir-prestataire" element={<DevenirPrestataire />} />
           <Route
             path="/annonces-public"
             element={
