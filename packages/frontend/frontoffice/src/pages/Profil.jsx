@@ -13,7 +13,7 @@ export default function Profil() {
       await api.delete(`/utilisateurs/${user.id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      logout();
+      await logout();
     } catch {
       setMessage("Erreur lors de la suppression de compte.");
     }
