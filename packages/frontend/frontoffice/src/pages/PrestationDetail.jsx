@@ -78,10 +78,35 @@ export default function PrestationDetail() {
   const isClient = user?.role === "client";
   const isPrestataire = user?.role === "prestataire";
 
+  const formatDate = (d) => {
+    if (!d) return "-";
+    const date = new Date(d);
+    const day = date.toLocaleDateString("fr-FR", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+    const time = date
+      .toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })
+      .replace(":", "h");
+    return `${day} à ${time}`;
+  };
+
+  const formatDuration = (mins) => {
+    if (!mins) return "-";
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    if (h && m) return `${h}h${m}`;
+    if (h) return `${h}h`;
+    return `${m} min`;
+  };
+
   return (
-    <div>
+    <div className="max-w-4xl mx-auto mt-8">
       <h2 className="text-xl font-bold mb-4">Détail de la prestation</h2>
       <p className="mb-2">{prestation.description}</p>
+      <p className="mb-2">Date : {formatDate(prestation.date_heure)}</p>
+      <p className="mb-2">Durée estimée : {formatDuration(prestation.duree_estimee)}</p>
       <div className="mb-2">
         Statut : <PrestationStatusBadge status={prestation.statut} />
         {prestation.intervention && prestation.intervention.note !== null && (
