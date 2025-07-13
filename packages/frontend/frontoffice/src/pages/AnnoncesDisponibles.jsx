@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 export default function AnnoncesDisponibles() {
-  const { user } = useAuth();
+  const { token, user } = useAuth();
   const [annoncesDisponibles, setAnnoncesDisponibles] = useState([]);
   const [livreur, setLivreur] = useState(null);
   const [error, setError] = useState("");
@@ -18,7 +18,7 @@ export default function AnnoncesDisponibles() {
   useEffect(() => {
     if (!user) return;
     api
-      .get(`/livreurs/${user.id}`)
+      .get(`/livreurs/${user.id}`, { headers: { Authorization: `Bearer ${token}` } })
       .then((res) => {
         setLivreur(res.data);
         if (res.data.statut === "valide") {
@@ -27,11 +27,13 @@ export default function AnnoncesDisponibles() {
       })
       .catch(() => setLivreur(null));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+  }, [user, token]);
 
   const fetchAnnonces = async () => {
     try {
-      const res = await api.get("/annonces-disponibles");
+      const res = await api.get("/annonces-disponibles", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setAnnoncesDisponibles(res.data.annonces_disponibles);
     } catch (err) {
       console.error("Erreur API :", err);
@@ -43,7 +45,9 @@ export default function AnnoncesDisponibles() {
     if (!window.confirm("Accepter cette annonce ?")) return;
 
     try {
-      await api.post(`/annonces/${annonceId}/accepter`);
+      await api.post(`/annonces/${annonceId}/accepter`, null, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       alert("Étape de livraison créée. Vous pouvez la suivre dans 'Mes étapes'.");
       navigate("/mes-etapes");
     } catch (err) {

@@ -5,7 +5,7 @@ import api from "../services/api";
 const STORAGE_BASE_URL = api.defaults.baseURL.replace("/api", "");
 
 export default function ProfilLivreur() {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const [livreur, setLivreur] = useState(null);
   const [files, setFiles] = useState({ identite: null, permis: null });
   const [uploading, setUploading] = useState(false);
@@ -14,10 +14,10 @@ export default function ProfilLivreur() {
   useEffect(() => {
     if (!user) return;
     api
-      .get(`/livreurs/${user.id}`)
+      .get(`/livreurs/${user.id}`, { headers: { Authorization: `Bearer ${token}` } })
       .then((res) => setLivreur(res.data))
       .catch(() => setError("Erreur de chargement"));
-  }, [user]);
+  }, [user, token]);
 
   const statutLabel =
     livreur?.statut === "valide"
@@ -35,6 +35,7 @@ export default function ProfilLivreur() {
     try {
       const res = await api.post("/livreurs/justificatifs", data, {
         headers: {
+          Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
         },
       });
@@ -53,7 +54,9 @@ export default function ProfilLivreur() {
   const handleDelete = async (type) => {
     if (!window.confirm("Supprimer ce document ?")) return;
     try {
-      await api.delete(`/livreurs/justificatifs/${type}`);
+      await api.delete(`/livreurs/justificatifs/${type}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setLivreur((prev) => ({
         ...prev,
         [`${type}_document`]: null,

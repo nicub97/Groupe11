@@ -3,9 +3,9 @@ import PropTypes from "prop-types";
 import { useAuth } from "../context/AuthContext";
 
 export default function GuestRoute({ children }) {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
 
-  return user ? <Navigate to="/" replace /> : children;
+  return user || token ? <Navigate to="/" replace /> : children;
 }
 
 GuestRoute.propTypes = {

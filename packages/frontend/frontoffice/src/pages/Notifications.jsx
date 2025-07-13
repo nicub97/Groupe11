@@ -3,13 +3,15 @@ import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
 
 export default function Notifications() {
-  const { user } = useAuth();
+  const { token, user } = useAuth();
   const [notifications, setNotifications] = useState([]);
   const [verificationSent, setVerificationSent] = useState(false);
 
   const fetchNotifications = async () => {
     try {
-      const res = await api.get("/notifications");
+      const res = await api.get("/notifications", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setNotifications(res.data);
     } catch (err) {
       console.error("Erreur lors du chargement des notifications :", err);
@@ -18,7 +20,9 @@ export default function Notifications() {
 
   const handleResendVerification = async () => {
     try {
-      await api.post("/email/verification-notification");
+      await api.post("/email/verification-notification", null, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setVerificationSent(true);
     } catch (err) {
       console.error("Erreur lors de l'envoi de l'email :", err);
@@ -28,7 +32,7 @@ export default function Notifications() {
 
   useEffect(() => {
     fetchNotifications();
-  }, []);
+  }, [token]);
 
   return (
     <div className="max-w-3xl mx-auto mt-10 px-4">

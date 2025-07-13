@@ -4,7 +4,7 @@ import api from "../services/api";
 import { useNavigate, Link } from "react-router-dom";
 
 export default function ChangePassword() {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const navigate = useNavigate();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -22,6 +22,8 @@ export default function ChangePassword() {
         current_password: currentPassword,
         password: newPassword,
         password_confirmation: confirmPassword,
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
       });
 
       setMessage("✅ Mot de passe mis à jour avec succès.");

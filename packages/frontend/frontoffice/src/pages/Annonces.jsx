@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function Annonces() {
   const [annonces, setAnnonces] = useState([]);
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const navigate = useNavigate();
 
   const [searchText, setSearchText] = useState("");
@@ -24,6 +24,7 @@ export default function Annonces() {
     const fetchAnnonces = async () => {
       try {
         const res = await api.get("/annonces", {
+          headers: { Authorization: `Bearer ${token}` },
         });
 
         // Filtrer uniquement les annonces de type "produit_livre" qui ne sont
@@ -40,7 +41,7 @@ export default function Annonces() {
     };
 
     fetchAnnonces();
-  }, []);
+  }, [token]);
 
   const handleReset = () => {
     setSearchText("");

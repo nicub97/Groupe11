@@ -5,7 +5,7 @@ import api from "../services/api";
 import FactureCard from "../components/FactureCard";
 
 export default function Factures() {
-  useAuth();
+  const { token } = useAuth();
   const [factures, setFactures] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -14,6 +14,7 @@ export default function Factures() {
     const fetchFactures = async () => {
       try {
         const res = await api.get("/factures-prestataire", {
+          headers: { Authorization: `Bearer ${token}` },
         });
         setFactures(res.data);
       } catch (err) {
@@ -24,7 +25,7 @@ export default function Factures() {
       }
     };
     fetchFactures();
-  }, []);
+  }, [token]);
 
   if (loading) return <p>Chargement...</p>;
   if (error) return <p className="text-red-600">{error}</p>;

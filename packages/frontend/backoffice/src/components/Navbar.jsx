@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useEffect, useRef } from 'react';
 
 export default function Navbar() {
-  const { user, logout } = useAuth();
+  const { token, logout } = useAuth();
   const navigate = useNavigate();
   const navRef = useRef(null);
 
@@ -37,7 +37,7 @@ export default function Navbar() {
       </div>
 
       <div className="flex gap-4 items-center">
-        {!user ? (
+        {!token ? (
           <Link
             to="/login"
             className="admin-btn-primary"
