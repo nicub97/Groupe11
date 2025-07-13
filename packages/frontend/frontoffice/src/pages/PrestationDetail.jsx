@@ -10,7 +10,7 @@ import ActionButtons from "../components/ActionButtons";
 export default function PrestationDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { token, user } = useAuth();
   const [prestation, setPrestation] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -19,7 +19,10 @@ export default function PrestationDetail() {
     setLoading(true);
     setError("");
     try {
-      const res = await api.get(`/prestations/${id}`);
+      const storedToken = localStorage.getItem("token");
+      const res = await api.get(`/prestations/${id}`, {
+        headers: { Authorization: `Bearer ${storedToken}` },
+      });
       setPrestation(res.data);
       console.log(res.data); // suivi de la prestation reçue
     } catch (err) {
@@ -45,6 +48,7 @@ export default function PrestationDetail() {
       localStorage.setItem("paymentContext", "prestation_reserver");
       localStorage.setItem("prestationId", id);
       const res = await api.post(`/prestations/${id}/payer`, null, {
+        headers: { Authorization: `Bearer ${token}` },
       });
       window.location.href = res.data.checkout_url;
     } catch (err) {
@@ -58,7 +62,7 @@ export default function PrestationDetail() {
       await api.post(
         "/interventions",
         { prestation_id: id, statut_final: "effectuée" },
-        
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       fetchPrestation();
     } catch (err) {

@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 
 export default function MesEtapes() {
-  const { user } = useAuth();
+  const { token, user } = useAuth();
   const livreur = user?.livreur;
   const navigate = useNavigate();
   const [etapes, setEtapes] = useState([]);
@@ -12,7 +12,9 @@ export default function MesEtapes() {
 
   const fetchEtapes = async () => {
     try {
-      const res = await api.get("/mes-etapes");
+      const res = await api.get("/mes-etapes", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       const toutes = res.data;
       const livreurEtapes = toutes.filter(
@@ -28,7 +30,7 @@ export default function MesEtapes() {
 
   useEffect(() => {
     fetchEtapes();
-  }, []);
+  }, [token]);
 
   if (livreur && livreur.statut !== "valide") {
     return (

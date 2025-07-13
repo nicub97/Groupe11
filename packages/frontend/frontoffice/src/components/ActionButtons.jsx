@@ -5,7 +5,7 @@ import { useAuth } from "../context/AuthContext";
 
 // Boutons d'actions pour le prestataire selon le statut de la prestation
 export default function ActionButtons({ prestationId, statut, onChange }) {
-  useAuth();
+  const { token } = useAuth();
   const [loading, setLoading] = useState(false);
 
   const changerStatut = async (nouveauStatut) => {
@@ -14,6 +14,7 @@ export default function ActionButtons({ prestationId, statut, onChange }) {
       await api.patch(
         `/prestations/${prestationId}/statut`,
         { statut: nouveauStatut },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       if (onChange) onChange();
     } catch (err) {

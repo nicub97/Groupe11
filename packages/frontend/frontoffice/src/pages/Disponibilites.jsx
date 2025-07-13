@@ -5,7 +5,7 @@ import api from "../services/api";
 import PlanningForm from "../components/PlanningForm";
 
 export default function Disponibilites() {
-  const { user } = useAuth();
+  const { token, user } = useAuth();
 
   const [slots, setSlots] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -19,7 +19,9 @@ export default function Disponibilites() {
     setLoading(true);
     setError("");
     try {
-      const res = await api.get("/plannings");
+      const res = await api.get("/plannings", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setSlots(res.data);
     } catch (err) {
       setError("Erreur lors du chargement des créneaux.");
@@ -31,16 +33,18 @@ export default function Disponibilites() {
   useEffect(() => {
     if (!user) return;
     api
-      .get(`/prestataires/${user.id}`)
+      .get(`/prestataires/${user.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
       .then((res) => setPrestataire(res.data))
       .catch(() => setPrestataire(null))
       .finally(() => setLoadingPrestataire(false));
-  }, [user]);
+  }, [user, token]);
 
   useEffect(() => {
     fetchSlots();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [token]);
 
   const handleAddSlot = async ({ date, heure_debut, heure_fin }) => {
     // vérifie localement les chevauchements de créneau
@@ -58,7 +62,8 @@ export default function Disponibilites() {
     try {
       await api.post(
         "/plannings",
-        { date_disponible: date, heure_debut, heure_fin }
+        { date_disponible: date, heure_debut, heure_fin },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       setMessage("Créneau ajouté avec succès.");
       fetchSlots();
@@ -72,7 +77,9 @@ export default function Disponibilites() {
   const handleDelete = async (id) => {
     if (!window.confirm("Supprimer ce créneau ?")) return;
     try {
-      await api.delete(`/plannings/${id}`);
+      await api.delete(`/plannings/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setSlots((prev) => prev.filter((s) => s.id !== id));
     } catch (err) {
       alert("Erreur lors de la suppression.");

@@ -6,7 +6,7 @@ import { useAuth } from "../context/AuthContext";
 export default function EditMesAnnonce() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, token } = useAuth();
 
   const [annonce, setAnnonce] = useState(null);
   const [form, setForm] = useState({ titre: "", description: "", prix_propose: "", lieu_depart: "", lieu_arrivee: "", photo: "" });
@@ -19,6 +19,7 @@ export default function EditMesAnnonce() {
   const fetchAnnonce = async () => {
     try {
       const res = await api.get(`/annonces/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
       const data = res.data;
       setAnnonce(data);
@@ -46,6 +47,7 @@ export default function EditMesAnnonce() {
     e.preventDefault();
     try {
       await api.patch(`/annonces/${id}`, form, {
+        headers: { Authorization: `Bearer ${token}` },
       });
       alert("Annonce mise à jour");
       fetchAnnonce();
@@ -59,6 +61,7 @@ export default function EditMesAnnonce() {
     if (!window.confirm("Confirmer la suppression de cette annonce ?")) return;
     try {
       await api.delete(`/annonces/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
       alert("Annonce supprimée.");
       navigate("/mes-annonces");

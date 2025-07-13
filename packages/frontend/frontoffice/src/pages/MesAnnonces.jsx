@@ -5,7 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import { Link } from "react-router-dom";
 
 export default function MesAnnonces() {
-  useAuth();
+  const { token } = useAuth();
   const [annonces, setAnnonces] = useState([]);
   const [payLoadingId, setPayLoadingId] = useState(null);
 
@@ -13,6 +13,7 @@ export default function MesAnnonces() {
     const fetchAnnonces = async () => {
       try {
         const res = await api.get("/mes-annonces", {
+          headers: { Authorization: `Bearer ${token}` },
         });
         setAnnonces(res.data);
       } catch (err) {
@@ -21,12 +22,13 @@ export default function MesAnnonces() {
     };
 
     fetchAnnonces();
-  }, []);
+  }, [token]);
 
   const handleDelete = async (id) => {
     if (!window.confirm("Confirmez-vous l'annulation de cette annonce ?")) return;
     try {
       await api.delete(`/annonces/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
       setAnnonces((prev) => prev.filter((a) => a.id !== id));
     } catch (err) {
@@ -42,7 +44,7 @@ export default function MesAnnonces() {
       localStorage.setItem("payerAnnonceId", annonce.id);
       const { checkout_url } = await createCheckoutSession(
         { annonce_id: annonce.id, type: annonce.type },
-        undefined,
+        token,
         "payer"
       );
       window.location.href = checkout_url;

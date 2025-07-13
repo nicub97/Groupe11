@@ -5,7 +5,7 @@ import api from "../services/api";
 import PrestationCard from "../components/PrestationCard";
 
 export default function Prestations() {
-  const { user, updateUser } = useAuth();
+  const { token, user, updateUser } = useAuth();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -17,6 +17,7 @@ export default function Prestations() {
     const fetchData = async () => {
       try {
         const res = await api.get("/prestations", {
+          headers: { Authorization: `Bearer ${token}` },
         });
         setData(res.data);
       } catch (err) {
@@ -26,7 +27,7 @@ export default function Prestations() {
       }
     };
     fetchData();
-  }, []);
+  }, [token]);
 
   // Récupération des infos détaillées de l'utilisateur
   useEffect(() => {
@@ -42,6 +43,7 @@ export default function Prestations() {
         if (!endpoint) return;
 
         const res = await api.get(endpoint, {
+          headers: { Authorization: `Bearer ${token}` },
         });
 
         if (user.role === "client") {
@@ -57,8 +59,8 @@ export default function Prestations() {
       }
     };
 
-    if (user) fetchUser();
-  }, [user, updateUser]);
+    if (token && user) fetchUser();
+  }, [token, user, updateUser]);
 
   if (loading || loadingUser) return <p>Chargement...</p>;
   if (error) return <p>Erreur lors du chargement.</p>;

@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 
 export default function CreerAnnonce() {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const navigate = useNavigate();
   // Déterminer le type selon le rôle
   let typeAnnonce = null;
@@ -29,6 +29,7 @@ export default function CreerAnnonce() {
     const fetchEntrepots = async () => {
       try {
         const res = await api.get("/entrepots", {
+          headers: { Authorization: `Bearer ${token}` },
         });
         setEntrepots(res.data);
       } catch (err) {
@@ -36,7 +37,7 @@ export default function CreerAnnonce() {
       }
     };
     fetchEntrepots();
-  }, []);
+  }, [token]);
 
 
   if (!typeAnnonce) {
@@ -86,6 +87,7 @@ export default function CreerAnnonce() {
       if (photoFile) data.append("photo", photoFile);
       await api.post("/annonces", data, {
         headers: {
+          Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
         },
       });

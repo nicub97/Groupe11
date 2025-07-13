@@ -6,7 +6,7 @@ import { useAuth } from "../context/AuthContext";
 
 export default function ReserverAnnonce() {
   const { annonceId } = useParams();
-  const { user } = useAuth();
+  const { token, user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -24,6 +24,7 @@ export default function ReserverAnnonce() {
     const fetchAnnonce = async () => {
       try {
         const res = await api.get(`/annonces/${annonceId}`, {
+          headers: { Authorization: `Bearer ${token}` },
         });
         setAnnonce(res.data);
       } catch (err) {
@@ -34,6 +35,7 @@ export default function ReserverAnnonce() {
     const fetchEntrepots = async () => {
       try {
         const res = await api.get("/entrepots", {
+          headers: { Authorization: `Bearer ${token}` },
         });
         setEntrepots(res.data);
       } catch (err) {
@@ -43,7 +45,7 @@ export default function ReserverAnnonce() {
 
     fetchAnnonce();
     fetchEntrepots();
-  }, [annonceId, user, navigate]);
+  }, [annonceId, token, user, navigate]);
 
   useEffect(() => {
     if (searchParams.get("cancel") === "1") {
@@ -63,6 +65,7 @@ export default function ReserverAnnonce() {
     setMessage("");
     try {
       const res = await api.get(`/annonces/${annonceId}`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
       if (res.data.id_client !== null || res.data.entrepot_arrivee_id !== null) {
         setMessage("Cette annonce a déjà été réservée par un autre client.");
@@ -74,7 +77,7 @@ export default function ReserverAnnonce() {
       localStorage.setItem("reservationAnnonceId", annonceId);
       const { checkout_url } = await createCheckoutSession(
         { annonce_id: Number(annonceId), type: annonce.type },
-        
+        token,
         "reserver",
       );
       window.location.href = checkout_url;
