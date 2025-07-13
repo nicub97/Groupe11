@@ -11,10 +11,8 @@ export default function AnnoncesPublic() {
     const fetchAnnonces = async () => {
       try {
         const res = await api.get("/public/annonces");
-        const annoncesFiltrees = res.data.filter(
-          (a) => a.type === "produit_livre"
-        );
-        setAnnonces(annoncesFiltrees);
+        console.log(res.data);
+        setAnnonces(res.data.data);
       } catch (err) {
         console.error("Erreur chargement annonces:", err);
       } finally {
