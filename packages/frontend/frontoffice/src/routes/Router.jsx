@@ -35,6 +35,11 @@ import ValidationCodeBox from "../pages/ValidationCodeBox";
 import SuiviAnnonce from "../pages/SuiviAnnonce";
 import ReserverAnnonce from "../pages/ReserverAnnonce";
 import MesPaiements from "../pages/client/MesPaiements";
+import GuestRoute from "./GuestRoute";
+import AnnoncesPublic from "../pages/AnnoncesPublic";
+import AnnonceDetailPublic from "../pages/AnnonceDetailPublic";
+import CataloguePublic from "../pages/CataloguePublic";
+import PrestationDetailPublic from "../pages/PrestationDetailPublic";
 
 export default function AppRouter() {
   return (
@@ -49,6 +54,38 @@ export default function AppRouter() {
           <Route
             path="/register-prestataire"
             element={<RegisterPrestataire />}
+          />
+          <Route
+            path="/annonces-public"
+            element={
+              <GuestRoute>
+                <AnnoncesPublic />
+              </GuestRoute>
+            }
+          />
+          <Route
+            path="/annonces-public/:id"
+            element={
+              <GuestRoute>
+                <AnnonceDetailPublic />
+              </GuestRoute>
+            }
+          />
+          <Route
+            path="/catalogue-public"
+            element={
+              <GuestRoute>
+                <CataloguePublic />
+              </GuestRoute>
+            }
+          />
+          <Route
+            path="/catalogue-public/:id"
+            element={
+              <GuestRoute>
+                <PrestationDetailPublic />
+              </GuestRoute>
+            }
           />
           <Route
             path="/annonces"
