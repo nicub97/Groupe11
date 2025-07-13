@@ -23,7 +23,9 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = async (identifiant, password) => {
-    await api.get("/sanctum/csrf-cookie");
+    await api.get("/sanctum/csrf-cookie", {
+      baseURL: api.defaults.baseURL.replace("/api", ""),
+    });
     const res = await api.post("/login", { identifiant, password });
 
     const user = res.data.user;
