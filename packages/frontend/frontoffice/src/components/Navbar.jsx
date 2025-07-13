@@ -130,6 +130,14 @@ export default function Navbar() {
                 </Link>
               </li>
               <li>
+                  <Link
+                    to="/Devenir-livreur"
+                    className="block hover:text-lime-300"
+                  >
+                    Devenir Livreur
+                  </Link>
+              </li>
+              <li>
                 <Link
                   to="/devenir-prestataire"
                   className="hover:text-lime-300 transition"
@@ -305,8 +313,16 @@ export default function Navbar() {
                 </li>
                 <li>
                   <Link
-                    to="/devenir-prestataire"
+                    to="/Devenir-livreur"
                     className="block hover:text-lime-300"
+                  >
+                    Devenir Livreur
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/devenir-prestataire"
+                    className="hover:text-lime-300 transition"
                   >
                     Devenir prestataire
                   </Link>
