@@ -26,6 +26,19 @@ export function AuthProvider({ children }) {
     localStorage.removeItem("user");
   };
 
+  const completeTutorial = async () => {
+    try {
+      await api.patch(
+        "/user/tutorial",
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      updateUser({ tutorial_done: true });
+    } catch (err) {
+      console.error("Erreur validation tutoriel:", err);
+    }
+  };
+
   // 🔄 mise à jour du user après modification de profil
   const updateUser = (data) => {
     const updated = { ...user, ...data };
@@ -34,7 +47,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, updateUser }}>
+    <AuthContext.Provider value={{ user, token, login, logout, updateUser, completeTutorial }}>
       {children}
     </AuthContext.Provider>
   );

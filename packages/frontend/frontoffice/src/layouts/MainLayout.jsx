@@ -1,11 +1,12 @@
 import Navbar from "../components/Navbar";
+import Tutorial from "../components/Tutorial";
 
 export default function MainLayout({ children }) {
   return (
     <div className="bg-gray-100 min-h-screen flex flex-col">
       <Navbar />
 
-      {/* Tutoriel d'accueil supprimé (ancienne mention des services) */}
+      <Tutorial />
 
       <main className="flex-grow container mx-auto px-6 py-8 bg-white rounded shadow-md mt-4">
         {children}

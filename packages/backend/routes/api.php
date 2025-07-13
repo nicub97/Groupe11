@@ -156,6 +156,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/utilisateurs/{id}', [UtilisateurController::class, 'destroy']);
 
 
+    Route::patch('/user/tutorial', [AuthController::class, 'completeTutorial']);
     // Annonces
     Route::get('/annonces', [AnnonceController::class, 'index']);
     Route::get('/annonces/{id}', [AnnonceController::class, 'show']);

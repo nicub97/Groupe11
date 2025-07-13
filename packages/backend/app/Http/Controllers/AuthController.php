@@ -79,6 +79,7 @@ class AuthController extends Controller
                 'pays' => $user->pays,
                 'telephone' => $user->telephone,
                 'adresse_postale' => $user->adresse_postale,
+                'tutorial_done' => $user->tutorial_done,
             ],
         ]);
     }
@@ -203,6 +204,7 @@ class AuthController extends Controller
                 'email' => $utilisateur->email,
                 'identifiant' => $utilisateur->identifiant,
                 'role' => $utilisateur->role,
+                'tutorial_done' => $utilisateur->tutorial_done,
             ]
         ], 201);
     }
@@ -231,5 +233,14 @@ class AuthController extends Controller
         ], 201);
     }
 
+
+    public function completeTutorial(Request $request)
+    {
+        $user = $request->user();
+        $user->tutorial_done = true;
+        $user->save();
+
+        return response()->json(["tutorial_done" => true]);
+    }
 
 }
