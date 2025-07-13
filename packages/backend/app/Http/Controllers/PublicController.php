@@ -13,6 +13,7 @@ class PublicController extends Controller
     {
         $annonces = Annonce::with(['entrepotDepart', 'entrepotArrivee'])
             ->where('type', 'produit_livre')
+            ->whereNull('id_client')
             ->orderBy('created_at', 'desc')
             ->get();
 

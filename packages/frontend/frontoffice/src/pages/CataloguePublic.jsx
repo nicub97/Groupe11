@@ -13,7 +13,7 @@ export default function CataloguePublic() {
     const fetchData = async () => {
       try {
         const res = await api.get("/public/prestations");
-        setData(res.data);
+        setData(res.data.data);
       } catch (err) {
         setError(err);
       } finally {

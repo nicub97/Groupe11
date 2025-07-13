@@ -7,14 +7,16 @@ export default function AnnonceDetailPublic() {
   const navigate = useNavigate();
   const [annonce, setAnnonce] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchAnnonce = async () => {
       try {
         const res = await api.get(`/public/annonces/${id}`);
-        setAnnonce(res.data);
+        setAnnonce(res.data.data);
       } catch (err) {
         console.error("Erreur chargement annonce:", err);
+        setError(err);
       } finally {
         setLoading(false);
       }
@@ -23,6 +25,7 @@ export default function AnnonceDetailPublic() {
   }, [id]);
 
   if (loading) return <p className="mt-10 text-center">Chargement...</p>;
+  if (error) return <p className="mt-10 text-center">Erreur lors du chargement.</p>;
   if (!annonce) return <p className="mt-10 text-center">Annonce introuvable</p>;
 
   return (
