@@ -5,7 +5,7 @@ import api from "../services/api";
 const STORAGE_BASE_URL = api.defaults.baseURL.replace("/api", "");
 
 export default function ProfilPrestataire() {
-  const { user, token } = useAuth();
+  const { user } = useAuth();
   const [prestataire, setPrestataire] = useState(null);
   const [evaluations, setEvaluations] = useState([]);
   const [justificatifs, setJustificatifs] = useState([]);
@@ -17,15 +17,15 @@ export default function ProfilPrestataire() {
   useEffect(() => {
     if (!user) return;
     api
-      .get(`/prestataires/${user.id}`, { headers: { Authorization: `Bearer ${token}` } })
+      .get(`/prestataires/${user.id}`)
       .then((res) => setPrestataire(res.data))
       .catch(() => setError("Erreur de chargement"));
-  }, [user, token]);
+  }, [user]);
 
   useEffect(() => {
-    if (!token || !user) return;
+    if (!user) return;
     api
-      .get("/prestations", { headers: { Authorization: `Bearer ${token}` } })
+      .get("/prestations")
       .then((res) => {
         const evals = res.data.filter(
           (p) =>
@@ -37,17 +37,14 @@ export default function ProfilPrestataire() {
         setEvaluations(evals);
       })
       .catch(() => {});
-  }, [token, user, prestataire]);
+  }, [user, prestataire]);
 
   useEffect(() => {
-    if (!token) return;
     api
-      .get("/prestataires/justificatifs", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      .get("/prestataires/justificatifs")
       .then((res) => setJustificatifs(res.data))
       .catch(() => setUploadError("Erreur chargement des justificatifs"));
-  }, [token]);
+  }, []);
 
   const handleUpload = async () => {
     if (!newFile) return;
@@ -57,18 +54,15 @@ export default function ProfilPrestataire() {
     try {
       await api.post("/prestataires/justificatifs", data, {
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
         },
       });
 
       const list = await api.get("/prestataires/justificatifs", {
-        headers: { Authorization: `Bearer ${token}` },
       });
       setJustificatifs(list.data);
 
       const profil = await api.get(`/prestataires/${user.id}`, {
-        headers: { Authorization: `Bearer ${token}` },
       });
       setPrestataire(profil.data);
       alert(

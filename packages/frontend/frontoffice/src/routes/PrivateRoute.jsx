@@ -3,10 +3,10 @@ import { useAuth } from "../context/AuthContext";
 import PropTypes from "prop-types";
 
 export default function PrivateRoute({ children }) {
-  const { token } = useAuth();
+  const { user } = useAuth();
 
-  // Redirection vers /login si pas de token
-  return token ? children : <Navigate to="/login" replace />;
+  // Redirection vers /login si pas connecté
+  return user ? children : <Navigate to="/login" replace />;
 }
 
 PrivateRoute.propTypes = {

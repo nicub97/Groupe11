@@ -8,7 +8,8 @@ export default function Catalogue() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { token } = useAuth();
+  useAuth();
+  const {} = useAuth();
   const [searchText, setSearchText] = useState("");
   const [minPrice, setMinPrice] = useState(null);
   const [maxPrice, setMaxPrice] = useState(null);
@@ -19,7 +20,6 @@ export default function Catalogue() {
     const fetchData = async () => {
       try {
         const res = await api.get("/prestations/catalogue", {
-          headers: { Authorization: `Bearer ${token}` },
         });
         setData(res.data);
       } catch (err) {
@@ -30,7 +30,7 @@ export default function Catalogue() {
     };
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
+  }, []);
 
   if (loading) return <p>Chargement...</p>;
   if (error) return <p>Erreur lors du chargement.</p>;

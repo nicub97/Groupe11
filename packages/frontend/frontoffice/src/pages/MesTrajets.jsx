@@ -3,7 +3,7 @@ import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
 
 export default function MesTrajets() {
-  const { token, user } = useAuth();
+  const { user } = useAuth();
   const [trajets, setTrajets] = useState([]);
   const [livreur, setLivreur] = useState(null);
   const [entrepots, setEntrepots] = useState([]);
@@ -18,7 +18,7 @@ export default function MesTrajets() {
     fetchEntrepots();
     if (user) {
       api
-        .get(`/livreurs/${user.id}`, { headers: { Authorization: `Bearer ${token}` } })
+        .get(`/livreurs/${user.id}`)
         .then((res) => {
           setLivreur(res.data);
           if (res.data.statut === "valide") {
@@ -31,9 +31,7 @@ export default function MesTrajets() {
 
   const fetchEntrepots = async () => {
     try {
-      const res = await api.get("/entrepots", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await api.get("/entrepots");
       setEntrepots(res.data);
     } catch (err) {
       console.error("Erreur chargement entrepôts:", err);
@@ -42,9 +40,7 @@ export default function MesTrajets() {
 
   const fetchTrajets = async () => {
     try {
-      const res = await api.get("/mes-trajets", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await api.get("/mes-trajets");
       setTrajets(res.data);
     } catch (err) {
       console.error("Erreur trajets:", err);
@@ -64,9 +60,7 @@ export default function MesTrajets() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await api.post("/mes-trajets", form, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.post("/mes-trajets", form);
       setForm({
         entrepot_depart_id: "",
         entrepot_arrivee_id: "",
@@ -83,9 +77,7 @@ export default function MesTrajets() {
   const handleDelete = async (id) => {
     if (!window.confirm("Supprimer ce trajet ?")) return;
     try {
-      await api.delete(`/mes-trajets/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.delete(`/mes-trajets/${id}`);
       fetchTrajets();
     } catch (err) {
       console.error("Erreur suppression:", err);

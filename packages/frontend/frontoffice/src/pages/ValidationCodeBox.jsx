@@ -8,7 +8,7 @@ export default function ValidationCodeBox() {
   const [searchParams] = useSearchParams();
   const queryType = searchParams.get("type");
   const navigate = useNavigate();
-  const { token, user } = useAuth();
+  const { user } = useAuth();
 
   const [code, setCode] = useState("");
   const [message, setMessage] = useState(null);
@@ -20,7 +20,6 @@ export default function ValidationCodeBox() {
   const fetchEtapeInfos = async () => {
     try {
       const res = await api.get(`/etapes/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
       });
 
       const e = res.data;
@@ -69,7 +68,7 @@ export default function ValidationCodeBox() {
 
   useEffect(() => {
     fetchEtapeInfos();
-  }, [id, token, user]);
+  }, [id, user]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -86,7 +85,6 @@ export default function ValidationCodeBox() {
           etape_id: id,
         },
         {
-          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
@@ -103,7 +101,6 @@ export default function ValidationCodeBox() {
         }
       } else {
         await api.patch(`/etapes/${id}/cloturer`, null, {
-          headers: { Authorization: `Bearer ${token}` },
         });
         alert("✅ Colis déposé. Étape clôturée.");
         navigate("/mes-etapes");
