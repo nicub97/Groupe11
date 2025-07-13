@@ -16,6 +16,16 @@ All routes are prefixed with `/api` when served by Laravel. Authentication uses 
 ### Logout
 | POST | `/logout` | `AuthController@logout` | Revoke current token. | `auth:sanctum` | 200 |
 
+## Public Routes
+Routes accessible without authentication.
+
+| Method | URL | Controller@method | Description |
+|-------|-----|-----------------|-------------|
+| GET | `/public/annonces` | `PublicController@listAnnonces` | List public product adverts |
+| GET | `/public/annonces/{id}` | `PublicController@showAnnonce` | Show specific public advert |
+| GET | `/public/prestations` | `PublicController@listPrestations` | List available services |
+| GET | `/public/prestations/{id}` | `PublicController@showPrestation` | Show service detail |
+
 ## Admin Routes
 Middleware: `auth:sanctum`, `role:admin`
 
