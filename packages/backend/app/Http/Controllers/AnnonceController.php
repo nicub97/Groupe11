@@ -527,4 +527,30 @@ class AnnonceController extends Controller
         return response()->json(['message' => 'Paiement enregistré avec succès.']);
     }
 
+    public function resetReservation($id)
+    {
+        $user = Auth::user();
+
+        if ($user->role !== 'admin') {
+            return response()->json(['message' => 'Action non autorisée.'], 403);
+        }
+
+        $annonce = Annonce::find($id);
+
+        if (! $annonce) {
+            return response()->json(['message' => 'Annonce introuvable.'], 404);
+        }
+
+        $annonce->id_client = null;
+        $annonce->entrepot_arrivee_id = null;
+        $annonce->save();
+
+        Log::info('Réinitialisation de réservation', [
+            'annonce_id' => $annonce->id,
+            'user_id' => $user->id,
+        ]);
+
+        return response()->json(['message' => 'Réservation réinitialisée avec succès.']);
+    }
+
 }
