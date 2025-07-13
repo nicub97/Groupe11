@@ -64,6 +64,14 @@ export default function ReserverAnnonce() {
     setLoading(true);
     setMessage("");
     try {
+      const res = await api.get(`/annonces/${annonceId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.data.id_client !== null || res.data.entrepot_arrivee_id !== null) {
+        setMessage("Cette annonce a déjà été réservée par un autre client.");
+        setLoading(false);
+        return;
+      }
       localStorage.setItem("reservationEntrepot", entrepotArriveeId);
       localStorage.setItem("paymentContext", "reserver");
       localStorage.setItem("reservationAnnonceId", annonceId);
