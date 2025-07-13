@@ -156,6 +156,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/annonces', [AnnonceController::class, 'store']);
     Route::patch('/annonces/{id}', [AnnonceController::class, 'update']);
     Route::delete('/annonces/{id}', [AnnonceController::class, 'destroy']);
+    Route::post('/annonces/{id}/reset-reservation', [AnnonceController::class, 'resetReservation']);
     
     // Commandes
     Route::get('/commandes', [CommandeController::class, 'index']);
