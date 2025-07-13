@@ -5,7 +5,7 @@ import { useAuth } from "../context/AuthContext";
 
 // Formulaire d\'évaluation d\'une prestation terminée
 export default function EvaluationForm({ interventionId, onSubmit }) {
-  const { token } = useAuth();
+  useAuth();
   const [note, setNote] = useState(1);
   const [commentaire, setCommentaire] = useState("");
   const [loading, setLoading] = useState(false);
@@ -23,7 +23,6 @@ export default function EvaluationForm({ interventionId, onSubmit }) {
           note,
           commentaire_client: commentaire,
         },
-        { headers: { Authorization: `Bearer ${token}` } }
       );
       setCommentaire("");
       setNote(1);

@@ -4,12 +4,12 @@ import api from "../services/api";
 import { Link } from "react-router-dom";
 
 export default function EditProfil() {
-  const { user, token, updateUser } = useAuth();
+  const { user, updateUser } = useAuth();
   const [formData, setFormData] = useState({});
   const [message, setMessage] = useState("");
 
   useEffect(() => {
-    if (!user || !token) return;
+    if (!user) return;
     setFormData({
       nom: user.nom, prenom: user.prenom, email: user.email,
       pays: user.pays, telephone: user.telephone, adresse_postale: user.adresse_postale,
@@ -20,9 +20,7 @@ export default function EditProfil() {
 
     const loadRoleData = async () => {
       try {
-        const res = await api.get(`/${user.role}s/${user.id}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const res = await api.get(`/${user.role}s/${user.id}`);
         setFormData((prev) => ({ ...prev, ...res.data }));
       } catch {
         setMessage("Erreur lors du chargement des données spécifiques.");
@@ -30,7 +28,7 @@ export default function EditProfil() {
     };
 
     loadRoleData();
-  }, [user, token]);
+  }, [user]);
 
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
@@ -49,9 +47,7 @@ export default function EditProfil() {
 
     try {
       // PATCH utilisateur
-      await api.patch(`/utilisateurs/${user.id}`, utilisateurData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.patch(`/utilisateurs/${user.id}`, utilisateurData);
 
       // 🔄 MAJ user dans localStorage
       updateUser(utilisateurData);
@@ -70,9 +66,7 @@ export default function EditProfil() {
           roleData.description = formData.description;
         }
 
-        await api.patch(`/${user.role}s/${user.id}`, roleData, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        await api.patch(`/${user.role}s/${user.id}`, roleData);
       }
 
       setMessage("✅ Profil mis à jour avec succès.");

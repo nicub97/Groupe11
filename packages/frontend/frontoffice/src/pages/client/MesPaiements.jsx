@@ -3,7 +3,7 @@ import { useAuth } from "../../context/AuthContext";
 import { fetchPaiements } from "../../services/paiement";
 
 export default function MesPaiements() {
-  const { token } = useAuth();
+  useAuth();
   const [paiements, setPaiements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -11,7 +11,7 @@ export default function MesPaiements() {
   useEffect(() => {
     const load = async () => {
       try {
-        const data = await fetchPaiements(token);
+        const data = await fetchPaiements();
         setPaiements(data);
       } catch (err) {
         console.error(err);
@@ -21,7 +21,7 @@ export default function MesPaiements() {
       }
     };
     load();
-  }, [token]);
+  }, []);
 
   if (loading) return <p className="p-4">Chargement...</p>;
   if (error) return <p className="text-red-600 p-4">{error}</p>;

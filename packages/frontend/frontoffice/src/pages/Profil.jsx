@@ -4,15 +4,13 @@ import api from "../services/api";
 import { Link } from "react-router-dom";
 
 export default function Profil() {
-  const { user, token, logout } = useAuth();
+  const { user, logout } = useAuth();
   const [message, setMessage] = useState("");
 
   const handleDelete = async () => {
     if (!window.confirm("Confirmez-vous la suppression de votre compte ?")) return;
     try {
-      await api.delete(`/utilisateurs/${user.id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await api.delete(`/utilisateurs/${user.id}`);
       await logout();
     } catch {
       setMessage("Erreur lors de la suppression de compte.");

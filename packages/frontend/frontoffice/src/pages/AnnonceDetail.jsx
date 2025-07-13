@@ -6,7 +6,7 @@ import api from "../services/api";
 export default function AnnonceDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { token, user } = useAuth();
+  const { user } = useAuth();
   const [annonce, setAnnonce] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -14,7 +14,6 @@ export default function AnnonceDetail() {
     const fetchAnnonce = async () => {
       try {
         const res = await api.get(`/annonces/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
         });
         setAnnonce(res.data);
       } catch (err) {
@@ -25,7 +24,7 @@ export default function AnnonceDetail() {
     };
 
     fetchAnnonce();
-  }, [id, token]);
+  }, [id]);
 
 
   if (loading) return <p className="mt-10 text-center">Chargement...</p>;

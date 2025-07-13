@@ -6,7 +6,7 @@ import { useAuth } from "../context/AuthContext";
 export default function PaiementSuccess() {
   const [message, setMessage] = useState("");
   const [searchParams] = useSearchParams();
-  const { token } = useAuth();
+  const {} = useAuth();
   const navigate = useNavigate();
   const finalized = useRef(false);
 
@@ -42,12 +42,11 @@ export default function PaiementSuccess() {
             await api.post(
               `/annonces/${annonceId}/reserver`,
               { entrepot_arrivee_id: Number(entrepotId) },
-              { headers: { Authorization: `Bearer ${token}` } }
+              
             );
 
             await api.get(`/annonces/${annonceId}/paiement-callback`, {
               params: { session_id: sessionId },
-              headers: { Authorization: `Bearer ${token}` },
             });
 
             localStorage.removeItem("reservationEntrepot");
@@ -65,7 +64,6 @@ export default function PaiementSuccess() {
             try {
               await api.get(`/annonces/${annonceId}/paiement-callback`, {
                 params: { session_id: sessionId },
-                headers: { Authorization: `Bearer ${token}` },
               });
             } catch (err) {
               console.error("Erreur callback paiement :", err);
@@ -77,7 +75,6 @@ export default function PaiementSuccess() {
             try {
               await api.get(`/prestations/${prestationId}/paiement-callback`, {
                 params: { session_id: sessionId },
-                headers: { Authorization: `Bearer ${token}` },
               });
             } catch (err) {
               console.error("Erreur callback paiement prestation:", err);
@@ -103,7 +100,6 @@ export default function PaiementSuccess() {
           }
           await api.post("/annonces", formData, {
             headers: {
-              Authorization: `Bearer ${token}`,
               "Content-Type": "multipart/form-data",
             },
           });
@@ -129,7 +125,7 @@ export default function PaiementSuccess() {
     };
 
     finalize();
-  }, [searchParams, token, navigate]);
+  }, [searchParams, navigate]);
 
   return (
     <div className="max-w-xl mx-auto mt-10 p-6 bg-white shadow rounded">

@@ -5,7 +5,7 @@ import { useAuth } from "../context/AuthContext";
 
 export default function SuiviAnnonce() {
   const { annonceId } = useParams();
-  const { token, user } = useAuth();
+  const { user } = useAuth();
   const [annonce, setAnnonce] = useState(null);
   const [code, setCode] = useState("");
   const [message, setMessage] = useState("");
@@ -14,9 +14,7 @@ export default function SuiviAnnonce() {
 
   const fetchAnnonce = async () => {
     try {
-      const res = await api.get(`/annonces/${annonceId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await api.get(`/annonces/${annonceId}`);
       setAnnonce(res.data);
     } catch (err) {
       console.error("Erreur chargement annonce:", err);
@@ -24,10 +22,8 @@ export default function SuiviAnnonce() {
   };
 
   useEffect(() => {
-    if (token) {
-      fetchAnnonce();
-    }
-  }, [token, annonceId]);
+    fetchAnnonce();
+  }, [annonceId]);
 
   if (!annonce || !user) return <p className="text-center mt-10">Chargement...</p>;
 
@@ -82,7 +78,7 @@ export default function SuiviAnnonce() {
       await api.post(
         "/valider-code-box",
         { code, type, etape_id },
-        { headers: { Authorization: `Bearer ${token}` } }
+        
       );
       setEtatCode("success");
       setMessage("✅ Code validé avec succès.");

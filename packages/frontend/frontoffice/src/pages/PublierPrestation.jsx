@@ -5,7 +5,7 @@ import api from "../services/api";
 import { useNavigate } from "react-router-dom";
 
 export default function PublierPrestation() {
-  const { token, user } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
@@ -27,20 +27,16 @@ export default function PublierPrestation() {
   useEffect(() => {
     if (!user) return;
     api
-      .get(`/prestataires/${user.id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      .get(`/prestataires/${user.id}`)
       .then((res) => setPrestataire(res.data))
       .catch(() => setPrestataire(null))
       .finally(() => setLoadingPrestataire(false));
-  }, [user, token]);
+  }, [user]);
 
   useEffect(() => {
     const fetchSlots = async () => {
       try {
-        const res = await api.get("/plannings", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await api.get("/plannings");
         const formatted = res.data.map((s) => {
           const value = `${s.date_disponible}T${s.heure_debut.slice(0, 5)}`;
           return {
@@ -57,7 +53,7 @@ export default function PublierPrestation() {
     };
 
     fetchSlots();
-  }, [token]);
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -87,8 +83,7 @@ export default function PublierPrestation() {
             ? Number(form.duree_estimee)
             : null,
           tarif: Number(form.tarif),
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
+        }
       );
       setSuccess(true);
       setMessage("Prestation publiée avec succès.");

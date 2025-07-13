@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use App\Models\Utilisateur;
 use App\Models\Commercant;
@@ -67,8 +68,10 @@ class AuthController extends Controller
             ], 403);
         }*/
 
+        Auth::login($user);
+        $request->session()->regenerate();
+
         return response()->json([
-            'token' => $user->createToken('auth_token')->plainTextToken,
             'user' => [
                 'id' => $user->id,
                 'nom' => $user->nom,
@@ -87,8 +90,16 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        if ($request->user()) {
-            $request->user()->currentAccessToken()->delete();
+        $user = $request->user();
+        if ($user) {
+            if ($user->currentAccessToken()) {
+                $user->currentAccessToken()->delete();
+            }
+
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
             return response()->json(['message' => 'Déconnexion réussie.']);
         }
 
@@ -196,7 +207,6 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Inscription réussie',
-            'token' => $utilisateur->createToken('auth_token')->plainTextToken,
             'user' => [
                 'id' => $utilisateur->id,
                 'nom' => $utilisateur->nom,

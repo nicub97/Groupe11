@@ -3,7 +3,7 @@ import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
 
 export default function FacturesManuelles() {
-  const { token, user } = useAuth();
+  const { user } = useAuth();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -16,15 +16,11 @@ export default function FacturesManuelles() {
       setError("");
       try {
         if (user.role === "livreur") {
-          const res = await api.get("/mes-etapes", {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+          const res = await api.get("/mes-etapes");
           const terminees = (res.data || []).filter((e) => e.statut === "terminee");
           setItems(terminees);
         } else {
-          const res = await api.get("/mes-annonces", {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+          const res = await api.get("/mes-annonces");
           const payees = (res.data || []).filter((a) => a.is_paid === true);
           setItems(payees);
         }
@@ -36,7 +32,7 @@ export default function FacturesManuelles() {
       }
     };
     load();
-  }, [token, user]);
+  }, [user]);
 
   const handleGenerate = async (id) => {
     setBtnLoadingId(id);
@@ -49,9 +45,7 @@ export default function FacturesManuelles() {
       } else {
         endpoint = `/factures/commercant/annonce/${id}`;
       }
-      const res = await api.post(endpoint, null, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await api.post(endpoint);
       const url = res.data.url;
       window.open(url, "_blank");
     } catch (err) {
