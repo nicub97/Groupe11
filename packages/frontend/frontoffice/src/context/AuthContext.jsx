@@ -19,21 +19,11 @@ export function AuthProvider({ children }) {
     localStorage.setItem("user", JSON.stringify(user));
   };
 
-  const logout = async () => {
-    try {
-      await api.post(
-        "/logout",
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-    } catch (err) {
-      console.error("Erreur lors de la déconnexion:", err);
-    } finally {
-      setToken(null);
-      setUser(null);
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-    }
+  const logout = () => {
+    setToken(null);
+    setUser(null);
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
   };
 
   const completeTutorial = async () => {
