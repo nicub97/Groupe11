@@ -45,11 +45,10 @@ export default function PaiementSuccess() {
               { headers: { Authorization: `Bearer ${token}` } }
             );
 
-            await api.post(
-              `/annonces/${annonceId}/paiement-callback?session_id=${sessionId}`,
-              {},
-              { headers: { Authorization: `Bearer ${token}` } }
-            );
+            await api.get(`/annonces/${annonceId}/paiement-callback`, {
+              params: { session_id: sessionId },
+              headers: { Authorization: `Bearer ${token}` },
+            });
 
             localStorage.removeItem("reservationEntrepot");
             localStorage.removeItem("reservationAnnonceId");
