@@ -116,7 +116,7 @@ Route::middleware(['auth:sanctum', 'role:admin,livreur'])->group(function () {
     Route::patch('/livreurs/{id}', [LivreurController::class, 'update'])->whereNumber('id');
     Route::get('/livreurs/{id}/justificatifs', [JustificatifLivreurController::class, 'index'])->whereNumber('id');
     Route::post('/livreurs/justificatifs', [JustificatifLivreurController::class, 'store']);
-    Route::delete('/livreurs/justificatifs/{type}', [JustificatifLivreurController::class, 'destroy']);
+    Route::delete('/livreurs/justificatifs/{id}', [JustificatifLivreurController::class, 'destroy']);
 
     Route::middleware('livreur.valide')->group(function () {
         Route::get('/annonces-disponibles', [AnnonceController::class, 'annoncesDisponibles']);
