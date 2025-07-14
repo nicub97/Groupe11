@@ -1,9 +1,13 @@
 import RegisterLivreur from "./RegisterLivreur";
+import api from "../services/api";
+
+const STORAGE_BASE_URL = api.defaults.baseURL.replace("/api", "");
+
 export default function DevenirLivreur() {
   return (
     <div className="max-w-3xl mx-auto p-4">
       <img
-        src={`${import.meta.env.VITE_API_URL}/storage/livreur-public.png`}
+        src={`${STORAGE_BASE_URL}/storage/livreur-public.png`}
         alt="Livreur souriant avec téléphone et colis"
         className="mx-auto mb-6"
       />
