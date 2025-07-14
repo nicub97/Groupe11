@@ -9,6 +9,7 @@ use App\Models\Livreur;
 use App\Models\Prestataire;
 use App\Models\Prestation;
 use App\Models\Commande; // pour les prestations
+use App\Models\EtapeLivraison;
 
 class StatAdminController extends Controller
 {
@@ -21,6 +22,7 @@ class StatAdminController extends Controller
             'prestataires' => Prestataire::count(),
             'livreurs' => Livreur::count(),
             'prestations' => Prestation::count(),
+            'etapes_livraison' => EtapeLivraison::count(),
         ]);
     }
 }
