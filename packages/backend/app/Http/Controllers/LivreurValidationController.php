@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Livreur;
+use App\Models\JustificatifLivreur;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class LivreurValidationController extends Controller
 {
@@ -60,6 +62,13 @@ class LivreurValidationController extends Controller
         $livreur->statut = 'refuse';
         $livreur->motif_refus = $validated['motif_refus'] ?? null;
         $livreur->save();
+
+        // Supprimer tous les justificatifs existants
+        $docs = $livreur->justificatifs;
+        foreach ($docs as $doc) {
+            Storage::disk('public')->delete($doc->chemin);
+            $doc->delete();
+        }
 
         return response()->json(['message' => 'Livreur refusé.']);
     }

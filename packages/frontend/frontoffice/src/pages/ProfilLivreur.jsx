@@ -7,7 +7,8 @@ const STORAGE_BASE_URL = api.defaults.baseURL.replace("/api", "");
 export default function ProfilLivreur() {
   const { user, token } = useAuth();
   const [livreur, setLivreur] = useState(null);
-  const [files, setFiles] = useState({ identite: null, permis: null });
+  const [justifs, setJustifs] = useState([]);
+  const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
 
@@ -17,6 +18,11 @@ export default function ProfilLivreur() {
       .get(`/livreurs/${user.id}`, { headers: { Authorization: `Bearer ${token}` } })
       .then((res) => setLivreur(res.data))
       .catch(() => setError("Erreur de chargement"));
+
+    api
+      .get(`/livreurs/${user.id}/justificatifs`, { headers: { Authorization: `Bearer ${token}` } })
+      .then((res) => setJustifs(res.data))
+      .catch(() => setJustifs([]));
   }, [user, token]);
 
   const statutLabel =
@@ -27,10 +33,9 @@ export default function ProfilLivreur() {
       : "En attente";
 
   const handleUpload = async () => {
-    if (!files.identite && !files.permis) return;
+    if (!file) return;
     const data = new FormData();
-    if (files.identite) data.append("piece_identite_document", files.identite);
-    if (files.permis) data.append("permis_conduire_document", files.permis);
+    data.append("fichier", file);
     setUploading(true);
     try {
       const res = await api.post("/livreurs/justificatifs", data, {
@@ -39,11 +44,12 @@ export default function ProfilLivreur() {
           "Content-Type": "multipart/form-data",
         },
       });
-      setLivreur(res.data.livreur);
-      alert(
-        "\u2705 Vos documents ont bien été reçus. Votre profil repasse en validation."
-      );
-      setFiles({ identite: null, permis: null });
+      setJustifs((prev) => [...prev, res.data]);
+      if (livreur.statut === "refuse") {
+        setLivreur((l) => ({ ...l, statut: "en_attente", motif_refus: null }));
+      }
+      alert("\u2705 Document envoyé.");
+      setFile(null);
     } catch {
       setError("Erreur lors de l'envoi du fichier");
     } finally {
@@ -51,16 +57,13 @@ export default function ProfilLivreur() {
     }
   };
 
-  const handleDelete = async (type) => {
+  const handleDelete = async (id) => {
     if (!window.confirm("Supprimer ce document ?")) return;
     try {
-      await api.delete(`/livreurs/justificatifs/${type}`, {
+      await api.delete(`/livreurs/justificatifs/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setLivreur((prev) => ({
-        ...prev,
-        [`${type}_document`]: null,
-      }));
+      setJustifs((prev) => prev.filter((j) => j.id !== id));
     } catch {
       alert("Suppression impossible");
     }
@@ -86,71 +89,38 @@ export default function ProfilLivreur() {
       <div className="mt-6 space-y-2">
         <h3 className="text-lg font-semibold">Mes justificatifs</h3>
         <ul className="space-y-2 mb-4">
-          {livreur.piece_identite_document && (
-            <li className="border p-2 rounded flex justify-between items-center">
+          {justifs.map((j) => (
+            <li key={j.id} className="border p-2 rounded flex justify-between items-center">
               <a
-                href={`${STORAGE_BASE_URL}/storage/${livreur.piece_identite_document}`}
+                href={`${STORAGE_BASE_URL}/storage/${j.chemin}`}
                 target="_blank"
                 rel="noreferrer"
                 className="text-blue-600 underline"
               >
-                Pièce d'identité
+                {j.type || j.chemin}
               </a>
               {livreur.statut === "refuse" && (
                 <button
-                  onClick={() => handleDelete("piece_identite")}
+                  onClick={() => handleDelete(j.id)}
                   className="text-sm text-red-600 hover:underline"
                 >
                   Supprimer
                 </button>
               )}
             </li>
-          )}
-          {livreur.permis_conduire_document && (
-            <li className="border p-2 rounded flex justify-between items-center">
-              <a
-                href={`${STORAGE_BASE_URL}/storage/${livreur.permis_conduire_document}`}
-                target="_blank"
-                rel="noreferrer"
-                className="text-blue-600 underline"
-              >
-                Permis de conduire
-              </a>
-              {livreur.statut === "refuse" && (
-                <button
-                  onClick={() => handleDelete("permis_conduire")}
-                  className="text-sm text-red-600 hover:underline"
-                >
-                  Supprimer
-                </button>
-              )}
-            </li>
-          )}
+          ))}
         </ul>
         {livreur.statut === "refuse" && (
           <>
-            {livreur.piece_identite_document || livreur.permis_conduire_document ? (
+            {justifs.some((j) => j.statut === "refuse") ? (
               <p className="text-sm text-gray-600">
-                📂 Vous devez supprimer les justificatifs refusés avant d’en
-                ajouter un nouveau.
+                📂 Vous devez supprimer les justificatifs refusés avant d’en ajouter un nouveau.
               </p>
             ) : (
               <>
-                <label className="block font-medium">Pièce d'identité</label>
                 <input
                   type="file"
-                  onChange={(e) =>
-                    setFiles((f) => ({ ...f, identite: e.target.files[0] }))
-                  }
-                  className="mb-2 block"
-                />
-
-                <label className="block font-medium">Permis de conduire</label>
-                <input
-                  type="file"
-                  onChange={(e) =>
-                    setFiles((f) => ({ ...f, permis: e.target.files[0] }))
-                  }
+                  onChange={(e) => setFile(e.target.files[0])}
                   className="mb-2 block"
                 />
                 <button

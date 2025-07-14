@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\JustificatifLivreur;
 
 class Livreur extends Model
 {
@@ -23,5 +24,10 @@ class Livreur extends Model
     public function utilisateur()
     {
         return $this->belongsTo(Utilisateur::class);
+    }
+
+    public function justificatifs()
+    {
+        return $this->hasMany(JustificatifLivreur::class);
     }
 }

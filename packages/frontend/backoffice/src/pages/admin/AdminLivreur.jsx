@@ -6,6 +6,7 @@ const STORAGE_BASE_URL = api.defaults.baseURL.replace("/api", "");
 export default function AdminLivreur() {
   const [livreurs, setLivreurs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [justifs, setJustifs] = useState({});
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [cityFilter, setCityFilter] = useState("");
@@ -24,6 +25,15 @@ export default function AdminLivreur() {
       setLoading(false);
     }
   }
+
+  const voirJustifs = async (id) => {
+    try {
+      const res = await api.get(`/livreurs/${id}/justificatifs`);
+      setJustifs((prev) => ({ ...prev, [id]: res.data }));
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const valider = async (id) => {
     if (!window.confirm("Valider ce livreur ?")) return;
@@ -123,27 +133,10 @@ export default function AdminLivreur() {
                 <td className="p-3">{l.utilisateur?.email}</td>
                 <td className="p-3">{l.valide ? "Oui" : "Non"}</td>
                 <td className="p-3 capitalize">{l.statut}</td>
-                <td className="p-3 space-y-1">
-                  {l.piece_identite_document && (
-                    <a
-                      href={`${STORAGE_BASE_URL}/storage/${l.piece_identite_document}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-blue-600 underline block"
-                    >
-                      Pièce d'identité
-                    </a>
-                  )}
-                  {l.permis_conduire_document && (
-                    <a
-                      href={`${STORAGE_BASE_URL}/storage/${l.permis_conduire_document}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-blue-600 underline block"
-                    >
-                      Permis de conduire
-                    </a>
-                  )}
+                <td className="p-3">
+                  <button onClick={() => voirJustifs(l.utilisateur_id)} className="text-blue-600 hover:underline">
+                    Voir justificatifs
+                  </button>
                 </td>
                 <td className="p-3 text-sm">{l.motif_refus || ""}</td>
                 <td className="p-3 space-x-2">
@@ -169,6 +162,25 @@ export default function AdminLivreur() {
           </tbody>
         </table>
       </div>
+      {Object.entries(justifs).map(([id, files]) => (
+        <div key={id} className="mt-4">
+          <h2 className="font-semibold">Justificatifs utilisateur {id}</h2>
+          <ul className="list-disc ml-6">
+            {files.map((f) => (
+              <li key={f.id}>
+                <a
+                  href={`${STORAGE_BASE_URL}/storage/${f.chemin}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-blue-600 underline"
+                >
+                  {f.chemin}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
     </div>
   );
 }
