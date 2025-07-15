@@ -132,8 +132,8 @@ export default function AnnoncesPublic() {
               <p className="text-sm text-gray-500">
                 Prix : {annonce.prix_propose} € • Départ :
                 {" "}
-                {annonce.entrepot_depart?.ville || "❓"} → {" "}
-                {annonce.entrepot_arrivee?.ville || "❓"}
+                {annonce.entrepot_depart?.ville || "-"} → {" "}
+                {annonce.entrepot_arrivee?.ville || "-"}
               </p>
               <p className="text-xs text-gray-400">
                 Publié le : {new Date(annonce.created_at).toLocaleDateString()}

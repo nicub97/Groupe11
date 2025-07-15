@@ -61,13 +61,13 @@ export default function MesAnnonces() {
   const afficherStatut = (statut) => {
     switch (statut) {
       case "en_attente":
-        return "🕐 En attente";
+        return "En attente";
       case "en_cours":
-        return "📦 En cours de livraison";
+        return "En cours de livraison";
       case "livree":
-        return "🎉 Livrée";
+        return "Livrée";
       default:
-        return "❓ Inconnu";
+        return "Inconnu";
     }
   };
 
@@ -135,7 +135,7 @@ export default function MesAnnonces() {
               {(a.entrepot_depart || a.entrepot_arrivee) && (
                 <p>
                   <strong>Trajet :</strong>{" "}
-                  {a.entrepot_depart?.ville || "❓"} → {a.entrepot_arrivee?.ville || "❓"}
+                  {a.entrepot_depart?.ville || "-"} → {a.entrepot_arrivee?.ville || "-"}
                 </p>
               )}
 
@@ -147,7 +147,7 @@ export default function MesAnnonces() {
 
               {a.etapes_livraison?.length > 0 ? (
                 <div className="mt-4">
-                  <p className="font-semibold">📦 Étapes de livraison :</p>
+                  <p className="font-semibold">Étapes de livraison :</p>
                   <ul className="list-disc ml-6 mt-2">
                     {a.etapes_livraison.map((etape) => (
                       <li key={etape.id}>
@@ -161,7 +161,7 @@ export default function MesAnnonces() {
                   </ul>
                 </div>
               ) : (
-                <p className="mt-2 text-yellow-600">⏳ Aucune étape encore définie</p>
+                <p className="mt-2 text-yellow-600">Aucune étape encore définie</p>
               )}
 
               <Link to={`/annonces/${a.id}/suivi`} className="text-blue-600 underline block mt-3">
@@ -178,7 +178,6 @@ export default function MesAnnonces() {
                 </button>
               )}
 
-              {/* ❗️Afficher le bouton seulement si aucune étape n’est liée */}
               {a.etapes_livraison?.length === 0 && (!a.id_client || a.type !== "produit_livre") && (
                 <button
                   onClick={() => handleDelete(a.id)}

@@ -53,7 +53,7 @@ export default function AnnoncesDisponibles() {
     } catch (err) {
       console.error("Erreur acceptation :", err);
       if (err.response && err.response.status === 403) {
-        alert("⛔ Vous ne pouvez pas accéder à cette fonctionnalité tant que votre profil n’est pas validé.");
+        alert("Vous ne pouvez pas accéder à cette fonctionnalité tant que votre profil n’est pas validé.");
       } else {
         alert("Erreur lors de l'acceptation.");
       }
@@ -99,7 +99,7 @@ export default function AnnoncesDisponibles() {
   if (livreur && livreur.statut !== "valide") {
     return (
       <p className="p-4 text-red-600">
-        ⛔ Vous ne pouvez pas accéder à cette fonctionnalité tant que votre profil n’est pas validé.
+        Vous ne pouvez pas accéder à cette fonctionnalité tant que votre profil n’est pas validé.
       </p>
     );
   }

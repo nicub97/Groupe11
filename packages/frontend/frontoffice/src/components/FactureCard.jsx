@@ -1,6 +1,4 @@
 import PropTypes from "prop-types";
-
-// Carte affichant les informations d'une facture mensuelle
 export default function FactureCard({ facture }) {
   const { mois, montant, pdf_url, chemin_pdf } = facture;
   const url = pdf_url || chemin_pdf;

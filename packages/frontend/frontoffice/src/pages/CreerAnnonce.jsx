@@ -6,7 +6,6 @@ import api from "../services/api";
 export default function CreerAnnonce() {
   const { user, token } = useAuth();
   const navigate = useNavigate();
-  // Déterminer le type selon le rôle
   let typeAnnonce = null;
   if (user?.role === "client") typeAnnonce = "livraison_client";
   else if (user?.role === "commercant") typeAnnonce = "produit_livre";
@@ -91,7 +90,7 @@ export default function CreerAnnonce() {
           "Content-Type": "multipart/form-data",
         },
       });
-      setMessage("✅ Annonce créée avec succès !");
+      setMessage("Annonce créée avec succès.");
       setSuccess(true);
       setForm({
         titre: "",

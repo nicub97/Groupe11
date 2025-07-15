@@ -115,7 +115,6 @@ export default function Navbar() {
 
           {!user ? (
             <>
-              {/* Liens vitrine accessibles sans connexion */}
               <li>
                 <Link
                   to="/annonces-public"
@@ -297,7 +296,6 @@ export default function Navbar() {
             <li><Link to="/" className="block hover:text-lime-300">Accueil</Link></li>
             {!user ? (
               <>
-                {/* Liens vitrine accessibles sans connexion */}
                 <li>
                   <Link
                     to="/annonces-public"

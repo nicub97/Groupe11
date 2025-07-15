@@ -107,7 +107,7 @@ export default function ReserverAnnonce() {
         <strong>Prix proposé :</strong> {annonce.prix_propose} €
       </p>
       <p className="mb-4">
-        <strong>Départ :</strong> {annonce.entrepot_depart?.ville || "❓"}
+        <strong>Départ :</strong> {annonce.entrepot_depart?.ville || "-"}
       </p>
 
       <div className="mb-4">

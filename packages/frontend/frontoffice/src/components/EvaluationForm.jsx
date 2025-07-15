@@ -3,7 +3,6 @@ import PropTypes from "prop-types";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
 
-// Formulaire d\'évaluation d\'une prestation terminée
 export default function EvaluationForm({ interventionId, onSubmit }) {
   const { token } = useAuth();
   const [note, setNote] = useState(1);

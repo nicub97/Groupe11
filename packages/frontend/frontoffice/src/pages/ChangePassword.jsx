@@ -26,12 +26,12 @@ export default function ChangePassword() {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      setMessage("✅ Mot de passe mis à jour avec succès.");
+      setMessage("Mot de passe mis à jour avec succès.");
       setSuccess(true);
 
-      setTimeout(() => navigate("/profil/edit"), 1500); // redirection après 1.5s
+      setTimeout(() => navigate("/profil/edit"), 1500);
     } catch {
-      setMessage("❌ Erreur lors du changement de mot de passe.");
+      setMessage("Erreur lors du changement de mot de passe.");
       setSuccess(false);
     }
   };
@@ -59,7 +59,7 @@ export default function ChangePassword() {
         </Link>
         <br />
         <Link to="/profil/resetpassword" className="text-sm text-gray-600 hover:underline">
-          🔒 Mot de passe oublié ? Réinitialiser ici.
+          Mot de passe oublié ? Réinitialiser ici.
         </Link>
       </div>
     </div>

@@ -48,7 +48,7 @@ export default function AnnonceDetail() {
         <strong>Prix :</strong> {annonce.prix_propose} €
       </p>
       <p className="mb-2">
-        <strong>Trajet :</strong> {annonce.entrepot_depart?.ville || "❓"} → {annonce.entrepot_arrivee?.ville || "❓"}
+        <strong>Trajet :</strong> {annonce.entrepot_depart?.ville || "-"} → {annonce.entrepot_arrivee?.ville || "-"}
       </p>
       {user?.role === "client" && !annonce.id_client && (
         <button

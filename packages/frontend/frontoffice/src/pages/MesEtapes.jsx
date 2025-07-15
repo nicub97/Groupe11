@@ -35,7 +35,7 @@ export default function MesEtapes() {
   if (livreur && livreur.statut !== "valide") {
     return (
       <p className="p-4 text-red-600">
-        ⛔️ Vous ne pouvez pas accéder à cette fonctionnalité tant que votre profil n’est pas validé.
+        Vous ne pouvez pas accéder à cette fonctionnalité tant que votre profil n’est pas validé.
       </p>
     );
   }
@@ -45,7 +45,7 @@ export default function MesEtapes() {
       <h2 className="text-2xl font-bold mb-6">Mes étapes de livraison</h2>
 
       {etapes.length === 0 ? (
-        <p>⏳ En attente du dépôt du client.</p>
+        <p>En attente du dépôt du client.</p>
       ) : (
         <ul className="space-y-6">
           {etapes.map((e) => {
@@ -55,7 +55,6 @@ export default function MesEtapes() {
             let infoMessage = "";
             let boutonAction = null;
 
-            // Étapes client/commerçant précédentes non terminées pour la même annonce
             const etapeBlocante = toutesEtapes.some(
               (et) =>
                 et.annonce_id === e.annonce_id &&
@@ -73,9 +72,9 @@ export default function MesEtapes() {
 
             if (!codeRetrait?.utilise && e.statut === "en_cours") {
               if (etapeBlocante) {
-                infoMessage = "⏳ En attente de dépôt du commerçant ou client";
+                infoMessage = "En attente de dépôt du commerçant ou client";
               } else if (colisEstDisponible) {
-                infoMessage = "🔓 Prêt pour retrait du colis";
+                infoMessage = "Prêt pour retrait du colis";
                 boutonAction = (
                   <Link
                     to={`/validation-code/${e.id}?type=retrait`}
@@ -85,7 +84,7 @@ export default function MesEtapes() {
                   </Link>
                 );
               } else if (!e.est_client && !e.est_commercant) {
-                infoMessage = "⏳ En attente de retrait par vous";
+                infoMessage = "En attente de retrait par vous";
                 boutonAction = (
                   <button
                     onClick={() =>
@@ -98,7 +97,7 @@ export default function MesEtapes() {
                 );
               }
             } else if (!codeDepot?.utilise && codeDepot) {
-              infoMessage = "📦 Prêt pour dépôt à l'arrivée";
+              infoMessage = "Prêt pour dépôt à l'arrivée";
               boutonAction = (
                 <Link
                   to={`/validation-code/${e.id}?type=depot`}
@@ -108,7 +107,7 @@ export default function MesEtapes() {
                 </Link>
               );
             } else {
-              infoMessage = "✅ Étape complétée";
+              infoMessage = "Étape complétée";
             }
 
             return (

@@ -48,15 +48,13 @@ export default function EditProfil() {
     };
 
     try {
-      // PATCH utilisateur
+      
       await api.patch(`/utilisateurs/${user.id}`, utilisateurData, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      // 🔄 MAJ user dans localStorage
       updateUser(utilisateurData);
 
-      // PATCH données spécifiques selon le rôle
       if (user.role !== "client") {
         const roleData = {};
         if (user.role === "livreur") {
@@ -75,17 +73,17 @@ export default function EditProfil() {
         });
       }
 
-      setMessage("✅ Profil mis à jour avec succès.");
+      setMessage("Profil mis à jour avec succès.");
       setTimeout(() => setMessage(""), 5000);
     } catch (error) {
       console.error("Erreur de mise à jour :", error);
       if (error.response?.data?.message) {
-        setMessage(`❌ ${error.response.data.message}`);
+        setMessage(error.response.data.message);
       } else if (error.response?.data?.errors) {
         const messages = Object.values(error.response.data.errors).flat();
-        setMessage(`❌ ${messages[0]}`);
+        setMessage(messages[0]);
       } else {
-        setMessage("❌ Erreur inconnue lors de la mise à jour.");
+        setMessage("Erreur inconnue lors de la mise à jour.");
       }
     }
   };

@@ -27,7 +27,7 @@ export default function Login() {
 
     try {
       await login(email, password);
-      navigate("/"); // Redirection vers la page d'accueil
+      navigate("/");
     } catch (error) {
       const status = error.response?.status;
       const message = error.response?.data?.message || "Erreur de connexion.";

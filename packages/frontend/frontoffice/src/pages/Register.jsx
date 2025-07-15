@@ -48,7 +48,6 @@ export default function Register() {
       [name]: val
     }));
 
-    // validation instantanée par champ
     setErrors((prevErrors) => {
       const newErrors = { ...prevErrors };
 

@@ -27,8 +27,6 @@ export default function Annonces() {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        // Filtrer uniquement les annonces de type "produit_livre" qui ne sont
-        // pas encore réservées (ni client ni entrepôt d'arrivée définis)
         const annoncesFiltrees = res.data.filter((a) => {
           if (a.type !== "produit_livre") return false;
           const estReservee = a.id_client !== null || a.entrepot_arrivee_id !== null;
@@ -159,7 +157,7 @@ export default function Annonces() {
               </h3>
               <p>{annonce.description}</p>
               <p className="text-sm text-gray-500">
-                Prix : {annonce.prix_propose} € • Départ : {annonce.entrepot_depart?.ville || "❓"} → {annonce.entrepot_arrivee?.ville || "❓"}
+                Prix : {annonce.prix_propose} € • Départ : {annonce.entrepot_depart?.ville || "-"} → {annonce.entrepot_arrivee?.ville || "-"}
               </p>
               <p className="text-xs text-gray-400">
                 Publié le : {new Date(annonce.created_at).toLocaleDateString()}
