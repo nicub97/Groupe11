@@ -1,4 +1,3 @@
-/* Gestion des créneaux de disponibilité du prestataire */
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
@@ -47,7 +46,6 @@ export default function Disponibilites() {
   }, [token]);
 
   const handleAddSlot = async ({ date, heure_debut, heure_fin }) => {
-    // vérifie localement les chevauchements de créneau
     const conflict = slots.some(
       (s) =>
         s.date_disponible === date &&

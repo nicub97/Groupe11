@@ -1,7 +1,5 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
-
-// Formulaire simple pour ajouter un créneau de disponibilité
 export default function PlanningForm({ onSubmit }) {
   const [values, setValues] = useState({ date: "", heure_debut: "", heure_fin: "" });
   const [error, setError] = useState("");

@@ -85,7 +85,7 @@ export default function SuiviAnnonce() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setEtatCode("success");
-      setMessage("✅ Code validé avec succès.");
+      setMessage("Code validé avec succès.");
       setCode("");
       await fetchAnnonce();
     } catch (err) {
@@ -128,13 +128,13 @@ export default function SuiviAnnonce() {
 
       {livraisonTerminee && (
         <div className="mb-4 bg-green-100 border border-green-500 text-green-700 px-4 py-3 rounded">
-          ✅ Livraison terminée. Le colis a bien été récupéré.
+          Livraison terminée. Le colis a bien été récupéré.
         </div>
       )}
 
       {etapeDepotClient && estClientActuel && (
         <EtapeForm
-          titre="🚚 Dépôt initial"
+          titre="Dépôt initial"
           code={code}
           setCode={setCode}
           loading={loading}
@@ -146,7 +146,7 @@ export default function SuiviAnnonce() {
 
       {etapeDepotCommercant && estCommercantActuel && (
         <EtapeForm
-          titre="🚚 Dépôt commerçant"
+          titre="Dépôt commerçant"
           code={code}
           setCode={setCode}
           loading={loading}
@@ -158,13 +158,13 @@ export default function SuiviAnnonce() {
 
       {depotEffectue && !etapeRetraitClient && !retraitEffectue && (
         <p className="text-gray-600 font-medium mt-4">
-          ⏳ Colis en cours d'acheminement.
+          Colis en cours d'acheminement.
         </p>
       )}
 
       {etapeRetraitClient && estClientActuel && (
         <EtapeForm
-          titre="📦 Retrait du colis"
+          titre="Retrait du colis"
           code={code}
           setCode={setCode}
           loading={loading}
@@ -177,12 +177,12 @@ export default function SuiviAnnonce() {
 
       {retraitEffectue && (
         <p className="text-green-600 font-semibold mt-4">
-          ✅ Colis retiré. Livraison terminée.
+          Colis retiré. Livraison terminée.
         </p>
       )}
 
       <div className="mt-8">
-        <h3 className="font-semibold mb-2">📦 Détails des étapes :</h3>
+        <h3 className="font-semibold mb-2">Détails des étapes :</h3>
         {annonce.etapes_livraison?.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm border">

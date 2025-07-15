@@ -1,4 +1,3 @@
-/* Page de détail d'une prestation avec actions de réservation ou gestion */
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useEffect, useState } from "react";
@@ -24,7 +23,6 @@ export default function PrestationDetail() {
         headers: { Authorization: `Bearer ${storedToken}` },
       });
       setPrestation(res.data);
-      console.log(res.data); // suivi de la prestation reçue
     } catch (err) {
       if (err.response?.status === 401) {
         navigate("/login");
@@ -116,7 +114,6 @@ export default function PrestationDetail() {
         )}
       </div>
 
-      {/* Actions pour le client */}
       {isClient && prestation.statut === "disponible" && !prestation.is_paid && (
         <button
           onClick={payer}
@@ -126,7 +123,6 @@ export default function PrestationDetail() {
         </button>
       )}
 
-      {/* Actions pour le prestataire */}
       {isPrestataire && (
         <ActionButtons
           prestationId={id}
@@ -144,7 +140,6 @@ export default function PrestationDetail() {
         </button>
       )}
 
-      {/* Formulaire de notation pour le client */}
       {isClient &&
         prestation.statut === "terminée" &&
         prestation.intervention &&

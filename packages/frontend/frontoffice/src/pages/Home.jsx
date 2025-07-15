@@ -6,7 +6,7 @@ export default function Home() {
           Bienvenue sur <span className="text-primary">EcoDeli</span>
         </h1>
         <p className="text-lg sm:text-xl text-gray-700 max-w-xl mx-auto">
-          Rejoignez une communauté de livraison collaborative, locale et responsable 🌍
+          Rejoignez une communauté de livraison collaborative, locale et responsable
         </p>
         <div className="font-sans text-xl text-primary">Tailwind fonctionne </div>
         

@@ -25,7 +25,6 @@ export default function ValidationCodeBox() {
 
       const e = res.data;
 
-      // Vérifie que l'étape appartient au livreur connecté
       if (e.livreur_id !== user.id) {
         setError("Étape non autorisée.");
         setStep(null);
@@ -91,11 +90,9 @@ export default function ValidationCodeBox() {
       );
 
       if (step === "retrait") {
-        setMessage("✅ Retrait validé. Vous pouvez continuer.");
+        setMessage("Retrait validé. Vous pouvez continuer.");
         setCode("");
         await fetchEtapeInfos();
-        // Si la validation est effectuée par un livreur, on retourne
-        // automatiquement sur la liste des étapes après un court délai
         if (etape && !etape.est_client && !etape.est_commercant) {
           setTimeout(() => {
             navigate("/mes-etapes");
@@ -105,7 +102,7 @@ export default function ValidationCodeBox() {
         await api.patch(`/etapes/${id}/cloturer`, null, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        alert("✅ Colis déposé. Étape clôturée.");
+        alert("Colis déposé. Étape clôturée.");
         navigate("/mes-etapes");
       }
     } catch (err) {
@@ -124,7 +121,7 @@ export default function ValidationCodeBox() {
   if (!step) {
     return (
       <p className="text-center mt-10 text-gray-600 font-medium">
-        ⏳ Aucune action requise pour le moment. Veuillez patienter.
+        Aucune action requise pour le moment. Veuillez patienter.
       </p>
     );
   }
@@ -138,7 +135,7 @@ export default function ValidationCodeBox() {
       <form onSubmit={handleSubmit} className="space-y-4">
         <p className="text-sm text-gray-600">
           Étape actuelle :{" "}
-          {step === "retrait" ? "🔓 Retrait du colis" : "📦 Dépôt du colis"}
+          {step === "retrait" ? "Retrait du colis" : "Dépôt du colis"}
         </p>
 
         <label className="block mb-1 font-medium">Code d'accès ({step})</label>

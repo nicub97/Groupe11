@@ -1,6 +1,4 @@
 import PropTypes from "prop-types";
-
-// Badge coloré indiquant le statut d'une prestation
 export default function PrestationStatusBadge({ status }) {
   const colors = {
     "en attente": "bg-gray-200 text-gray-800",

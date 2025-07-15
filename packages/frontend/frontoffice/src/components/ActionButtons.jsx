@@ -3,7 +3,6 @@ import PropTypes from "prop-types";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
 
-// Boutons d'actions pour le prestataire selon le statut de la prestation
 export default function ActionButtons({ prestationId, statut, onChange }) {
   const { token } = useAuth();
   const [loading, setLoading] = useState(false);

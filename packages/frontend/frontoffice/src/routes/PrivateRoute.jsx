@@ -5,7 +5,6 @@ import PropTypes from "prop-types";
 export default function PrivateRoute({ children }) {
   const { token } = useAuth();
 
-  // Redirection vers /login si pas de token
   return token ? children : <Navigate to="/login" replace />;
 }
 

@@ -69,7 +69,7 @@ export default function PaiementSuccess() {
               });
             } catch (err) {
               console.error("Erreur callback paiement :", err);
-              setMessage("\u274C Une erreur est survenue. Paiement non valid\u00e9.");
+              setMessage("Une erreur est survenue. Paiement non validé.");
               paiementOk = false;
             }
           }

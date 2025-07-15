@@ -1,4 +1,3 @@
-/* Liste des prestations de l'utilisateur connecté */
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
@@ -9,7 +8,6 @@ export default function Prestations() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  // id prestataire récupéré depuis l'API dédiée
   const [prestataireId, setPrestataireId] = useState(null);
   const [loadingUser, setLoadingUser] = useState(true);
 
@@ -29,7 +27,6 @@ export default function Prestations() {
     fetchData();
   }, [token]);
 
-  // Récupération des infos détaillées de l'utilisateur
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -65,12 +62,9 @@ export default function Prestations() {
   if (loading || loadingUser) return <p>Chargement...</p>;
   if (error) return <p>Erreur lors du chargement.</p>;
 
-  // Filtre les prestations selon le rôle utilisateur
   const isClient = user?.role === "client";
   const filteredData = isClient
-    // match sur l'id client récupéré via l'API
     ? data.filter((p) => p.client_id === user.client?.id)
-    // match sur l'id prestataire récupéré via l'API
     : data.filter((p) => p.prestataire_id === prestataireId);
 
   return (

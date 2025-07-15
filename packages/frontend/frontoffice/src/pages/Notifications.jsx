@@ -38,7 +38,6 @@ export default function Notifications() {
     <div className="max-w-3xl mx-auto mt-10 px-4">
       <h2 className="text-2xl font-bold mb-4">Mes notifications</h2>
 
-      {/* Alerte si l'email n'est pas vérifié */}
       {user && !user.email_verified_at && (
         <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-4 mb-6 rounded">
           <p>

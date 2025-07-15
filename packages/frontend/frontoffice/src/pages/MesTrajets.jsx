@@ -95,7 +95,7 @@ export default function MesTrajets() {
   if (livreur && livreur.statut !== "valide") {
     return (
       <p className="p-4 text-red-600">
-        ⛔ Vous ne pouvez pas accéder à cette fonctionnalité tant que votre profil n’est pas validé.
+        Vous ne pouvez pas accéder à cette fonctionnalité tant que votre profil n’est pas validé.
       </p>
     );
   }

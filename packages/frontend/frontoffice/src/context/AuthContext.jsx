@@ -39,7 +39,6 @@ export function AuthProvider({ children }) {
     }
   };
 
-  // 🔄 mise à jour du user après modification de profil
   const updateUser = (data) => {
     const updated = { ...user, ...data };
     setUser(updated);
