@@ -63,7 +63,6 @@ class LivreurValidationController extends Controller
         $livreur->motif_refus = $validated['motif_refus'] ?? null;
         $livreur->save();
 
-        // Supprimer tous les justificatifs existants
         $docs = $livreur->justificatifs;
         foreach ($docs as $doc) {
             Storage::disk('public')->delete($doc->chemin);

@@ -7,17 +7,11 @@ use Illuminate\Http\Request;
 
 class EntrepotController extends Controller
 {
-    /**
-     * Lister tous les entrepôts.
-     */
     public function index()
     {
         return response()->json(Entrepot::all());
     }
 
-    /**
-     * Créer un nouvel entrepôt.
-     */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -35,9 +29,6 @@ class EntrepotController extends Controller
         ], 201);
     }
 
-    /**
-     * Afficher un entrepôt spécifique.
-     */
     public function show($id)
     {
         $entrepot = Entrepot::find($id);
@@ -49,9 +40,6 @@ class EntrepotController extends Controller
         return response()->json($entrepot);
     }
 
-    /**
-     * Modifier un entrepôt.
-     */
     public function update(Request $request, $id)
     {
         $entrepot = Entrepot::find($id);
@@ -75,9 +63,6 @@ class EntrepotController extends Controller
         ]);
     }
 
-    /**
-     * Supprimer un entrepôt.
-     */
     public function destroy($id)
     {
         $entrepot = Entrepot::find($id);

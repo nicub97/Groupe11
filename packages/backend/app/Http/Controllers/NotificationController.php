@@ -8,9 +8,6 @@ use Illuminate\Support\Facades\Auth;
 
 class NotificationController extends Controller
 {
-    /**
-     * Lister les notifications de l'utilisateur connecté.
-     */
     public function index()
     {
         $notifications = Notification::where('utilisateur_id', Auth::id())
@@ -20,9 +17,7 @@ class NotificationController extends Controller
         return response()->json($notifications);
     }
 
-    /**
-     * Marquer une notification comme lue.
-     */
+    
     public function markAsRead($id)
     {
         $notification = Notification::where('id', $id)
@@ -38,9 +33,6 @@ class NotificationController extends Controller
         return response()->json(['message' => 'Notification marquée comme lue.']);
     }
 
-    /**
-     * Créer une notification (ex. : par admin ou test manuel).
-     */
     public function store(Request $request)
     {
         $request->validate([

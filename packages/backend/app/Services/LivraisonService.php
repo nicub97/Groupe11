@@ -13,9 +13,6 @@ use Illuminate\Support\Facades\DB;
 
 class LivraisonService
 {
-    /**
-     * Crée une nouvelle étape réelle à partir d'un dépôt intermédiaire.
-     */
     public static function creerNouvelleEtapeDepuisDepotIntermediaire(Annonce $annonce, Utilisateur $livreur): ?EtapeLivraison
     {
         if (!$annonce->is_paid) {

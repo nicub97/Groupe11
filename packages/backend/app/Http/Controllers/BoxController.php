@@ -7,9 +7,6 @@ use Illuminate\Http\Request;
 
 class BoxController extends Controller
 {
-    /**
-     * Lister toutes les boxes (optionnellement par entrepôt).
-     */
     public function index(Request $request)
     {
         $query = Box::with('entrepot');
@@ -21,9 +18,6 @@ class BoxController extends Controller
         return response()->json($query->get());
     }
 
-    /**
-     * Créer une nouvelle box dans un entrepôt.
-     */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -44,9 +38,6 @@ class BoxController extends Controller
         ], 201);
     }
 
-    /**
-     * Mettre à jour une box.
-     */
     public function update(Request $request, $id)
     {
         $box = Box::find($id);
@@ -68,9 +59,6 @@ class BoxController extends Controller
         ]);
     }
 
-    /**
-     * Supprimer une box.
-     */
     public function destroy($id)
     {
         $box = Box::find($id);

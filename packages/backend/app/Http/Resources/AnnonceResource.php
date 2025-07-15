@@ -6,9 +6,6 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class AnnonceResource extends JsonResource
 {
-    /**
-     * Transform the resource into an array.
-     */
     public function toArray($request)
     {
         return [

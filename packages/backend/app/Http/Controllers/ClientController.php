@@ -8,13 +8,11 @@ use Illuminate\Support\Facades\Auth;
 
 class ClientController extends Controller
 {
-    // Retourne tous les clients
     public function index()
     {
         return response()->json(Client::all());
     }
 
-    // Affiche un client par utilisateur_id (lié au profil utilisateur)
     public function show($id)
     {
         $client = Client::where('utilisateur_id', $id)->first();
@@ -26,7 +24,6 @@ class ClientController extends Controller
         return response()->json($client);
     }
 
-    // Met à jour un client (seulement téléphone ou adresse)
     public function update(Request $request, $id)
     {
         $client = Client::where('utilisateur_id', $id)->first();

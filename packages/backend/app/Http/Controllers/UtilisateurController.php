@@ -9,25 +9,16 @@ use App\Models\Utilisateur;
 
 class UtilisateurController extends Controller
 {
-    /**
-     * Lister tous les utilisateurs.
-     */
     public function index()
     {
         return response()->json(Utilisateur::orderBy('created_at', 'desc')->get());
     }
 
-    /**
-     * Lister tous les livreurs.
-     */
     public function indexLivreurs()
     {
         return Utilisateur::where('role', 'livreur')->get();
     }
 
-    /**
-     * Créer un nouvel utilisateur
-     */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -56,7 +47,7 @@ class UtilisateurController extends Controller
             'nom' => $validated['nom'],
             'prenom' => $validated['prenom'],
             'email' => strtolower($validated['email']),
-            'password' => $validated['password'], // hashé via mutator
+            'password' => $validated['password'],
             'role' => $validated['role'],
             'pays' => $validated['pays'] ?? null,
             'telephone' => $validated['telephone'] ?? null,
@@ -70,9 +61,6 @@ class UtilisateurController extends Controller
     }
 
 
-    /**
-     * Afficher un utilisateur spécifique.
-     */
     public function show($id)
     {
         $utilisateur = Utilisateur::find($id);
@@ -85,9 +73,6 @@ class UtilisateurController extends Controller
     }
     
 
-    /**
-     * Modifier un utilisateur.
-     */
     public function update(Request $request, $id)
     {
         $utilisateur = Utilisateur::find($id);
@@ -151,9 +136,6 @@ class UtilisateurController extends Controller
     }
 
 
-    /**
-     * Supprimer un utilisateur.
-     */
     public function destroy($id)
     {
         $utilisateur = Utilisateur::find($id);
@@ -168,7 +150,6 @@ class UtilisateurController extends Controller
             return response()->json(['message' => 'Action non autorisée.'], 403);
         }
 
-        // Supprimer aussi dans la table liée selon le rôle
         match ($utilisateur->role) {
             'client' => $utilisateur->client()?->delete(),
             'livreur' => $utilisateur->livreur()?->delete(),

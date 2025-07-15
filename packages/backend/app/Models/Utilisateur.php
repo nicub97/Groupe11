@@ -32,7 +32,6 @@ class Utilisateur extends Authenticatable implements MustVerifyEmail
         'remember_token',
     ];
 
-    // Mutator pour hasher automatiquement le mot de passe
     public function setPasswordAttribute($value)
     {
         if (!empty($value)) {
@@ -40,26 +39,22 @@ class Utilisateur extends Authenticatable implements MustVerifyEmail
         }
     }
 
-    // Annonces créées par le client (type livraison_client ou produit_livre)
     public function annoncesClient()
     {
         return $this->hasMany(Annonce::class, 'id_client');
     }
 
-    // Annonces créées par le commerçant (type produit_livre)
     public function annoncesCommercant()
     {
         return $this->hasMany(Annonce::class, 'id_commercant');
     }
 
 
-    // Annonces pour lesquelles l'utilisateur est livreur
     public function livraisons()
     {
         return $this->belongsToMany(Annonce::class, 'annonce_utilisateur', 'utilisateur_id', 'annonce_id');
     }
 
-    // Commandes faites par ce client
     public function commandes()
     {
         return $this->hasMany(Commande::class, 'client_id');

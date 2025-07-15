@@ -31,8 +31,6 @@ class EtapeLivraisonController extends Controller
         return response()->json($etape);
     }
 
-
-    // Liste des étapes pour un livreur
     public function mesEtapes()
     {
         $user = Auth::user();
@@ -41,7 +39,6 @@ class EtapeLivraisonController extends Controller
             return response()->json(['message' => 'Accès réservé aux livreurs.'], 403);
         }
 
-        // On renvoie toutes les étapes liées à l’annonce du livreur
         $etapes = EtapeLivraison::with('annonce', 'codes')
             ->where('livreur_id', $user->id)
             ->orderBy('created_at', 'asc')
@@ -49,8 +46,6 @@ class EtapeLivraisonController extends Controller
 
         return response()->json($etapes);
     }
-
-    // Modifier le statut d'une étape
     public function changerStatut(Request $request, $id)
     {
         $user = Auth::user();
@@ -65,7 +60,6 @@ class EtapeLivraisonController extends Controller
             'statut' => 'required|in:en_attente,en_cours,terminee',
         ]);
 
-        // Règle métier simple : éviter de reculer dans le statut
         $statuts = ['en_attente' => 0, 'en_cours' => 1, 'terminee' => 2];
         if ($statuts[$request->statut] < $statuts[$etape->statut]) {
             return response()->json(['message' => 'Transition invalide.'], 400);
@@ -82,29 +76,25 @@ class EtapeLivraisonController extends Controller
         $user = Auth::user();
         $etape = EtapeLivraison::with('annonce', 'codes')->findOrFail($id);
 
-        // Sécurité : seule le livreur associé peut clôturer l'étape
         if ($etape->livreur_id !== $user->id) {
             return response()->json(['message' => 'Non autorisé.'], 403);
         }
 
-        // Vérifie si l'étape est déjà terminée
         if ($etape->statut === 'terminee') {
             return response()->json(['message' => 'Étape déjà terminée.'], 200);
         }
 
-        // Vérifie que le code de dépôt a été utilisé
+        
         $codeDepot = $etape->codes->first(fn($c) => $c->type === 'depot' && $c->utilise);
 
         if (! $codeDepot) {
             return response()->json(['message' => 'Le dépôt n’a pas encore été validé.'], 400);
         }
 
-        // Clôture
         $etape->statut = 'terminee';
         $etape->save();
 
-
-        return response()->json(['message' => '✅ Étape clôturée avec succès.']);
+        return response()->json(['message' => 'Étape clôturée avec succès.']);
     }
 
     public function validerCode(Request $request)
@@ -119,7 +109,6 @@ class EtapeLivraisonController extends Controller
         $etape = EtapeLivraison::with('annonce')->findOrFail($request->etape_id);
         $annonce = $etape->annonce;
 
-        // Restrictions d\'accès en fonction du rôle réel dans l\'annonce
         if ($request->type === 'depot') {
             if ($etape->est_client && $user->id !== $annonce->id_client) {
                 return response()->json([
@@ -146,8 +135,6 @@ class EtapeLivraisonController extends Controller
             return response()->json(['message' => 'Non autorisé.'], 403);
         }
 
-        // Blocage : un retrait ne peut être validé si une étape client ou
-        // commerçant précédente de la même annonce n'est pas terminée.
         if ($request->type === 'retrait' && ! $etape->peutRetirer()) {
             return response()->json([
                 'message' => 'Le colis n\'a pas encore été déposé.'
@@ -164,11 +151,9 @@ class EtapeLivraisonController extends Controller
             return response()->json(['message' => 'Code invalide ou déjà utilisé'], 400);
         }
 
-        // ✅ Marquer le code comme utilisé
         $codeBox->utilise = true;
         $codeBox->save();
 
-        // Libérer la box lorsque le code de retrait est validé
         if ($request->type === 'retrait') {
             $box = $codeBox->box;
             if ($box) {
@@ -177,7 +162,6 @@ class EtapeLivraisonController extends Controller
             }
         }
 
-        // Envoi du code par email une seule fois
         if (!$codeBox->mail_envoye_at) {
             $destinataire = null;
             $mailable = null;
@@ -191,7 +175,7 @@ class EtapeLivraisonController extends Controller
                     $destinataire = $etape->livreur;
                 }
                 $mailable = new CodeDepotMail($codeBox);
-            } else { // retrait
+            } else {
                 if ($etape->est_client) {
                     $destinataire = $etape->annonce->client;
                 } else {
@@ -207,7 +191,6 @@ class EtapeLivraisonController extends Controller
             }
         }
 
-        // 🎯 Cas 1 : Étape de dépôt initial (client ou commerçant)
         if (($etape->est_client || $etape->est_commercant) && $request->type === 'depot') {
             $etape->statut = 'terminee';
             $etape->save();
@@ -261,7 +244,7 @@ class EtapeLivraisonController extends Controller
             return response()->json(['message' => 'Code de dépôt validé. Étape clôturée.']);
         }
 
-        // 🎯 Cas 2 : Retrait final par le client
+        
         if ($etape->est_client && $request->type === 'retrait') {
             if ($etape->statut === 'en_cours') {
                 $etape->statut = 'terminee';
@@ -270,10 +253,9 @@ class EtapeLivraisonController extends Controller
 
             PaiementService::distribuerPaiement($etape->annonce);
 
-            return response()->json(['message' => '✅ Colis retiré. Livraison terminée.']);
+            return response()->json(['message' => 'Colis retiré. Livraison terminée.']);
         }
 
-        // 🎯 Cas 3 : Étape livreur
         if (! $etape->est_client && ! $etape->est_commercant) {
             if ($request->type === 'retrait') {
                 return response()->json(['message' => 'Code de retrait validé. Vous pouvez maintenant déposer.']);
@@ -353,7 +335,6 @@ class EtapeLivraisonController extends Controller
     {
         $etape = EtapeLivraison::findOrFail($id);
 
-        // On cherche la prochaine étape (de la même annonce et du même livreur)
         $suivante = EtapeLivraison::where('annonce_id', $etape->annonce_id)
             ->where('livreur_id', $etape->livreur_id)
             ->where('created_at', '>', $etape->created_at)

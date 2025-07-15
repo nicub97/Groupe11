@@ -11,9 +11,6 @@ use Stripe\StripeClient;
 
 class PaiementController extends Controller
 {
-    /**
-     * Lister les paiements de l'utilisateur connecté.
-     */
     public function index()
     {
         $utilisateur = Auth::user();
@@ -23,9 +20,6 @@ class PaiementController extends Controller
         return response()->json($paiements);
     }
 
-    /**
-     * Créer un nouveau paiement.
-     */
     public function store(Request $request)
     {
         $utilisateur = Auth::user();
@@ -53,9 +47,6 @@ class PaiementController extends Controller
         ], 201);
     }
 
-    /**
-     * Afficher un paiement spécifique.
-     */
     public function show($id)
     {
         $paiement = Paiement::find($id);
@@ -67,9 +58,6 @@ class PaiementController extends Controller
         return response()->json($paiement);
     }
 
-    /**
-     * Crée une session Stripe Checkout et renvoie son URL.
-     */
     public function createCheckoutSession(Request $request)
     {
         $validated = $request->validate([

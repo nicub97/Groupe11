@@ -35,7 +35,6 @@ class JustificatifController extends Controller
             'type_document' => 'nullable|string',
         ]);
 
-        // Supprimer les justificatifs refusés existants
         $anciens = JustificatifPrestataire::where('prestataire_id', $prestataire->id)
             ->where('statut', 'refuse')
             ->get();

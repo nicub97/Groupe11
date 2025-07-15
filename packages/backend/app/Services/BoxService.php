@@ -7,9 +7,6 @@ use Illuminate\Support\Str;
 
 class BoxService
 {
-    /**
-     * Create the default boxes for a warehouse.
-     */
     public static function createDefaultBoxes(Entrepot $entrepot): void
     {
         $boxes = [];

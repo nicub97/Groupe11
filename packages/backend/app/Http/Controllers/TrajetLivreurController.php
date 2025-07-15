@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Auth;
 
 class TrajetLivreurController extends Controller
 {
-    // Lister les trajets du livreur connecté
     public function index()
     {
         $user = Auth::user();
@@ -19,7 +18,6 @@ class TrajetLivreurController extends Controller
         return response()->json($trajets);
     }
 
-    // Ajouter un trajet
     public function store(Request $request)
     {
         $user = Auth::user();
@@ -45,7 +43,6 @@ class TrajetLivreurController extends Controller
         return response()->json(['message' => 'Trajet enregistré.', 'trajet' => $trajet]);
     }
 
-    // Supprimer un trajet
     public function destroy($id)
     {
         $trajet = TrajetLivreur::findOrFail($id);
