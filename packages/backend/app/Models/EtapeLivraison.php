@@ -43,11 +43,6 @@ class EtapeLivraison extends Model
         return $this->hasMany(CodeBox::class, 'etape_livraison_id');
     }
 
-    /**
-     * Détermine si le retrait peut être validé pour cette étape.
-     * Il ne doit exister aucune étape précédente de la même annonce
-     * créée pour le client ou le commerçant qui n'est pas encore terminée.
-     */
     public function peutRetirer(): bool
     {
         return !self::where('annonce_id', $this->annonce_id)

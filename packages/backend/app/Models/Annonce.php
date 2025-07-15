@@ -73,10 +73,9 @@ class Annonce extends Model
             return 'en_cours';
         }
 
-        // Vérifier si toutes les étapes sont "terminee"
         $toutesTerminees = $etapes->every(fn($e) => $e->statut === 'terminee');
 
-        // Vérifier si l'une des étapes termine à la destination finale
+        
         $destinationFinaleAtteinte = $etapes->contains(function ($e) {
             return $e->lieu_arrivee === $this->entrepotArrivee->ville && $e->statut === 'terminee';
         });

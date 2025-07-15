@@ -39,7 +39,6 @@ class JustificatifLivreurController extends Controller
 
         $livreur = $user->livreur;
 
-        // Supprimer les justificatifs refusés existants
         $anciens = JustificatifLivreur::where('livreur_id', $livreur->id)
             ->where('statut', 'refuse')
             ->get();

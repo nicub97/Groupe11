@@ -68,7 +68,6 @@ class AnnonceController extends Controller
             return response()->json(['message' => 'Action non autorisée.'], 403);
         }
 
-        // Déterminer les règles dynamiquement selon le rôle
         $rules = [
             'type' => 'required|in:livraison_client,produit_livre',
             'titre' => 'required|string|max:255',
@@ -78,7 +77,6 @@ class AnnonceController extends Controller
             'entrepot_depart_id' => 'required|exists:entrepots,id',
         ];
 
-        // Si client → il faut entrepot_arrivee_id
         if ($user->role === 'client') {
             $rules['entrepot_arrivee_id'] = 'required|exists:entrepots,id';
         }
@@ -105,7 +103,7 @@ class AnnonceController extends Controller
             $annonce->id_client = $user->id;
         } elseif ($user->role === 'commercant') {
             $annonce->id_commercant = $user->id;
-            $annonce->entrepot_arrivee_id = null; // ne doit pas être défini au départ
+            $annonce->entrepot_arrivee_id = null;
         }
 
         $annonce->save();
@@ -246,7 +244,6 @@ class AnnonceController extends Controller
 
             if ($annonce->type === 'produit_livre') {
                 if ($annonce->id_commercant === null) {
-                    // Annonce créée par un client : toutes les étapes doivent être terminées
                     if (! $annonce->entrepotDepart || ! $annonce->entrepotArrivee) {
                         continue;
                     }
@@ -255,7 +252,6 @@ class AnnonceController extends Controller
                         continue;
                     }
                 } else {
-                    // Annonce d'un commerçant : doit être réservée par un client
                     if (! $annonce->id_client || ! $annonce->entrepotArrivee) {
                         continue;
                     }
@@ -270,7 +266,6 @@ class AnnonceController extends Controller
                 }
             }
 
-            // Déterminer la ville de départ actuelle
             $depart_actuel = $annonce->entrepotDepart?->ville ?? '';
 
             $lastStep = $etapes
@@ -288,7 +283,6 @@ class AnnonceController extends Controller
                 $depart_actuel = $lastStep->lieu_arrivee;
             }
 
-            // Vérifier compatibilité avec un trajet du livreur
             $compatible = $trajets->first(function ($trajet) use ($depart_actuel) {
                 return $trajet->entrepotDepart &&
                     strcasecmp(trim($trajet->entrepotDepart->ville), trim($depart_actuel)) === 0;
@@ -411,7 +405,6 @@ class AnnonceController extends Controller
 
         $stripe = new \Stripe\StripeClient(config('services.stripe.secret'));
 
-        // Crée une session Checkout Stripe
         $session = $stripe->checkout->sessions->create([
             'payment_method_types' => ['card'],
             'mode' => 'payment',
@@ -446,7 +439,6 @@ class AnnonceController extends Controller
 
         if ($session && $session->payment_status === 'paid') {
             DB::transaction(function () use ($annonce, $sessionId) {
-                // Enregistrer le paiement s'il n'existe pas déjà
                 if (! $annonce->id_client) {
                     Log::warning(
                         'paiementCallback: id_client manquant, fallback sur Auth::id()',

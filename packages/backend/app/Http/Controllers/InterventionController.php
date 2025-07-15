@@ -46,19 +46,14 @@ class InterventionController extends Controller
 
         $prestation = Prestation::find($validated['prestation_id']);
 
-        // Vérifier que le prestataire est bien celui lié à la prestation
         if ($prestation->prestataire_id !== ($user->prestataire->id ?? null)) {
             return response()->json(['message' => 'Accès interdit.'], 403);
         }
 
-        // Empêcher la création d'une intervention avant la date de la prestation
-        // Désactivé temporairement pour la phase de test fonctionnel
         if (Carbon::now()->lt($prestation->date_heure)) {
             Log::warning('Intervention avant date prévue', ['prestation_id' => $prestation->id]);
-            // La vérification est momentanément désactivée : on ne bloque pas la création
         }
 
-        // Empêcher la duplication d'intervention pour la même prestation
         if (Intervention::where('prestation_id', $prestation->id)->exists()) {
             Log::warning('Intervention déjà enregistrée', [
                 'prestation_id' => $prestation->id,
@@ -80,7 +75,6 @@ class InterventionController extends Controller
             'prestataire_id' => $user->prestataire->id ?? null,
         ]);
 
-        // Mettre à jour le statut de la prestation
         $prestation->statut = 'terminée';
         $prestation->save();
 

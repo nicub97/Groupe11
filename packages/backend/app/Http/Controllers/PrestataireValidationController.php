@@ -96,7 +96,6 @@ class PrestataireValidationController extends Controller
         $prestataire->motif_refus = $validated['motif_refus'] ?? null;
         $prestataire->save();
 
-        // Supprimer tous les justificatifs désormais refusés
         foreach ($prestataire->justificatifs as $justificatif) {
             Storage::disk('public')->delete($justificatif->chemin);
             $justificatif->delete();

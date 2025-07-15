@@ -21,12 +21,10 @@ class FacturePrestataireController extends Controller
             return response()->json(['message' => 'Accès réservé aux prestataires.'], 403);
         }
 
-        // Vérifier si facture déjà générée
         if (FacturePrestataire::where('prestataire_id', $prestataireId)->where('mois', $mois)->exists()) {
             return response()->json(['message' => 'Facture déjà générée pour ce mois.'], 409);
         }
 
-        // Récupérer les prestations validées du mois donné
         $interventions = Intervention::with('prestation')
             ->whereHas('prestation', function ($query) use ($mois, $prestataireId) {
                 $query->where('prestataire_id', $prestataireId)
@@ -42,7 +40,6 @@ class FacturePrestataireController extends Controller
 
         $total = $interventions->sum(fn($i) => $i->prestation->tarif);
 
-        // Générer le PDF
         $pdf = Pdf::loadView('factures.prestataire', [
             'interventions' => $interventions,
             'mois' => $mois,

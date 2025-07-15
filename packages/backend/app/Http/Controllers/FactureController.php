@@ -12,9 +12,6 @@ use Illuminate\Support\Facades\Auth;
 
 class FactureController extends Controller
 {
-    /**
-     * Lister toutes les factures de l'utilisateur connecté.
-     */
     public function index()
     {
         $factures = Facture::where('utilisateur_id', Auth::id())->get();
@@ -22,9 +19,6 @@ class FactureController extends Controller
         return response()->json($factures);
     }
 
-    /**
-     * Créer une facture manuellement.
-     */
     public function store(Request $request)
     {
         $request->validate([
@@ -45,9 +39,6 @@ class FactureController extends Controller
         ], 201);
     }
 
-    /**
-     * Afficher une facture spécifique.
-     */
     public function show($id)
     {
         $facture = Facture::where('utilisateur_id', Auth::id())->find($id);

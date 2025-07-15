@@ -8,9 +8,6 @@ use Illuminate\Support\Facades\Log;
 
 class PrestationPolicy
 {
-    /**
-     * Determine if the authenticated user can pay for the prestation.
-     */
     public function pay(Utilisateur $user, Prestation $prestation): bool
     {
         if (! $user->relationLoaded('client')) {
@@ -21,8 +18,7 @@ class PrestationPolicy
             return false;
         }
 
-        // If no client is attached yet, allow payment only when the prestation
-        // is available so it can be reserved afterwards
+        // Autoriser le paiement uniquement si la prestation est disponible lorsque aucun client n'est encore associé
         if ($prestation->client_id === null) {
             return $prestation->statut === 'disponible';
         }
@@ -34,14 +30,9 @@ class PrestationPolicy
         return $prestation->client->utilisateur_id === $user->id;
     }
 
-    /**
-     * Determine if the authenticated user can reserve the prestation.
-     * The user must be a client and, if a client is already associated
-     * to the prestation, it must be the same one.
-     */
+
     public function reserver(Utilisateur $user, Prestation $prestation): bool
     {
-        // Ensure the client relation is loaded for the authenticated user
         if (! $user->relationLoaded('client')) {
             $user->load('client');
         }

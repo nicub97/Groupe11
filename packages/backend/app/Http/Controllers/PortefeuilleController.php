@@ -8,9 +8,6 @@ use Illuminate\Support\Facades\Auth;
 
 class PortefeuilleController extends Controller
 {
-    /**
-     * Afficher le solde du portefeuille de l'utilisateur connecté.
-     */
     public function show()
     {
         $portefeuille = Portefeuille::firstOrCreate(
@@ -23,9 +20,6 @@ class PortefeuilleController extends Controller
         ]);
     }
 
-    /**
-     * Créditer le portefeuille (ajout d'argent).
-     */
     public function credit(Request $request)
     {
         $request->validate([
@@ -45,9 +39,6 @@ class PortefeuilleController extends Controller
         ]);
     }
 
-    /**
-     * Débiter le portefeuille (retrait d'argent, optionnel).
-     */
     public function debit(Request $request)
     {
         $request->validate([
