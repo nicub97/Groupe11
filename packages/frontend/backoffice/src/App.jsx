@@ -8,10 +8,8 @@ export default function App() {
   return (
     <Router>
       <Routes>
-        {/* Page de login */}
         <Route path="/login" element={<Login />} />
 
-        {/* Espace admin protégé */}
         <Route
           path="/admin/*"
           element={
@@ -23,7 +21,6 @@ export default function App() {
           }
         />
 
-        {/* Redirection automatique */}
         <Route path="*" element={<Navigate to="/admin" />} />
       </Routes>
     </Router>

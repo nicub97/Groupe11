@@ -70,7 +70,6 @@ export default function PrestationList() {
     }
   }
 
-  // A prestation is considered engaged only if a client has booked it
   const isEngagee = (p) => p.client_id != null;
 
   const startEdit = (prestation) => {
