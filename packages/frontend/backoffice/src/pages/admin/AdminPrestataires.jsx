@@ -197,7 +197,7 @@ export default function AdminPrestataires() {
                 <li key={e.id} className="mb-2">
                   <span className="font-medium">{e.prestation.type_prestation}</span>
                   {" - "}
-                  {new Date(e.prestation.date_heure).toLocaleDateString()} - {e.note}/5 ⭐
+                  {new Date(e.prestation.date_heure).toLocaleDateString()} - {e.note}/5
                   {e.commentaire_client && <p>{e.commentaire_client}</p>}
                 </li>
               ))}
