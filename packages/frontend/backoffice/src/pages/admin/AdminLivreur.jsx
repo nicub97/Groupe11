@@ -3,6 +3,11 @@ import api from "../../services/api";
 
 const STORAGE_BASE_URL = api.defaults.baseURL.replace("/api", "");
 
+const labelType = {
+  piece_identite: "Pièce d'identité",
+  permis_conduire: "Permis de conduire",
+};
+
 export default function AdminLivreur() {
   const [livreurs, setLivreurs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -168,13 +173,17 @@ export default function AdminLivreur() {
           <ul className="list-disc ml-6">
             {files.map((f) => (
               <li key={f.id}>
+                <span className="mr-2 font-medium">
+                  {labelType[f.type] || f.type}
+                </span>
+                –
                 <a
                   href={`${STORAGE_BASE_URL}/storage/${f.chemin}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-blue-600 underline"
+                  className="ml-2 text-blue-600 underline"
                 >
-                  {f.chemin}
+                  Télécharger fichier
                 </a>
               </li>
             ))}
