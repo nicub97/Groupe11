@@ -8,7 +8,8 @@ export default function ProfilLivreur() {
   const { user, token } = useAuth();
   const [livreur, setLivreur] = useState(null);
   const [justifs, setJustifs] = useState([]);
-  const [file, setFile] = useState(null);
+  const [fileIdentite, setFileIdentite] = useState(null);
+  const [filePermis, setFilePermis] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
 
@@ -32,10 +33,13 @@ export default function ProfilLivreur() {
       ? "Refusé"
       : "En attente";
 
-  const handleUpload = async () => {
-    if (!file) return;
+  const handleUpload = async (selectedFile, type) => {
+    if (!selectedFile) return;
     const data = new FormData();
-    data.append("fichier", file);
+    data.append("fichier", selectedFile);
+    if (type) {
+      data.append("type_document", type);
+    }
     setUploading(true);
     try {
       const res = await api.post("/livreurs/justificatifs", data, {
@@ -49,7 +53,11 @@ export default function ProfilLivreur() {
         setLivreur((l) => ({ ...l, statut: "en_attente", motif_refus: null }));
       }
       alert("\u2705 Document envoyé.");
-      setFile(null);
+      if (type === "piece_identite") {
+        setFileIdentite(null);
+      } else if (type === "permis_conduire") {
+        setFilePermis(null);
+      }
     } catch {
       setError("Erreur lors de l'envoi du fichier");
     } finally {
@@ -118,18 +126,36 @@ export default function ProfilLivreur() {
               </p>
             ) : (
               <>
-                <input
-                  type="file"
-                  onChange={(e) => setFile(e.target.files[0])}
-                  className="mb-2 block"
-                />
-                <button
-                  onClick={handleUpload}
-                  disabled={uploading}
-                  className="btn-primary mt-2 disabled:opacity-50"
-                >
-                  {uploading ? "Envoi..." : "Envoyer"}
-                </button>
+                <div className="mb-4">
+                  <label className="block font-medium mb-1">Pièce d'identité</label>
+                  <input
+                    type="file"
+                    onChange={(e) => setFileIdentite(e.target.files[0])}
+                    className="mb-2 block"
+                  />
+                  <button
+                    onClick={() => handleUpload(fileIdentite, "piece_identite")}
+                    disabled={uploading}
+                    className="btn-primary mt-2 disabled:opacity-50"
+                  >
+                    {uploading ? "Envoi..." : "Envoyer"}
+                  </button>
+                </div>
+                <div>
+                  <label className="block font-medium mb-1">Permis de conduire</label>
+                  <input
+                    type="file"
+                    onChange={(e) => setFilePermis(e.target.files[0])}
+                    className="mb-2 block"
+                  />
+                  <button
+                    onClick={() => handleUpload(filePermis, "permis_conduire")}
+                    disabled={uploading}
+                    className="btn-primary mt-2 disabled:opacity-50"
+                  >
+                    {uploading ? "Envoi..." : "Envoyer"}
+                  </button>
+                </div>
               </>
             )}
           </>
