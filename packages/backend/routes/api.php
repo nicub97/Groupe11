@@ -215,8 +215,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // Étapes de livraison
     Route::middleware('livreur.valide')->group(function () {
         Route::get('/mes-etapes', [EtapeLivraisonController::class, 'mesEtapes']);
-        Route::post('/valider-code-box', [EtapeLivraisonController::class, 'validerCode']);
     });
+    Route::post('/valider-code-box', [EtapeLivraisonController::class, 'validerCode']);
     Route::get('/etapes/{id}', [EtapeLivraisonController::class, 'show']);
     Route::patch('/etapes/{id}/statut', [EtapeLivraisonController::class, 'changerStatut']);
     Route::patch('/etapes/{id}/cloturer', [EtapeLivraisonController::class, 'cloturerEtape']);
