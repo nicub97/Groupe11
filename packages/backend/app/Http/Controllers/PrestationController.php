@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use Stripe\StripeClient;
 use Illuminate\Support\Facades\Log;
 use App\Models\Paiement;
+use Illuminate\Support\Facades\DB;
 
 class PrestationController extends Controller
 {
@@ -324,42 +325,47 @@ class PrestationController extends Controller
         $session = $stripe->checkout->sessions->retrieve($sessionId);
 
         if ($session && $session->payment_status === 'paid') {
-            if ($prestation->is_paid) {
-                return response()->json(['message' => 'Paiement déjà confirmé.']);
-            }
+            DB::transaction(function () use ($prestation, $sessionId) {
+                $user = Auth::user();
+                if (! $user->relationLoaded('client')) {
+                    $user->load('client');
+                }
 
-            $user = Auth::user();
-            if (! $user->relationLoaded('client')) {
-                $user->load('client');
-            }
+                $clientId = $prestation->client_id ?: $user->client?->id;
 
-            $clientId = $prestation->client_id ?: $user->client?->id;
+                if ($clientId) {
+                    Paiement::firstOrCreate(
+                        [
+                            'utilisateur_id' => $clientId,
+                            'reference'      => $sessionId,
+                        ],
+                        [
+                            'annonce_id' => null,
+                            'commande_id' => null,
+                            'montant'     => $prestation->tarif,
+                            'sens'        => 'debit',
+                            'type'        => 'stripe',
+                            'statut'      => 'valide',
+                        ]
+                    );
+                }
 
-            if ($clientId && ! Paiement::where('utilisateur_id', $clientId)->where('reference', $sessionId)->exists()) {
-                Paiement::create([
-                    'utilisateur_id' => $clientId,
-                    'annonce_id' => null,
-                    'commande_id' => null,
-                    'montant' => $prestation->tarif,
-                    'sens' => 'debit',
-                    'type' => 'stripe',
-                    'reference' => $sessionId,
-                    'statut' => 'valide',
-                ]);
-            }
+                $prestation->is_paid = true;
 
-            $prestation->is_paid = true;
+                if (! $prestation->client_id && $clientId) {
+                    $prestation->client_id = $clientId;
+                }
 
-            if (! $prestation->client_id && $prestation->statut === 'disponible' && $user->client) {
-                $prestation->client_id = $user->client->id;
-                $prestation->statut = 'en_attente';
-            }
+                if ($prestation->statut === 'disponible') {
+                    $prestation->statut = 'en_attente';
+                }
 
-            $prestation->save();
+                $prestation->save();
+            });
 
             Log::info('Prestation payée et réservée', [
                 'prestation_id' => $prestation->id,
-                'client_id' => $prestation->client_id,
+                'client_id'     => $prestation->client_id,
             ]);
         }
 
