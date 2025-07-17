@@ -11,7 +11,6 @@ use Carbon\Carbon;
 use Stripe\StripeClient;
 use Illuminate\Support\Facades\Log;
 use App\Models\Paiement;
-use Illuminate\Support\Facades\DB;
 
 class PrestationController extends Controller
 {
@@ -77,7 +76,7 @@ class PrestationController extends Controller
 
         $prestation = new Prestation($validated);
         $prestation->prestataire_id = $user->prestataire->id;
-        $prestation->statut = 'disponible';
+        $prestation->statut = 'disponible'; // visible par les clients
         $prestation->save();
 
         return response()->json([
@@ -129,6 +128,7 @@ class PrestationController extends Controller
             return response()->json(['message' => 'Prestation introuvable.'], 404);
         }
 
+        // Modification impossible dès qu'un client a réservé la prestation
         if ($prestation->client_id !== null) {
             return response()->json(['message' => 'Impossible de modifier une prestation déjà réservée par un client.'], 403);
         }
@@ -168,6 +168,7 @@ class PrestationController extends Controller
             return response()->json(['message' => 'Suppression non autorisée.'], 403);
         }
 
+        // Suppression impossible dès qu'un client a réservé la prestation
         if ($prestation->client_id !== null) {
             return response()->json(['message' => 'Impossible de supprimer une prestation déjà réservée par un client.'], 403);
         }
@@ -192,6 +193,7 @@ class PrestationController extends Controller
             'statut' => 'required|in:acceptée,refusée,terminée',
         ]);
 
+        // ne pas modifier une prestation déjà refusée ou terminée
         if (in_array($prestation->statut, ['refusée', 'terminée'])) {
             return response()->json([
                 'message' => 'Impossible de modifier une prestation finalisée.'
@@ -221,6 +223,7 @@ class PrestationController extends Controller
         $prestation->statut = $nouveauStatut;
         $prestation->save();
 
+        // Créer notification pour le client (si la prestation a bien un client)
         if ($prestation->client_id) {
             Notification::create([
                 'utilisateur_id' => $prestation->client->utilisateur_id ?? null,
@@ -325,47 +328,42 @@ class PrestationController extends Controller
         $session = $stripe->checkout->sessions->retrieve($sessionId);
 
         if ($session && $session->payment_status === 'paid') {
-            DB::transaction(function () use ($prestation, $sessionId) {
-                $user = Auth::user();
-                if (! $user->relationLoaded('client')) {
-                    $user->load('client');
-                }
+            if ($prestation->is_paid) {
+                return response()->json(['message' => 'Paiement déjà confirmé.']);
+            }
 
-                $clientId = $prestation->client_id ?: $user->client?->id;
+            $user = Auth::user();
+            if (! $user->relationLoaded('client')) {
+                $user->load('client');
+            }
 
-                if ($clientId) {
-                    Paiement::firstOrCreate(
-                        [
-                            'utilisateur_id' => $clientId,
-                            'reference'      => $sessionId,
-                        ],
-                        [
-                            'annonce_id' => null,
-                            'commande_id' => null,
-                            'montant'     => $prestation->tarif,
-                            'sens'        => 'debit',
-                            'type'        => 'stripe',
-                            'statut'      => 'valide',
-                        ]
-                    );
-                }
+            $clientId = $prestation->client_id ?: $user->client?->id;
 
-                $prestation->is_paid = true;
+            if ($clientId && ! Paiement::where('utilisateur_id', $clientId)->where('reference', $sessionId)->exists()) {
+                Paiement::create([
+                    'utilisateur_id' => $clientId,
+                    'annonce_id' => null,
+                    'commande_id' => null,
+                    'montant' => $prestation->tarif,
+                    'sens' => 'debit',
+                    'type' => 'stripe',
+                    'reference' => $sessionId,
+                    'statut' => 'valide',
+                ]);
+            }
 
-                if (! $prestation->client_id && $clientId) {
-                    $prestation->client_id = $clientId;
-                }
+            $prestation->is_paid = true;
 
-                if ($prestation->statut === 'disponible') {
-                    $prestation->statut = 'en_attente';
-                }
+            if (! $prestation->client_id && $prestation->statut === 'disponible' && $user->client) {
+                $prestation->client_id = $user->client->id;
+                $prestation->statut = 'en_attente';
+            }
 
-                $prestation->save();
-            });
+            $prestation->save();
 
             Log::info('Prestation payée et réservée', [
                 'prestation_id' => $prestation->id,
-                'client_id'     => $prestation->client_id,
+                'client_id' => $prestation->client_id,
             ]);
         }
 
